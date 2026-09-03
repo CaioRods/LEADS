@@ -1,0 +1,248 @@
+═══════════════════════════════════════════════════════════════════════════════
+                        🚀 PROSPECAPP - COMO USAR
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ INSTALAÇÃO CONCLUÍDA!
+
+Seu aplicativo ProspecApp está pronto para usar. Siga os passos abaixo:
+
+═══════════════════════════════════════════════════════════════════════════════
+1️⃣  INICIANDO A APLICAÇÃO
+═══════════════════════════════════════════════════════════════════════════════
+
+OPÇÃO A - Via Linha de Comando (PowerShell ou CMD):
+───────────────────────────────────────────────────────────────────────────────
+1. Abra o PowerShell ou CMD
+2. Digite e execute:
+   cd C:\Users\[seu-usuario]\Desktop\ProspecApp
+   npm start
+
+A aplicação abrirá em aproximadamente 5-10 segundos.
+
+OPÇÃO B - Via Explorador de Arquivos:
+───────────────────────────────────────────────────────────────────────────────
+1. Abra C:\Users\[seu-usuario]\Desktop\ProspecApp
+2. Pressione Shift + Clique Direito
+3. Selecione "Abrir janela do PowerShell aqui"
+4. Digite: npm start
+
+═══════════════════════════════════════════════════════════════════════════════
+2️⃣  PRIMEIRA EXECUÇÃO
+═══════════════════════════════════════════════════════════════════════════════
+
+Na primeira vez que abrir:
+✓ Uma pasta de dados será criada automaticamente
+✓ Arquivo "dados.json" será gerado
+✓ Dashboard vazio será mostrado (coloque seus primeiros leads!)
+
+═══════════════════════════════════════════════════════════════════════════════
+3️⃣  FUNCIONALIDADES PRINCIPAIS
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 DASHBOARD
+├─ Visualize total de leads
+├─ Quantidade por status
+└─ Gráfico de categorias
+
+👥 MEUS LEADS
+├─ Lista de todos os seus leads
+├─ Cards com informações principais
+├─ Busca e filtro por status
+└─ Clique para ver detalhes
+
+➕ NOVO LEAD
+├─ Formulário completo
+├─ Campos: Nome, Empresa, Telefone, Email, etc
+├─ Categorias pré-configuradas
+└─ Status inicial configurável
+
+📥 EXPORTAR
+├─ Baixe seus dados em CSV
+└─ Use em Excel, Sheets ou CRM
+
+═══════════════════════════════════════════════════════════════════════════════
+4️⃣  FLUXO RECOMENDADO DE USO
+═══════════════════════════════════════════════════════════════════════════════
+
+PASSO 1: Importar seus leads do Regente Feijó
+─────────────────────────────────────────────────────────────────────────────
+1. Clique em "Novo Lead"
+2. Copie dados do arquivo "Leads_Regente_Feijo.csv"
+3. Preencha cada lead manualmente ou use script de importação
+4. Todos começam com status "Novo"
+
+Dica: Você pode adicionar os leads da sua lista fornecida:
+- 10 Padarias/Confeitarias
+- 4 Restaurantes/Bares
+- 3 Salões de Beleza
+- 4 Oficinas Automotivas
+- + outros
+
+PASSO 2: Acompanhamento
+─────────────────────────────────────────────────────────────────────────────
+1. Clique em "Meus Leads"
+2. Clique no botão "Ver Detalhes" de um lead
+3. Quando ligar/contactar, clique "Editar" e mude status para "Contatado"
+4. Adicione uma nota no campo de atividades (ex: "Falei com João, respondeu mal")
+5. Continue acompanhando até vender
+
+PASSO 3: Acompanhar Progresso
+─────────────────────────────────────────────────────────────────────────────
+1. Volte ao Dashboard
+2. Veja quantos leads estão em cada etapa
+3. Gráfico mostra categoria mais promissora
+4. Quando vender, mude para "Vendido" 🎉
+
+═══════════════════════════════════════════════════════════════════════════════
+5️⃣  DICAS DE OURO
+═══════════════════════════════════════════════════════════════════════════════
+
+💡 ORGANIZAÇÃO
+──────────────
+✓ Use as categorias corretamente (Padaria, Restaurante, Salão, etc)
+✓ Atualize status após cada contato
+✓ Adicione notas descritivas nas atividades
+✓ Não deixe leads "esquecidos" - dê follow-up regular
+
+💡 BUSCA EFICIENTE
+──────────────────
+✓ Use a busca para encontrar um cliente específico
+✓ Use filtro de status para ver próximos a contactar
+✓ Agrupe por categoria para campanhas específicas
+
+💡 EXPORTAÇÃO
+──────────────
+✓ Exporte sempre antes de grandes mudanças
+✓ Importe em seu CRM favorito (Pipedrive, RD Station, etc)
+✓ Backup semanal em CSV para segurança
+
+💡 ACOMPANHAMENTO
+──────────────────
+✓ Registre TODAS as interações (ligação, email, WhatsApp, visita)
+✓ Adicione data/hora quando pertinente
+✓ Use para criar histórico completo do cliente
+
+═══════════════════════════════════════════════════════════════════════════════
+6️⃣  SOLUÇÃO DE PROBLEMAS
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ "npm não é reconhecido"
+──────────────────────────────────────────────────────────────────────────────
+Solução: Node.js não está instalado ou não está no PATH
+1. Instale Node.js em https://nodejs.org/
+2. Escolha versão LTS (recomendada)
+3. Reinicie o computador
+4. Tente novamente
+
+❌ "A aplicação fecha ao abrir"
+──────────────────────────────────────────────────────────────────────────────
+Solução:
+1. Abra PowerShell/CMD na pasta do projeto
+2. Execute: npm install
+3. Execute: npm start
+4. Verifique mensagens de erro
+
+❌ "Dados não estão sendo salvos"
+──────────────────────────────────────────────────────────────────────────────
+Solução:
+1. Feche a aplicação
+2. Verifique permissões de escrita da pasta
+3. Delete arquivo dados.json
+4. Reinicie a aplicação (será recriado)
+
+❌ "Não consigo importar dados"
+──────────────────────────────────────────────────────────────────────────────
+Solução: No momento, adicione leads manualmente. Para importação em massa:
+1. Exporte do aplicativo (aprenda a estrutura)
+2. Use um script Python para processar CSV
+3. Importe o JSON gerado
+
+═══════════════════════════════════════════════════════════════════════════════
+7️⃣  DADOS ARMAZENADOS
+═══════════════════════════════════════════════════════════════════════════════
+
+Localização do arquivo de dados (dados.json):
+C:\Users\[seu-usuario]\AppData\Roaming\ProspecApp\
+
+Estrutura JSON:
+{
+  "leads": [
+    {
+      "id": 1234567890,
+      "nome": "João Silva",
+      "empresa": "Padaria do Bairro",
+      "telefone": "(18) 98765-4321",
+      "email": "joao@padaria.com",
+      "categoria": "padaria",
+      "status": "contatado",
+      "endereco": "Rua A, 123",
+      "observacoes": "Muito receptivo",
+      "criado_em": "2026-09-03T10:30:00Z",
+      "atualizado_em": "2026-09-03T11:45:00Z"
+    }
+  ],
+  "activities": [
+    {
+      "id": 1234567891,
+      "leadId": 1234567890,
+      "nota": "Ligação realizada - marcou visita",
+      "criado_em": "2026-09-03T11:45:00Z"
+    }
+  ]
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+8️⃣  RECURSOS AVANÇADOS
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 Personalizar Categorias:
+──────────────────────────────────────────────────────────────────────────────
+Se quiser adicionar/remover categorias:
+1. Edite o arquivo index.html
+2. Procure por "select id="categoria""
+3. Modifique os options
+4. Salve e reinicie
+
+📊 Analisar Dados:
+──────────────────────────────────────────────────────────────────────────────
+1. Exporte em CSV
+2. Abra em Excel
+3. Crie gráficos e tabelas dinâmicas
+4. Analise tendências de vendas
+
+🔗 Integração com CRM:
+──────────────────────────────────────────────────────────────────────────────
+1. Exporte em CSV
+2. Importe em seu CRM (Pipedrive, RD Station, HubSpot, etc)
+3. Sincronize regularmente
+
+═══════════════════════════════════════════════════════════════════════════════
+9️⃣  PRÓXIMAS ETAPAS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ✅ Instale e abra a aplicação
+2. ✅ Adicione seus primeiros 5 leads
+3. ✅ Teste as funcionalidades (editar, deletar, atividades)
+4. ✅ Mude status de alguns leads
+5. ✅ Exporte dados para testar
+6. ✅ Comece a usar para sua prospecção real!
+
+═══════════════════════════════════════════════════════════════════════════════
+🆘 SUPORTE
+═══════════════════════════════════════════════════════════════════════════════
+
+Se algo não funcionar:
+1. Tente reiniciar a aplicação
+2. Limpe o arquivo dados.json (será recriado)
+3. Reinstale as dependências: npm install
+4. Verifique se o Node.js está atualizado
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✨ PRONTO PARA COMEÇAR! ✨
+
+Agora você tem uma ferramenta profissional de gerenciamento de prospecção.
+
+Boa sorte com suas vendas! 🚀
+
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProspecApp — Leads</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+  <!-- ============================ TRILHO ============================ -->
+  <nav class="trilho">
+    <div class="marca">
+      <span class="marca-selo" aria-hidden="true">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.5 20V8.2L12 3.4l8.5 4.8V20"/>
+          <path d="M3.5 20h17"/>
+          <path d="M9.4 20v-6h5.2v6"/>
+        </svg>
+      </span>
+      <span>
+        <span class="marca-nome">ProspecApp</span>
+        <span class="marca-sub">Regente Feijó · DDD 18</span>
+      </span>
+    </div>
+
+    <div class="nav-grupo">
+      <div class="nav-titulo">Operação</div>
+      <button class="nav-item" data-visao="leads" aria-current="page">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.2" y="3.2" width="7.6" height="7.6" rx="2.2"/>
+          <rect x="13.2" y="3.2" width="7.6" height="7.6" rx="2.2"/>
+          <rect x="3.2" y="13.2" width="7.6" height="7.6" rx="2.2"/>
+          <rect x="13.2" y="13.2" width="7.6" height="7.6" rx="2.2"/>
+        </svg>
+        Leads <span class="nav-cont" id="navContLeads">—</span>
+      </button>
+      <button class="nav-item" data-visao="panorama" aria-current="false">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20v-6.5"/><path d="M9.3 20V4.6"/><path d="M14.7 20v-9.6"/><path d="M20 20V7.8"/>
+        </svg>
+        Panorama
+      </button>
+      <button class="nav-item" data-visao="mapa" aria-current="false">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.6 6.6 9 4.6v13L3.6 19.6z"/><path d="M9 4.6l6 2.1v13l-6-2.1z"/>
+          <path d="M15 6.7l5.4-2.1v13L15 19.7z"/>
+        </svg>
+        Rotas de visita
+      </button>
+    </div>
+
+    <div class="nav-grupo">
+      <div class="nav-titulo">Ações</div>
+      <button class="nav-item" id="navNovo">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14"/><path d="M5 12h14"/>
+        </svg>
+        Novo lead
+      </button>
+      <button class="nav-item" id="navExportar">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3.6v11"/><path d="M7.8 10.6 12 14.8l4.2-4.2"/>
+          <path d="M4.4 17.6v2.8h15.2v-2.8"/>
+        </svg>
+        Exportar CSV
+      </button>
+      <button class="nav-item" id="navLocal">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 1 0-13 0c0 5.4 6.5 11 6.5 11z"/>
+          <circle cx="12" cy="10" r="2.4"/>
+        </svg>
+        Minha localização
+      </button>
+      <button class="nav-item" id="navSom">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.6 9.4h3.2L12 5.6v12.8l-4.2-3.8H4.6z"/>
+          <path d="M15.8 9.6a3.4 3.4 0 0 1 0 4.8" class="onda1"/>
+          <path d="M18.2 7.2a6.8 6.8 0 0 1 0 9.6" class="onda2"/>
+        </svg>
+        Som <span class="marcador" id="somEstado">—</span>
+      </button>
+    </div>
+
+    <div class="trilho-pe">
+      <p id="peLocal">—</p>
+      <p id="peFila">Carregando…</p>
+    </div>
+  </nav>
+
+  <!-- ============================ PRINCIPAL ============================ -->
+  <main class="principal">
+    <header class="barra-topo">
+      <div>
+        <h1 id="tituloVisao">Leads</h1>
+        <span class="sub" id="subTitulo">Carregando da API…</span>
+      </div>
+
+      <div class="busca">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.8" cy="10.8" r="6.6"/><path d="m15.6 15.6 4.2 4.2"/>
+        </svg>
+        <input id="busca" type="search" placeholder="Buscar nome, rua, telefone…"
+               autocomplete="off" aria-label="Buscar leads">
+        <kbd>/</kbd>
+      </div>
+
+      <button class="botao botao-forte" id="btnNovo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14"/><path d="M5 12h14"/>
+        </svg>
+        Novo lead
+      </button>
+    </header>
+
+    <!-- ---- visão LEADS ---- -->
+    <div id="visaoLeads" style="display:flex;flex-direction:column;flex:1;min-height:0">
+      <section class="panorama" id="faixaPanorama"></section>
+      <div class="filtros" id="barraFiltros"></div>
+      <div class="area" id="areaLeads">
+        <div class="carregando">Carregando leads da API…</div>
+      </div>
+    </div>
+
+    <!-- ---- visão PANORAMA ---- -->
+    <div id="visaoPanorama" class="area ocultar"></div>
+
+    <!-- ---- visão ROTAS ---- -->
+    <div id="visaoMapa" class="area ocultar"></div>
+  </main>
+</div>
+
+<div id="camadas"></div>
+<div id="avisos"></div>
+
+<script src="app-web.js"></script>
+</body>
+</html>

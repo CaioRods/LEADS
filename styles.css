@@ -1,0 +1,767 @@
+/* ===========================================================================
+   ProspecApp — Soft UI / Neumorfismo
+   Valores de referência do usuário: fundo #E8EAE9, sombra escura #0D2750
+   (azul-marinho, nunca preto — é o que deixa o relevo frio e limpo).
+
+   Gramática física: repouso = elevado · hover = mais alto · ativo/pressionado
+   /selecionado = afundado. Campo de busca e input são sempre poço.
+
+   As duas travas de acessibilidade do neumorfismo:
+   1. TEXTO NUNCA É NEUMÓRFICO. Tinta sólida sobre o fundo claro. Medidos:
+      #2A3444 sobre #E8EAE9 = 10.3:1 · #5A6472 sobre #E8EAE9 = 4.96:1.
+      O relevo é dos painéis e controles, jamais das letras.
+   2. ESTADO CRÍTICO NUNCA DEPENDE SÓ DE SOMBRA. Score, etapa do funil,
+      "tem telefone" e proximidade sempre carregam texto e forma além do
+      relevo — trilha de 5 pontos na etapa, barras na proximidade, palavra
+      da faixa no score, glifo cheio/riscado no telefone.
+
+   Acento único: terracota #B4552F — a terra roxa da região de Prudente e a
+   crosta das 10 padarias da lista. É o único calor sobre um fundo frio, então
+   aparece pouco e sempre quer dizer a mesma coisa: aqui é o ponto quente.
+=========================================================================== */
+
+:root{
+  --fundo:      #E8EAE9;
+  --sombra-rgb: 13, 39, 80;          /* #0D2750 — marinho, nunca preto */
+  --luz-rgb:    255, 255, 255;
+
+  --tinta:      #2A3444;             /* 10.3:1 sobre o fundo */
+  --tinta-2:    #5A6472;             /* 4.96:1 sobre o fundo */
+  --acento:     #B4552F;
+  --acento-tinta:#8A3D1E;            /* 6.2:1 sobre o fundo — para texto */
+  --acento-fraco: rgba(180, 85, 47, .14);
+
+  /* ---- escada de relevo. g ≈ 320px · m ≈ 140px · p ≈ 40px ----
+     Os valores de m e p são os de g escalados por 0.44 e 0.16, senão
+     uma sombra de 43px de blur num controle de 40px vira borrão. */
+  --relevo-g:
+    -31px -31px 43px rgba(var(--luz-rgb), 1),
+     8px 8px 10px rgba(var(--sombra-rgb), .04);
+  --relevo-m:
+    -14px -14px 20px rgba(var(--luz-rgb), .95),
+     4px 4px 6px rgba(var(--sombra-rgb), .05);
+  --relevo-p:
+    -5px -5px 7px rgba(var(--luz-rgb), .9),
+     1.5px 1.5px 2px rgba(var(--sombra-rgb), .07);
+
+  /* hover = mesmo relevo, mais alto */
+  --relevo-m-alto:
+    -18px -18px 27px rgba(var(--luz-rgb), 1),
+     7px 7px 13px rgba(var(--sombra-rgb), .07);
+  --relevo-p-alto:
+    -7px -7px 10px rgba(var(--luz-rgb), 1),
+     3px 3px 5px rgba(var(--sombra-rgb), .09);
+
+  /* ---- escada de poço (afundado) ---- */
+  --fundo-g:
+    inset -33px -33px 46px rgba(var(--luz-rgb), .64),
+    inset 28px 28px 54px rgba(var(--sombra-rgb), .16);
+  --fundo-m:
+    inset -14px -14px 20px rgba(var(--luz-rgb), .7),
+    inset 12px 12px 24px rgba(var(--sombra-rgb), .13);
+  --fundo-p:
+    inset -5px -5px 7px rgba(var(--luz-rgb), .75),
+    inset 4px 4px 8px rgba(var(--sombra-rgb), .11);
+
+  /* sulco: linha gravada, para separar sem virar cartão */
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .07),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .8);
+
+  --r-g: 30px;   /* cartões grandes, tipo squircle */
+  --r-m: 16px;
+  --r-p: 11px;
+
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
+          "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+
+  --curva: cubic-bezier(.4, 0, .2, 1);
+  --t: 190ms var(--curva);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--sans);
+  font-size:14px;line-height:1.45;letter-spacing:-.006em;
+  color:var(--tinta);
+  background:var(--fundo);
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{background:none;border:0;cursor:pointer}
+::selection{background:var(--acento-fraco)}
+:focus-visible{outline:2px solid var(--acento);outline-offset:3px;border-radius:var(--r-p)}
+
+.rotulo{
+  font-size:12px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--tinta-2);
+}
+.ocultar{display:none !important}
+
+/* ============================== ESTRUTURA ============================== */
+.app{display:grid;grid-template-columns:232px 1fr;height:100vh;overflow:hidden}
+
+/* ------------------------------ TRILHO ------------------------------ */
+.trilho{display:flex;flex-direction:column;padding:22px 16px 18px;overflow:hidden}
+
+.marca{display:flex;align-items:center;gap:12px;padding:0 6px 24px}
+.marca-selo{
+  width:44px;height:44px;flex:none;border-radius:14px;
+  background:var(--fundo);box-shadow:var(--relevo-p);
+  display:grid;place-items:center;color:var(--acento);
+}
+.marca-nome{font-size:15px;font-weight:700;letter-spacing:-.02em;display:block}
+.marca-sub{font-size:12px;color:var(--tinta-2);display:block;margin-top:1px}
+
+.nav-grupo{margin-bottom:22px}
+.nav-titulo{padding:0 8px 9px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--tinta-2)}
+.nav-item{
+  display:flex;align-items:center;gap:11px;width:100%;
+  padding:10px 12px;border-radius:var(--r-p);margin-bottom:5px;
+  font-size:14px;font-weight:500;color:var(--tinta-2);text-align:left;
+  transition:box-shadow var(--t), color var(--t), transform var(--t);
+}
+.nav-item:hover{box-shadow:var(--relevo-p);color:var(--tinta)}
+.nav-item:active{box-shadow:var(--fundo-p)}
+.nav-item[aria-current="page"]{
+  box-shadow:var(--fundo-p);       /* selecionado = afundado */
+  color:var(--tinta);font-weight:650;
+}
+.nav-item svg{flex:none;opacity:.75}
+.nav-item[aria-current="page"] svg{color:var(--acento);opacity:1}
+.nav-cont{margin-left:auto;font-size:12px;font-weight:600;color:var(--tinta-2)}
+
+.trilho-pe{margin-top:auto;padding:14px 12px 0}
+.trilho-pe p{font-size:12px;color:var(--tinta-2);margin-bottom:4px;line-height:1.4}
+
+/* ------------------------------ PRINCIPAL ------------------------------ */
+.principal{display:flex;flex-direction:column;min-width:0;overflow:hidden;padding-right:6px}
+
+.barra-topo{display:flex;align-items:center;gap:14px;padding:18px 24px 14px;flex:none}
+.barra-topo h1{font-size:21px;font-weight:700;letter-spacing:-.028em}
+.barra-topo .sub{font-size:14px;color:var(--tinta-2)}
+
+/* busca: poço, sempre */
+.busca{position:relative;margin-left:auto;width:290px}
+.busca svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--tinta-2);pointer-events:none}
+.busca input{
+  width:100%;height:44px;padding:0 40px 0 40px;
+  background:var(--fundo);border:0;border-radius:var(--r-p);
+  box-shadow:var(--fundo-p);
+  font-size:14px;color:var(--tinta);outline:none;
+}
+.busca input::placeholder{color:var(--tinta-2)}
+.busca input::-webkit-search-cancel-button{-webkit-appearance:none}
+.busca input:focus{box-shadow:var(--fundo-p), 0 0 0 2px var(--acento)}
+.busca kbd{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  font-family:var(--sans);font-size:12px;font-weight:600;color:var(--tinta-2);pointer-events:none;
+}
+.busca input:focus + kbd{opacity:0}
+
+/* botões */
+.botao{
+  height:44px;padding:0 18px;border-radius:var(--r-p);
+  background:var(--fundo);box-shadow:var(--relevo-p);
+  font-size:14px;font-weight:600;color:var(--tinta);
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  transition:box-shadow var(--t), color var(--t);
+}
+.botao:hover{box-shadow:var(--relevo-p-alto)}
+.botao:active{box-shadow:var(--fundo-p)}
+.botao svg{color:var(--tinta-2)}
+.botao-forte{color:var(--acento-tinta)}
+.botao-forte svg{color:var(--acento)}
+.botao[disabled]{opacity:.55;cursor:default;box-shadow:var(--fundo-p)}
+.botao-pq{height:36px;padding:0 14px;font-size:13px}
+a.botao{text-decoration:none}
+
+/* ============================== PANORAMA (faixa) ============================== */
+.panorama{
+  flex:none;margin:0 28px 18px;padding:20px 26px;
+  background:var(--fundo);border-radius:var(--r-g);box-shadow:var(--relevo-m);
+  display:flex;align-items:stretch;gap:26px;flex-wrap:wrap;min-width:0;
+}
+.bloco{display:flex;flex-direction:column;justify-content:center}
+.bloco > .rotulo{margin-bottom:10px}
+.bloco + .bloco{padding-left:26px;box-shadow:inset 1px 0 0 rgba(var(--sombra-rgb),.06)}
+
+.funil{display:flex;gap:8px}
+.etapa{
+  padding:7px 12px;border-radius:var(--r-p);text-align:left;min-width:78px;
+  transition:box-shadow var(--t);
+}
+.etapa:hover{box-shadow:var(--relevo-p)}
+.etapa[aria-pressed="true"]{box-shadow:var(--fundo-p)}
+.etapa .n{display:block;font-size:22px;font-weight:700;letter-spacing:-.035em;line-height:1.1}
+.etapa .t{display:block;font-size:12px;font-weight:500;color:var(--tinta-2);white-space:nowrap;margin-top:1px}
+.etapa.vazia .n{color:var(--tinta-2);font-weight:600}
+.etapa.destaque .n{color:var(--acento-tinta)}
+
+.fila{display:flex;gap:10px}
+.fila button{padding:7px 12px;border-radius:var(--r-p);text-align:left;transition:box-shadow var(--t)}
+.fila button:hover{box-shadow:var(--relevo-p)}
+.fila button[aria-pressed="true"]{box-shadow:var(--fundo-p)}
+.fila .n{display:block;font-size:22px;font-weight:700;letter-spacing:-.035em;line-height:1.1}
+.fila .pode .n{color:var(--acento-tinta)}
+.fila .t{display:block;font-size:12px;font-weight:500;color:var(--tinta-2);white-space:nowrap;margin-top:1px}
+
+.ramos{display:flex;height:10px;width:min(200px,100%);gap:3px;margin-bottom:9px}
+.ramos i{display:block;border-radius:5px;box-shadow:var(--fundo-p)}
+.ramos-legenda{font-size:12px;color:var(--tinta-2);width:min(200px,100%);line-height:1.5}
+.ramos-legenda b{color:var(--tinta);font-weight:650}
+
+.esgota{margin-left:auto;min-width:0}
+.medidor{
+  height:12px;border-radius:6px;box-shadow:var(--fundo-p);
+  padding:3px;display:flex;gap:2px;margin-bottom:9px;min-width:200px;max-width:340px;
+}
+.medidor i{flex:1;border-radius:3px;background:rgba(var(--sombra-rgb),.10)}
+.medidor i.feito{background:var(--acento)}
+.medidor i.fora{background:rgba(var(--sombra-rgb),.04)}
+.esgota p{font-size:12px;color:var(--tinta-2)}
+.esgota b{color:var(--tinta);font-weight:650}
+
+/* ============================== BARRA DE FILTROS ============================== */
+.filtros{
+  flex:none;display:flex;align-items:center;gap:11px;
+  padding:0 28px 18px;flex-wrap:wrap;
+}
+/* grupo segmentado = poço com cápsulas dentro */
+.grupo{
+  display:inline-flex;align-items:center;gap:4px;padding:5px;
+  border-radius:var(--r-m);box-shadow:var(--fundo-p);
+}
+.grupo button{
+  height:32px;padding:0 13px;border-radius:9px;
+  font-size:13px;font-weight:600;color:var(--tinta-2);
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  transition:box-shadow var(--t), color var(--t);
+}
+.grupo button:hover{color:var(--tinta)}
+.grupo button[aria-pressed="true"]{
+  background:var(--fundo);box-shadow:var(--relevo-p);color:var(--tinta);
+}
+.grupo button .c{font-size:12px;font-weight:600;opacity:.72}
+.grupo button[aria-pressed="true"] .c{color:var(--acento-tinta);opacity:1}
+
+.chip{
+  height:38px;padding:0 15px;border-radius:var(--r-p);
+  font-size:13px;font-weight:600;color:var(--tinta-2);
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  transition:box-shadow var(--t), color var(--t);
+}
+.chip:hover{box-shadow:var(--relevo-p);color:var(--tinta)}
+.chip[aria-pressed="true"]{box-shadow:var(--fundo-p);color:var(--acento-tinta)}
+.chip .c{font-size:12px;font-weight:600;opacity:.75}
+.filtros .limpar{font-size:13px;font-weight:600;color:var(--tinta-2);text-decoration:underline;text-underline-offset:3px}
+.filtros .limpar:hover{color:var(--acento-tinta)}
+.filtros .direita{margin-left:auto;font-size:12px;font-weight:600;color:var(--tinta-2)}
+
+/* ============================== ÁREA ROLÁVEL ============================== */
+.area{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 30px 48px}
+.area::-webkit-scrollbar{width:10px}
+.area::-webkit-scrollbar-thumb{background:rgba(var(--sombra-rgb),.13);border-radius:5px;border:3px solid var(--fundo)}
+
+/* ============================== CARTÕES ============================== */
+.grade-cartoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:30px}
+
+
+.cartao{
+  background:var(--fundo);border-radius:var(--r-g);padding:22px;
+  box-shadow:var(--relevo-m);
+  display:flex;flex-direction:column;gap:14px;text-align:left;
+  transition:box-shadow var(--t), transform var(--t);
+}
+.cartao:hover{box-shadow:var(--relevo-m-alto);transform:translateY(-2px)}
+.cartao[aria-selected="true"]{box-shadow:var(--fundo-m);transform:none}
+.cartao.descartado{opacity:.72}
+
+.cartao-topo{display:flex;align-items:flex-start;gap:13px}
+.avatar{
+  width:54px;height:54px;flex:none;border-radius:17px;
+  background:var(--fundo);box-shadow:var(--relevo-p);
+  display:grid;place-items:center;position:relative;overflow:hidden;
+}
+.avatar .glifo{position:absolute;inset:0;display:grid;place-items:center;color:var(--tinta);opacity:.12}
+.avatar .iniciais{
+  position:relative;font-size:17px;font-weight:700;letter-spacing:-.02em;
+  color:var(--tinta);
+}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:17px}
+
+.cartao-id{min-width:0;flex:1}
+.cartao-nome{
+  font-size:14.5px;font-weight:650;letter-spacing:-.014em;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.cartao-cat{font-size:12.5px;color:var(--tinta-2);margin-top:3px}
+
+.cartao-linha{display:flex;align-items:center;gap:9px;min-width:0}
+.cartao-linha .txt{font-size:13px;color:var(--tinta-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cartao-pe{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:2px;flex-wrap:wrap}
+
+/* ícone em poço, o "encaixe" de cada dado do cartão */
+.pocinho{
+  width:30px;height:30px;flex:none;border-radius:9px;
+  box-shadow:var(--fundo-p);display:grid;place-items:center;color:var(--tinta-2);
+}
+.pocinho.ok{color:var(--acento)}
+
+/* ============================== TELEFONE ============================== */
+/* forma + texto + cor: glifo cheio e número, ou glifo riscado e "exige visita" */
+.tel{font-family:var(--mono);font-size:13.5px;font-weight:600;letter-spacing:-.03em;color:var(--tinta)}
+.tel.duvida{color:var(--acento-tinta)}
+.sem-tel{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--tinta-2)}
+
+/* ============================== SCORE ============================== */
+/* nunca só sombra: número sólido + palavra da faixa + barra em poço */
+.score{display:flex;align-items:center;gap:9px}
+.score .num{font-size:19px;font-weight:700;letter-spacing:-.035em;line-height:1;color:var(--tinta)}
+.score .lado{display:flex;flex-direction:column;gap:4px;min-width:0}
+.score .faixa{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2);white-space:nowrap}
+.score.f-quente .faixa{color:var(--acento-tinta)}
+.score .trilho{width:62px;height:7px;border-radius:4px;box-shadow:var(--fundo-p);padding:1.5px;display:flex}
+.score .trilho i{border-radius:2px;background:rgba(var(--sombra-rgb),.34)}
+.score.f-quente .trilho i{background:var(--acento)}
+.score.verificar .num{border-bottom:2px dotted var(--tinta-2);padding-bottom:1px}
+
+/* ============================== SELO DE ETAPA ============================== */
+/* trilha de 5 pontos = posição no funil, em forma. O nome vai junto, sempre. */
+.selo{
+  display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;
+  border-radius:9px;box-shadow:var(--fundo-p);
+  font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--tinta);
+}
+.trilha{display:flex;gap:3px;align-items:center}
+.trilha i{width:5px;height:5px;border-radius:50%;background:rgba(var(--sombra-rgb),.16)}
+.trilha i.feito{background:var(--tinta-2)}
+.trilha i.agora{background:var(--acento);width:7px;height:7px}
+.selo.s-descartado{color:var(--tinta-2);box-shadow:none;border:1px dashed rgba(var(--sombra-rgb),.28)}
+.selo.s-descartado .trilha i{background:none;box-shadow:inset 0 0 0 1px rgba(var(--sombra-rgb),.22)}
+
+/* ============================== PROXIMIDADE ============================== */
+/* barras (forma) + rótulo (texto). Nunca só cor. */
+.prox{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--tinta-2)}
+.barras{display:flex;align-items:flex-end;gap:2px;height:12px;flex:none}
+.barras i{width:3px;border-radius:1.5px;background:rgba(var(--sombra-rgb),.16)}
+.barras i:nth-child(1){height:5px}
+.barras i:nth-child(2){height:8.5px}
+.barras i:nth-child(3){height:12px}
+.barras i.on{background:var(--tinta-2)}
+.prox.n1 .barras i.on,.prox.n2 .barras i.on{background:var(--acento)}
+.prox.n1,.prox.n2{color:var(--acento-tinta);font-weight:700}
+.prox.n6 .barras{position:relative}
+.prox.n6 .barras::after{
+  content:"";position:absolute;left:-2px;right:-2px;top:50%;height:1.5px;
+  background:var(--tinta-2);transform:rotate(-28deg);
+}
+
+/* redes no cartão */
+.redes-mini{display:flex;gap:6px}
+.redes-mini a{
+  width:30px;height:30px;border-radius:9px;box-shadow:var(--relevo-p);
+  display:grid;place-items:center;color:var(--tinta-2);
+  transition:box-shadow var(--t), color var(--t);
+}
+.redes-mini a:hover{box-shadow:var(--relevo-p-alto);color:var(--acento)}
+.redes-mini a.destaque{color:var(--acento)}
+
+/* ============================== LISTA COMPACTA ============================== */
+.lista{background:var(--fundo);border-radius:var(--r-g);box-shadow:var(--relevo-m);overflow:hidden}
+.linha{
+  display:grid;
+  grid-template-columns:34px 84px minmax(190px,1fr) 108px 132px minmax(150px,1fr) 128px 122px;
+  align-items:center;gap:10px;height:52px;padding:0 22px;width:100%;text-align:left;
+  box-shadow:var(--sulco);
+  transition:background var(--t);
+}
+.linha > *{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.linha.cabeca{height:40px;box-shadow:var(--sulco);background:transparent}
+.linha.cabeca > *{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--tinta-2)}
+.corpo .linha:hover{background:rgba(var(--luz-rgb),.5)}
+.corpo .linha[aria-selected="true"]{box-shadow:var(--fundo-p)}
+.corpo .linha:last-child{box-shadow:none}
+.linha .nome{font-size:14px;font-weight:600;letter-spacing:-.012em}
+.linha .cat{font-size:13px;color:var(--tinta-2)}
+.linha .nome-cel{display:flex;align-items:center;gap:7px;min-width:0}
+.linha .sinais{display:flex;gap:4px;flex:none;color:var(--tinta-2)}
+.linha .sinais .oportunidade{color:var(--acento)}
+.linha .score .trilho{width:44px}
+.linha .selo{height:26px;padding:0 10px;font-size:11.5px}
+
+.fim-lista{padding:18px 4px 8px;font-size:13px;color:var(--tinta-2);text-align:center}
+.vazio{padding:60px 24px;text-align:center;font-size:14px;color:var(--tinta-2)}
+.vazio button{color:var(--acento-tinta);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.carregando{padding:60px 24px;text-align:center;font-size:14px;color:var(--tinta-2)}
+
+/* ============================== PAINEL DE DETALHE ============================== */
+.veu{position:fixed;inset:0;z-index:40;background:transparent}
+.veu.escuro{background:rgba(var(--sombra-rgb),.22)}
+.painel{
+  position:fixed;top:14px;right:14px;bottom:14px;width:452px;z-index:41;
+  background:var(--fundo);border-radius:var(--r-g);
+  box-shadow:-31px -31px 43px rgba(var(--luz-rgb),1), 8px 8px 26px rgba(var(--sombra-rgb),.16);
+  display:flex;flex-direction:column;overflow:hidden;
+  animation:entra 220ms var(--curva);
+}
+@keyframes entra{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+
+.painel-topo{padding:22px 24px 16px;flex:none}
+.painel-cab{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.painel-topo h2{font-size:18px;font-weight:700;letter-spacing:-.024em;line-height:1.28;flex:1;min-width:0}
+.painel-topo .empresa{font-size:13px;color:var(--tinta-2);margin-top:3px}
+.avatar-g{width:64px;height:64px;flex:none;border-radius:20px;background:var(--fundo);box-shadow:var(--relevo-p);display:grid;place-items:center;position:relative;overflow:hidden}
+.avatar-g .glifo{position:absolute;inset:0;display:grid;place-items:center;color:var(--tinta);opacity:.12}
+.avatar-g .iniciais{position:relative;font-size:21px;font-weight:700;letter-spacing:-.02em}
+.avatar-g img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:20px}
+.fechar{
+  width:38px;height:38px;flex:none;border-radius:var(--r-p);
+  box-shadow:var(--relevo-p);display:grid;place-items:center;color:var(--tinta-2);
+  transition:box-shadow var(--t)}
+.fechar:hover{box-shadow:var(--relevo-p-alto);color:var(--tinta)}
+.painel-resumo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.painel-acoes{display:flex;gap:8px;flex-wrap:wrap}
+
+.painel-corpo{flex:1;overflow-y:auto;padding:0 24px 24px}
+.painel-corpo::-webkit-scrollbar{width:10px}
+.painel-corpo::-webkit-scrollbar-thumb{background:rgba(var(--sombra-rgb),.13);border-radius:5px;border:3px solid var(--fundo)}
+.secao{margin-top:20px}
+.secao > .rotulo{display:block;margin-bottom:11px}
+
+.poco{border-radius:var(--r-m);box-shadow:var(--fundo-p);padding:6px 16px}
+.campo{display:grid;grid-template-columns:112px 1fr;gap:12px;padding:9px 0;align-items:baseline;box-shadow:var(--sulco)}
+.campo:last-child{box-shadow:none}
+.campo dt{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2)}
+.campo dd{font-size:13.5px;word-break:break-word}
+.campo dd.mono{font-family:var(--mono);font-size:13.5px;letter-spacing:-.03em}
+.campo dd.suave{color:var(--tinta-2)}
+
+.obs{font-size:13.5px;line-height:1.55;border-radius:var(--r-m);box-shadow:var(--fundo-p);padding:14px 16px}
+.obs.atencao{color:var(--acento-tinta);font-weight:500}
+
+.motivos{border-radius:var(--r-m);box-shadow:var(--fundo-p);padding:6px 16px;list-style:none}
+.motivos li{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:baseline;padding:9px 0;font-size:13.5px;box-shadow:var(--sulco)}
+.motivos li:last-child{box-shadow:none}
+.motivos .pts{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right;letter-spacing:-.03em;color:var(--acento-tinta)}
+.motivos .pts.neg{color:var(--tinta-2)}
+.motivos li.total{font-weight:700}
+.motivos li.total .pts{font-size:15px;color:var(--tinta)}
+
+.hist{list-style:none;display:flex;flex-direction:column;gap:9px}
+.hist li{border-radius:var(--r-m);box-shadow:var(--relevo-p);padding:12px 15px;display:flex;gap:11px;align-items:flex-start}
+.hist .txt{flex:1;min-width:0}
+.hist .quando{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2);margin-bottom:3px}
+.hist .oque{font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.hist .apagar{width:28px;height:28px;flex:none;border-radius:9px;display:grid;place-items:center;color:var(--tinta-2);opacity:0;transition:opacity var(--t), box-shadow var(--t)}
+.hist li:hover .apagar{opacity:1}
+.hist .apagar:hover{box-shadow:var(--fundo-p);color:var(--acento-tinta)}
+.hist-vazio{font-size:13.5px;color:var(--tinta-2);border-radius:var(--r-m);box-shadow:var(--fundo-p);padding:16px}
+
+.painel-pe{flex:none;padding:16px 24px 20px;box-shadow:inset 0 1px 0 rgba(var(--sombra-rgb),.06), inset 0 2px 0 rgba(var(--luz-rgb),.7)}
+.painel-pe textarea{
+  width:100%;min-height:70px;resize:vertical;padding:13px 15px;margin-bottom:11px;
+  background:var(--fundo);border:0;border-radius:var(--r-m);box-shadow:var(--fundo-p);
+  font-size:13.5px;line-height:1.5;outline:none;color:var(--tinta);
+}
+.painel-pe textarea:focus{box-shadow:var(--fundo-p), 0 0 0 2px var(--acento)}
+.pe-acoes{display:flex;align-items:center;gap:9px}
+.pe-acoes select{flex:none}
+
+/* campo de logo dentro do painel */
+.logo-campo{display:flex;gap:9px;align-items:center}
+.logo-campo input{
+  flex:1;min-width:0;height:40px;padding:0 14px;
+  background:var(--fundo);border:0;border-radius:var(--r-p);box-shadow:var(--fundo-p);
+  font-size:13px;font-family:var(--mono);letter-spacing:-.02em;outline:none;color:var(--tinta);
+}
+.logo-campo input:focus{box-shadow:var(--fundo-p), 0 0 0 2px var(--acento)}
+.dica{font-size:12px;color:var(--tinta-2);margin-top:8px;line-height:1.5}
+
+/* selects neumórficos */
+select.suave{
+  height:44px;padding:0 14px;border:0;border-radius:var(--r-p);
+  background:var(--fundo);box-shadow:var(--relevo-p);
+  font-size:13.5px;font-weight:600;color:var(--tinta);outline:none;cursor:pointer;
+}
+select.suave:focus{box-shadow:var(--fundo-p), 0 0 0 2px var(--acento)}
+select.suave.pq{height:38px;font-size:13px}
+
+/* ============================== MODAL ============================== */
+.modal{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:41;
+  width:640px;max-height:calc(100vh - 60px);overflow-y:auto;
+  background:var(--fundo);border-radius:var(--r-g);
+  box-shadow:-31px -31px 43px rgba(var(--luz-rgb),1), 10px 10px 40px rgba(var(--sombra-rgb),.18);
+  animation:entra-m 220ms var(--curva);
+}
+@keyframes entra-m{from{transform:translate(-50%,-48%) scale(.98);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.modal-topo{padding:22px 26px 4px;display:flex;align-items:center;gap:14px}
+.modal-topo h2{font-size:18px;font-weight:700;letter-spacing:-.024em;flex:1}
+.modal-corpo{padding:18px 26px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-campo{display:flex;flex-direction:column;gap:7px}
+.form-campo.largo{grid-column:1 / -1}
+.form-campo label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2)}
+.form-campo input,.form-campo select,.form-campo textarea{
+  height:44px;padding:0 15px;border:0;border-radius:var(--r-p);
+  background:var(--fundo);box-shadow:var(--fundo-p);
+  font-size:13.5px;color:var(--tinta);outline:none;
+}
+.form-campo textarea{height:auto;min-height:76px;padding:13px 15px;resize:vertical;line-height:1.5}
+.form-campo input:focus,.form-campo select:focus,.form-campo textarea:focus{box-shadow:var(--fundo-p), 0 0 0 2px var(--acento)}
+.form-campo .aj{font-size:12px;color:var(--tinta-2)}
+.modal-pe{padding:6px 26px 24px;display:flex;gap:10px;justify-content:flex-end;align-items:center}
+.modal-pe .erro{margin-right:auto;font-size:13px;font-weight:600;color:var(--acento-tinta)}
+
+/* ============================== PANORAMA / ROTAS ============================== */
+.pan-grade{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:1120px}
+.caixa{background:var(--fundo);border-radius:var(--r-g);box-shadow:var(--relevo-m);overflow:hidden}
+.caixa header{padding:18px 22px 12px}
+.caixa .conteudo{padding:0 22px 18px}
+.barra-linha{display:grid;grid-template-columns:170px 1fr 40px;gap:13px;align-items:center;padding:9px 0;box-shadow:var(--sulco)}
+.barra-linha:last-child{box-shadow:none}
+.barra-linha .nm{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barra-linha .tr{height:9px;border-radius:5px;box-shadow:var(--fundo-p);padding:2px}
+.barra-linha .tr i{display:block;height:100%;border-radius:3px;background:rgba(var(--sombra-rgb),.28);transition:width 300ms var(--curva)}
+.barra-linha .tr i.q{background:var(--acento)}
+.barra-linha .vl{font-size:13.5px;font-weight:700;text-align:right}
+
+.mapa-topo{max-width:1120px;margin-bottom:18px}
+.mapa-topo h2{font-size:19px;font-weight:700;letter-spacing:-.026em;margin-bottom:7px}
+.mapa-topo p{font-size:13.5px;color:var(--tinta-2);line-height:1.55;max-width:78ch}
+.mapa-grade{display:flex;flex-direction:column;gap:18px;max-width:1120px}
+
+.rota{padding:16px 22px 8px;box-shadow:var(--sulco)}
+.rota:last-child{box-shadow:none}
+.rota-cab{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.rota-cab h3{font-size:14px;font-weight:700;letter-spacing:-.014em}
+.rota-cab .qt{font-size:12px;color:var(--tinta-2);font-weight:600}
+.rota-cab .spread{margin-left:auto;font-size:12px;color:var(--tinta-2)}
+.rota svg{display:block;width:100%;overflow:visible}
+.rota svg .via-linha{stroke:rgba(var(--sombra-rgb),.2);stroke-width:1.5;stroke-linecap:round}
+.rota svg .via-gap{stroke:rgba(var(--sombra-rgb),.2);stroke-width:1.5;stroke-dasharray:2 5;stroke-linecap:round}
+.rota svg .haste{stroke:rgba(var(--sombra-rgb),.18);stroke-width:1.5}
+.rota svg .no{cursor:pointer}
+.rota svg .no circle.bola{transition:r 160ms var(--curva)}
+.rota svg .no:hover circle.bola{r:7}
+.rota svg .porta{font-family:var(--mono);font-size:11px;fill:var(--tinta-2);letter-spacing:-.02em;font-weight:600}
+.rota svg .rotulo-lead{font-size:12px;fill:var(--tinta);font-weight:600}
+.rota svg .no:hover .rotulo-lead{fill:var(--acento-tinta)}
+.rota svg .rotulo-lead.suave{fill:var(--tinta-2)}
+
+.bairros{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 22px 20px}
+.bairro{border-radius:var(--r-m);box-shadow:var(--fundo-p);padding:14px;min-height:104px;display:flex;flex-direction:column}
+.bairro-nome{font-size:13.5px;font-weight:700;letter-spacing:-.012em}
+.bairro-nome.indef{color:var(--tinta-2);font-weight:600}
+.bairro-qt{font-size:12px;color:var(--tinta-2);margin:3px 0 10px}
+.bairro-blocos{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.bairro-blocos button{width:16px;height:16px;border-radius:5px;background:rgba(var(--sombra-rgb),.14);transition:transform 160ms var(--curva)}
+.bairro-blocos button:hover{transform:scale(1.25)}
+.bairro-blocos button.b-quente{background:var(--acento)}
+.bairro-blocos button.b-morno{background:rgba(var(--sombra-rgb),.36)}
+
+.fora{display:flex;gap:32px;flex-wrap:wrap;padding:4px 22px 22px}
+.fora div{font-size:13px;color:var(--tinta-2)}
+.fora b{display:block;font-size:22px;font-weight:700;color:var(--tinta);letter-spacing:-.035em;line-height:1.15;margin-bottom:2px}
+
+.distancia{padding:4px 22px 22px}
+.eixo{display:flex;align-items:stretch}
+.polo{flex:none;width:250px}
+.polo h4{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-2);margin-bottom:10px}
+.polo ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.polo li button{font-size:13px;color:var(--tinta-2);text-align:left;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.polo li button:hover{color:var(--acento-tinta)}
+.vao{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 18px;min-width:130px}
+.vao .tracejado{width:100%;height:3px;border-radius:2px;box-shadow:var(--fundo-p)}
+.vao span{font-size:12px;font-weight:600;color:var(--tinta-2);margin-top:10px;text-align:center}
+
+/* ============================== AVISO ============================== */
+.aviso{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;
+  background:var(--fundo);border-radius:var(--r-m);
+  box-shadow:-14px -14px 20px rgba(var(--luz-rgb),1), 8px 8px 22px rgba(var(--sombra-rgb),.16);
+  padding:14px 22px;font-size:13.5px;font-weight:600;color:var(--tinta);
+  animation:entra-a 200ms var(--curva);max-width:560px;
+}
+.aviso.falha{color:var(--acento-tinta)}
+@keyframes entra-a{from{transform:translate(-50%,10px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+
+/* ===========================================================================
+   COR POR RAMO — cada categoria ganha identidade própria.
+   Croma baixo de propósito (0.06–0.11): é cor de tinta impressa, não de tela,
+   então convive com o relevo sem brigar com o acento terracota.
+=========================================================================== */
+:root{
+  --c-padaria:      38;   /* crosta de pão */
+  --c-restaurante:  22;   /* terracota, família do acento */
+  --c-bar:          310;  /* ameixa */
+  --c-salao_beleza: 348;  /* rosa */
+  --c-oficina:      232;  /* azul de aço */
+  --c-farmacia:     158;  /* verde de farmácia */
+  --c-loja:         190;  /* turquesa */
+  --c-supermercado: 62;   /* laranja de feira */
+  --c-outro:        250;  /* ardósia */
+}
+.cat-padaria      { --h: var(--c-padaria) }
+.cat-restaurante  { --h: var(--c-restaurante) }
+.cat-bar          { --h: var(--c-bar) }
+.cat-salao_beleza { --h: var(--c-salao_beleza) }
+.cat-oficina      { --h: var(--c-oficina) }
+.cat-farmacia     { --h: var(--c-farmacia) }
+.cat-loja         { --h: var(--c-loja) }
+.cat-supermercado { --h: var(--c-supermercado) }
+.cat-outro        { --h: var(--c-outro) }
+
+/* avatar ganha a cor do ramo — é o que faz cada lead virar reconhecível */
+.avatar, .avatar-g{ background:hsl(var(--h,250) 40% 88%) }
+.avatar .iniciais, .avatar-g .iniciais{ color:hsl(var(--h,250) 42% 30%) }
+.avatar .glifo,   .avatar-g .glifo   { color:hsl(var(--h,250) 55% 24%); opacity:.26 }
+.cartao-cat{ color:hsl(var(--h,250) 46% 32%); font-weight:600 }
+.linha .cat:first-of-type{ color:hsl(var(--h,250) 34% 34%); font-weight:600 }
+
+/* ===========================================================================
+   MODO CHANCE — tinge o lead pela chance de fechar.
+   Verde = mais chance · âmbar = meio · vermelho = menos.
+   A luminosidade fica travada em 91%, igual ao fundo, senão o relevo se perde.
+=========================================================================== */
+.cartao, .linha{ transition:box-shadow var(--t), transform var(--t),
+                            background-color 620ms var(--curva) }
+
+.app.chance .cartao{
+  background:hsl(var(--hc) 52% 90%);
+  animation:tingir 700ms var(--curva) both;
+  animation-delay:var(--atraso, 0ms);
+}
+.app.chance .corpo .linha{
+  background:hsl(var(--hc) 48% 91.5%);
+  animation:tingir 620ms var(--curva) both;
+  animation-delay:var(--atraso, 0ms);
+}
+.app.chance .cartao .avatar{ background:hsl(var(--hc) 38% 86%) }
+
+@keyframes tingir{
+  0%  { background-color:var(--fundo); transform:none }
+  38% { transform:translateY(-3px) scale(1.012) }
+  100%{ transform:none }
+}
+
+/* faixa de luz que varre a grade quando o modo liga */
+.varredura{
+  position:fixed;inset:0;z-index:30;pointer-events:none;
+  background:linear-gradient(105deg,
+    transparent 42%,
+    rgba(var(--luz-rgb),.92) 50%,
+    transparent 58%);
+  animation:varrer 720ms var(--curva) forwards;
+}
+@keyframes varrer{ from{transform:translateX(-115%)} to{transform:translateX(115%)} }
+
+/* legenda do modo */
+.chance-legenda{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:8px 14px;border-radius:var(--r-p);box-shadow:var(--fundo-p);
+  font-size:12px;font-weight:600;color:var(--tinta-2);
+}
+.chance-legenda .esc{
+  width:104px;height:9px;border-radius:5px;
+  background:linear-gradient(90deg,hsl(8 46% 78%),hsl(45 52% 76%),hsl(145 42% 74%));
+}
+.chip.chance-on{ box-shadow:var(--fundo-p); color:hsl(145 46% 26%) }
+.chip.chance-on .ponto{
+  width:9px;height:9px;border-radius:50%;
+  background:linear-gradient(135deg,hsl(8 52% 56%),hsl(145 44% 42%));
+}
+
+/* ===========================================================================
+   ANIMAÇÕES DE ENTRADA — escalonadas, curtas, sem balanço
+=========================================================================== */
+@keyframes surgir{
+  from{ opacity:0; transform:translateY(9px) }
+  to  { opacity:1; transform:none }
+}
+.grade-cartoes .cartao{ animation:surgir 380ms var(--curva) both; animation-delay:var(--atraso,0ms) }
+.app.chance .grade-cartoes .cartao{ animation:tingir 700ms var(--curva) both }
+.corpo .linha{ animation:surgir 300ms var(--curva) both; animation-delay:var(--atraso,0ms) }
+.caixa{ animation:surgir 420ms var(--curva) both }
+
+/* pressionar de verdade: o botão afunda */
+.botao:active, .chip:active, .nav-item:active, .etapa:active{ transform:translateY(.5px) }
+.cartao:active{ box-shadow:var(--fundo-m); transform:none }
+
+/* som ligado/desligado */
+.nav-item .marcador{
+  margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--tinta-2);
+}
+.nav-item.ativo .marcador{ color:var(--acento-tinta) }
+
+@media (prefers-reduced-motion: reduce){
+  .varredura{display:none}
+  .grade-cartoes .cartao,.corpo .linha,.caixa{animation:none}
+}
+
+/* ===========================================================================
+   MODO MINIMALISTA — a tela fica quieta.
+   Só o essencial no cartão: quem é, o ramo pela cor, e a chance.
+   Todo o resto continua a um clique, no painel. Nada é perdido, só recolhido.
+=========================================================================== */
+.app.minimal .panorama{ display:none }
+.app.minimal .filtros{ gap:12px; padding-bottom:22px }
+.app.minimal .filtros .chip:not(.sempre),
+.app.minimal .filtros .chance-legenda,
+.app.minimal .filtros .limpar{ display:none }
+.app.minimal .grade-cartoes{ gap:34px; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)) }
+.app.minimal .area{ padding:22px 34px 56px }
+
+.app.minimal .cartao{ padding:26px 24px; gap:16px }
+.app.minimal .cartao-linha,
+.app.minimal .cartao .selo,
+.app.minimal .cartao .prox,
+.app.minimal .cartao .redes-mini{ display:none }
+.app.minimal .cartao-pe{ padding-top:0 }
+/* no lugar do rodapé cheio, um único sinal de estado */
+.app.minimal .cartao-pe::before{
+  content:attr(data-resumo);
+  font-size:12px;font-weight:600;color:var(--tinta-2);letter-spacing:-.004em;
+}
+.app.minimal .cartao:hover .cartao-pe::before{ color:var(--acento-tinta) }
+
+.app.minimal .linha{
+  grid-template-columns:34px 84px 1fr 132px;
+  height:60px;
+}
+.app.minimal .linha > *:nth-child(n+5){ display:none }
+.app.minimal .linha.cabeca > *:nth-child(n+5){ display:none }
+
+/* interruptor físico — o controle mais "coisa" da interface */
+.chave{
+  display:inline-flex;align-items:center;gap:11px;
+  height:38px;padding:0 15px 0 7px;border-radius:var(--r-p);
+  box-shadow:var(--relevo-p);
+  font-size:13px;font-weight:600;color:var(--tinta-2);
+  transition:box-shadow var(--t), color var(--t);
+}
+.chave:hover{ box-shadow:var(--relevo-p-alto) }
+.chave .trilhoc{
+  width:40px;height:22px;border-radius:11px;box-shadow:var(--fundo-p);
+  position:relative;flex:none;
+}
+.chave .bolinha{
+  position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:var(--fundo);box-shadow:var(--relevo-p);
+  transition:transform 260ms var(--curva), background 260ms var(--curva);
+}
+.chave[aria-pressed="true"]{ color:var(--acento-tinta); box-shadow:var(--fundo-p) }
+.chave[aria-pressed="true"] .bolinha{ transform:translateX(18px); background:var(--acento) }
+
+/* respiro ao entrar/sair do modo */
+@keyframes acalmar{ from{ opacity:.35; transform:scale(.985) } to{ opacity:1; transform:none } }
+.app.minimal .grade-cartoes,
+.app.saindo-minimal .grade-cartoes{ animation:acalmar 460ms var(--curva) both }

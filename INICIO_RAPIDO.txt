@@ -1,0 +1,259 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    ⚡ GUIA DE INÍCIO RÁPIDO - PROSPECAPP
+═══════════════════════════════════════════════════════════════════════════════
+
+Vamos começar em 3 minutos!
+
+═══════════════════════════════════════════════════════════════════════════════
+PASSO 1: INSTALE (Se ainda não instalou)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Abra PowerShell ou CMD
+2. Navegue até: cd C:\Users\[seu-usuario]\Desktop\ProspecApp
+3. Execute: npm install
+
+(Espere terminar a instalação)
+
+═══════════════════════════════════════════════════════════════════════════════
+PASSO 2: INICIE A APLICAÇÃO
+═══════════════════════════════════════════════════════════════════════════════
+
+Na mesma janela do PowerShell/CMD, execute:
+
+    npm start
+
+📌 Aguarde 5-10 segundos até a janela do ProspecApp abrir
+
+═══════════════════════════════════════════════════════════════════════════════
+PASSO 3: CARREGUE DADOS DE EXEMPLO (OPCIONAL)
+═══════════════════════════════════════════════════════════════════════════════
+
+Se quiser começar com 10 leads de exemplo do Regente Feijó:
+
+1. Feche a aplicação ProspecApp
+2. No PowerShell/CMD, estando na pasta ProspecApp, execute:
+
+    cp exemplo-dados.json dados.json
+
+3. Se uma janela perguntar sobre sobrescrever, clique SIM
+4. Inicie novamente: npm start
+
+Agora você terá 10 leads de exemplo para testar!
+
+═══════════════════════════════════════════════════════════════════════════════
+ESTRUTURA BÁSICA QUE VOCÊ ACABOU DE CRIAR
+═══════════════════════════════════════════════════════════════════════════════
+
+📁 ProspecApp/
+ ├── main.js ..................... Motor principal (Electron)
+ ├── preload.js .................. APIs de segurança
+ ├── index.html .................. Interface (HTML)
+ ├── styles.css .................. Estilos (CSS)
+ ├── app.js ...................... Lógica da aplicação (JavaScript)
+ ├── package.json ................ Configurações do projeto
+ ├── README.md ................... Documentação completa
+ ├── COMO_USAR.txt ............... Manual detalhado
+ ├── INICIO_RAPIDO.txt ........... Este arquivo
+ ├── exemplo-dados.json .......... Dados de teste
+ ├── dados.json .................. Seu banco de dados (criado ao usar)
+ └── node_modules/ ............... Dependências (criado ao instalar)
+
+═══════════════════════════════════════════════════════════════════════════════
+FUNCIONALIDADES PRINCIPAIS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ DASHBOARD
+   • Total de leads
+   • Contador por status (Novo, Contatado, Agendado, etc)
+   • Gráfico de categorias
+
+✅ GERENCIAR LEADS
+   • Adicionar novos
+   • Editar informações
+   • Deletar quando necessário
+   • Buscar por nome/empresa/telefone
+   • Filtrar por status
+
+✅ HISTÓRICO
+   • Registrar interações (ligações, emails, etc)
+   • Acompanhar progresso
+   • Notas detalhadas
+
+✅ EXPORTAR
+   • Baixar em CSV para Excel/Sheets
+   • Usar em CRM
+   • Backup de segurança
+
+═══════════════════════════════════════════════════════════════════════════════
+USANDO COM SEUS LEADS DO REGENTE FEIJÓ
+═══════════════════════════════════════════════════════════════════════════════
+
+Você tem 3 maneiras:
+
+MANEIRA 1: Adicionar Manualmente (5 minutos)
+──────────────────────────────────────────────────────────────────────────────
+1. Clique em "Novo Lead"
+2. Copie dados do arquivo "Leads_Regente_Feijo.csv"
+3. Preencha os campos
+4. Clique "Adicionar Lead"
+
+Repita para cada lead (é rápido!)
+
+MANEIRA 2: Usar Dados de Exemplo (Imediato)
+──────────────────────────────────────────────────────────────────────────────
+1. Feche a aplicação
+2. Execute: cp exemplo-dados.json dados.json
+3. Inicie novamente: npm start
+
+Pronto! 10 leads carregados para testar.
+
+MANEIRA 3: Script de Importação (Avançado)
+──────────────────────────────────────────────────────────────────────────────
+Se tiver muitos leads em CSV:
+1. Crie um script Python ou Node.js
+2. Converta CSV para JSON
+3. Substitua dados.json
+
+═══════════════════════════════════════════════════════════════════════════════
+FLUXO DE TRABALHO RECOMENDADO
+═══════════════════════════════════════════════════════════════════════════════
+
+1️⃣  PLANEJAMENTO (Hoje)
+    ├─ Abra o ProspecApp
+    ├─ Adicione seus 10 primeiros leads
+    ├─ Organize por categoria
+    └─ Defina meta de contatos
+
+2️⃣  PROSPECÇÃO (Semana 1)
+    ├─ Ligues para leads categorizados como "Novo"
+    ├─ Após ligar, mude status para "Contatado"
+    ├─ Adicione nota sobre o resultado
+    ├─ Se interessado, mude para "Agendado"
+    └─ Monitore progresso no Dashboard
+
+3️⃣  ACOMPANHAMENTO (Semana 2-4)
+    ├─ Agende reuniões
+    ├─ Envie propostas (status = "Em Proposta")
+    ├─ Registre cada interação
+    ├─ Quando vender, mude para "Vendido" 🎉
+    └─ Exporte dados para análise
+
+═══════════════════════════════════════════════════════════════════════════════
+ATALHOS ÚTEIS
+═══════════════════════════════════════════════════════════════════════════════
+
+Navegação Rápida:
+├─ 📊 Dashboard ............. Ver resumo geral
+├─ 👥 Meus Leads ............ Listar todos os leads
+├─ ➕ Novo Lead ............ Adicionar novo cliente
+└─ 📥 Exportar ............. Baixar dados
+
+Dentro de um Lead:
+├─ Ver Detalhes ............ Clique no card
+├─ Editar .................. Botão dentro do detalhe
+├─ Adicionar Nota .......... Campo de atividades
+├─ Deletar ................. Botão de deletar
+└─ Fechar .................. Clique fora ou no X
+
+═══════════════════════════════════════════════════════════════════════════════
+MANTENDO SEUS DADOS SEGUROS
+═══════════════════════════════════════════════════════════════════════════════
+
+Seus dados são salvos em:
+C:\Users\[seu-usuario]\AppData\Roaming\ProspecApp\dados.json
+
+Backup Regular:
+1. Clique em "Exportar"
+2. Clique em "Exportar CSV"
+3. Guarde o arquivo em local seguro (Dropbox, Google Drive, etc)
+
+Backup Manual:
+1. Copie o arquivo dados.json
+2. Guarde em outro lugar
+
+═══════════════════════════════════════════════════════════════════════════════
+TROUBLESHOOTING RÁPIDO
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ "npm: comando não encontrado"
+→ Instale Node.js em https://nodejs.org/ e reinicie
+
+❌ "Aplicação não abre"
+→ Execute: npm install && npm start
+
+❌ "Dados sumiram"
+→ Restaure do backup CSV que você exportou
+
+❌ "Erro ao salvar"
+→ Feche outras abas/janelas acessando a pasta, reinicie
+
+═══════════════════════════════════════════════════════════════════════════════
+PRÓXIMOS PASSOS
+═══════════════════════════════════════════════════════════════════════════════
+
+Nível 1 - Básico:
+✓ Adicione 5 leads
+✓ Teste editar um
+✓ Teste deletar um
+✓ Exporte para ver como fica
+
+Nível 2 - Intermediário:
+✓ Adicione 20+ leads
+✓ Comece a prospectar de verdade
+✓ Registre todas as interações
+✓ Mude status regularmente
+
+Nível 3 - Avançado:
+✓ Integre com seu CRM
+✓ Crie rotinas de follow-up
+✓ Analise dados em Excel
+✓ Customize categorias conforme sua necessidade
+
+═══════════════════════════════════════════════════════════════════════════════
+PERGUNTAS FREQUENTES
+═══════════════════════════════════════════════════════════════════════════════
+
+P: Quantos leads posso adicionar?
+R: Unlimited! (Limitado pela memória do seu computador)
+
+P: Onde estão salvos meus dados?
+R: C:\Users\[seu-usuario]\AppData\Roaming\ProspecApp\dados.json
+
+P: Posso acessar de outro computador?
+R: Atualmente não. Mas você pode exportar e importar em outro.
+
+P: Como faço backup?
+R: Use a função "Exportar" para baixar em CSV
+
+P: Posso customizar as categorias?
+R: Sim! Edite o arquivo index.html (procure por <select id="categoria">)
+
+P: Como integro com meu CRM?
+R: Exporte em CSV e importe no seu CRM (Pipedrive, RD, HubSpot, etc)
+
+═══════════════════════════════════════════════════════════════════════════════
+SUPORTE E DESENVOLVIMENTO
+═══════════════════════════════════════════════════════════════════════════════
+
+Quer adicionar recursos?
+1. Edite app.js para lógica
+2. Edite index.html para interface
+3. Edite styles.css para aparência
+4. Reinicie: npm start
+
+Precisa de ajuda?
+1. Leia COMO_USAR.txt (manual completo)
+2. Leia README.md (documentação técnica)
+3. Verifique os arquivos JavaScript para entender a estrutura
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 VOCÊ ESTÁ PRONTO! 🚀
+
+Sua ferramenta de prospecção está funcionando.
+
+Agora é só começar a prospectar e fazer vendas! 💰
+
+Boa sorte! 🎯
+
+═══════════════════════════════════════════════════════════════════════════════

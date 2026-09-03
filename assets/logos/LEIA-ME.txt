@@ -1,0 +1,7 @@
+Coloque aqui os logos e fotos das empresas.
+
+Nomeie pelo id do lead, ex.:  2002.png  (Restaurante Montanha)
+Depois, no app, abra o lead e cole "assets/logos/2002.png" no campo Logo.
+Também aceita URL completa (https://...).
+
+Formatos: png, jpg, webp, svg.

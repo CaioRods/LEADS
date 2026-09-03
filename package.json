@@ -1,0 +1,26 @@
+{
+  "name": "prospecapp",
+  "version": "1.0.0",
+  "description": "Aplicativo de Gestão de Prospecção de Clientes",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging"
+  },
+  "keywords": [
+    "prospecção",
+    "clientes",
+    "vendas",
+    "CRM"
+  ],
+  "author": "Seu Nome",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^44.1.1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
