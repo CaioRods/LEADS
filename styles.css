@@ -765,3 +765,18 @@ select.suave.pq{height:38px;font-size:13px}
 @keyframes acalmar{ from{ opacity:.35; transform:scale(.985) } to{ opacity:1; transform:none } }
 .app.minimal .grade-cartoes,
 .app.saindo-minimal .grade-cartoes{ animation:acalmar 460ms var(--curva) both }
+
+/* grade de candidatos a foto */
+.fotos-grade{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+  max-height:420px;overflow-y:auto;padding:2px;
+}
+.foto-op{
+  aspect-ratio:1;border-radius:var(--r-m);overflow:hidden;
+  box-shadow:var(--relevo-p);background:var(--fundo);
+  transition:box-shadow var(--t), transform var(--t);
+}
+.foto-op:hover{ box-shadow:var(--relevo-p-alto); transform:translateY(-2px) }
+.foto-op:active{ box-shadow:var(--fundo-p) }
+.foto-op img{ width:100%;height:100%;object-fit:cover;display:block }
+.foto-op[disabled]{ opacity:.5 }

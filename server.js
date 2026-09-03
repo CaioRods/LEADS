@@ -188,6 +188,82 @@ app.get('/api/export', (req, res) => {
   res.send(csv);
 });
 
+/* ---------------------------------------------------------------------------
+   BUSCA DE IMAGEM — candidatos para o usuário ESCOLHER.
+   Nunca preenche sozinho: para comércio pequeno de cidade pequena o buscador
+   devolve imagem só semanticamente parecida ("Montanha" vira foto de montanha),
+   e imagem errada num arquivo de prospecção é pior que imagem nenhuma.
+   Usa curl porque só ele enxerga o proxy desta máquina.
+--------------------------------------------------------------------------- */
+const { execFile } = require('child_process');
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+           '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+function buscarImagens(termo) {
+  return new Promise((resolve) => {
+    const url = 'https://www.bing.com/images/search?q=' + encodeURIComponent(termo) + '&form=HDRSC2';
+    execFile('curl', ['-sL', '--max-time', '25', '-A', UA, url],
+      { maxBuffer: 12 * 1024 * 1024 }, (err, html) => {
+        if (err || !html) return resolve([]);
+        const vistos = new Set(), out = [];
+        const re = /murl&quot;:&quot;(.*?)&quot;/g;
+        let m;
+        while ((m = re.exec(html)) && out.length < 24) {
+          const u = m[1].replace(/\\u002f/g, '/').replace(/\\/g, '');
+          if (!/^https?:\/\//.test(u)) continue;
+          if (!/\.(jpe?g|png|webp)(\?|$)/i.test(u)) continue;
+          if (vistos.has(u)) continue;
+          vistos.add(u); out.push(u);
+        }
+        resolve(out);
+      });
+  });
+}
+
+// GET /api/imagens?q=...  -> lista de candidatos
+app.get('/api/imagens', async (req, res) => {
+  const q = String(req.query.q || '').trim();
+  if (!q) return res.status(400).json({ error: 'informe q' });
+  res.json({ termo: q, candidatos: await buscarImagens(q) });
+});
+
+// GET /api/proxy-img?u=...  -> repassa a imagem (evita bloqueio de hotlink no <img>)
+app.get('/api/proxy-img', (req, res) => {
+  const u = String(req.query.u || '');
+  if (!/^https:\/\//.test(u)) return res.status(400).end();
+  execFile('curl', ['-sL', '--max-time', '20', '-A', UA, '--max-filesize', '4000000', u],
+    { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 }, (err, buf) => {
+      if (err || !buf || !buf.length) return res.status(502).end();
+      const t = buf.slice(0, 4).toString('hex');
+      const tipo = t.startsWith('ffd8') ? 'image/jpeg'
+                 : t.startsWith('8950') ? 'image/png'
+                 : t.startsWith('5249') ? 'image/webp' : 'application/octet-stream';
+      res.set('Content-Type', tipo).set('Cache-Control', 'public, max-age=86400').send(buf);
+    });
+});
+
+// POST /api/salvar-imagem  { id, url } -> baixa para assets/logos/<id>.<ext>
+app.post('/api/salvar-imagem', (req, res) => {
+  const { id, url } = req.body || {};
+  if (!id || !/^https:\/\//.test(url || '')) return res.status(400).json({ error: 'id e url são obrigatórios' });
+  const dir = path.join(__dirname, 'assets', 'logos');
+  fs.mkdirSync(dir, { recursive: true });
+  execFile('curl', ['-sL', '--max-time', '25', '-A', UA, '--max-filesize', '4000000', url],
+    { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 }, (err, buf) => {
+      if (err || !buf || buf.length < 512) return res.status(502).json({ error: 'não consegui baixar a imagem' });
+      const t = buf.slice(0, 4).toString('hex');
+      const ext = t.startsWith('ffd8') ? 'jpg' : t.startsWith('8950') ? 'png'
+                : t.startsWith('5249') ? 'webp' : null;
+      if (!ext) return res.status(415).json({ error: 'o arquivo não é uma imagem' });
+      const rel = `assets/logos/${id}.${ext}`;
+      fs.writeFileSync(path.join(__dirname, rel), buf);
+      const dados = loadData();
+      const l = (dados.leads || []).find(x => String(x.id) === String(id));
+      if (l) { l.logo = rel; l.atualizado_em = new Date().toISOString(); saveData(dados); }
+      res.json({ logo: rel, bytes: buf.length });
+    });
+});
+
 // Servir index.html na raiz
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

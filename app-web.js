@@ -26,7 +26,9 @@ const API = {
   listarAtividades(id){     return API.req("GET",    `/api/activities/${id}`); },
   criarAtividade(id, d){    return API.req("POST",   `/api/activities/${id}`, d); },
   excluirAtividade(id){     return API.req("DELETE", `/api/activities/${id}`); },
-  exportar(){               return API.req("GET",    "/api/export"); }
+  exportar(){               return API.req("GET",    "/api/export"); },
+  buscarImagens(q){         return API.req("GET",    "/api/imagens?q=" + encodeURIComponent(q)); },
+  salvarImagem(id, url){    return API.req("POST",   "/api/salvar-imagem", { id, url }); }
 };
 
 /* --------------------------- DICIONÁRIOS --------------------------- */
@@ -684,8 +686,11 @@ async function abrirPainel(id){
         <div class="secao"><span class="rotulo">Logo ou foto</span>
           <div class="logo-campo">
             <input id="campoLogo" value="${esc(l.logo||"")}" placeholder="assets/logos/${l.id}.png ou https://…">
-            <button class="botao botao-forte" id="salvarLogo">Salvar</button>
+            <button class="botao" id="salvarLogo">Salvar</button>
+            <button class="botao botao-forte" id="buscarImg">Buscar foto</button>
           </div>
+          ${l.foto_fonte ? `<p class="dica">Foto encontrada na busca. <a href="${esc(l.foto_fonte)}"
+            target="_blank" rel="noopener">ver origem</a></p>` : ""}
           <p class="dica">Cole uma imagem com Ctrl+V ou arraste o arquivo sobre o avatar.
           ${temInsta(l)?"Também dá para abrir o Instagram acima e copiar a foto de lá.":""}</p>
         </div>
@@ -718,6 +723,7 @@ async function abrirPainel(id){
     catch(e){ aviso("Não consegui excluir: " + e.message, true); }
   };
   $("#salvarLogo").onclick = () => salvarLogo(l.id, $("#campoLogo").value.trim());
+  $("#buscarImg").onclick = () => escolherFoto(l);
   $("#salvarNota").onclick = () => registrar(l);
   $("#camadas").querySelectorAll("[data-atv]").forEach(b => b.onclick = async () => {
     try { await API.excluirAtividade(+b.dataset.atv); abrirPainel(l.id); aviso("Nota apagada."); }
@@ -734,6 +740,64 @@ async function salvarLogo(id, valor){
     aviso(valor ? "Imagem salva." : "Imagem removida."); abrirPainel(id);
   } catch(e){ aviso("Não consegui salvar: " + e.message, true); }
 }
+/* --------------------- ESCOLHER FOTO NA BUSCA ---------------------
+   O app nunca decide sozinho qual é a foto certa: para comércio pequeno o
+   buscador devolve imagem só parecida no assunto. Você olha e escolhe. */
+async function escolherFoto(l){
+  const cidade = (l.cidade||"").includes("capital") ? "São Paulo" : "Regente Feijó";
+  let termo = `${l.nome} ${cidade} SP`;
+
+  const desenhar = (estado, cands) => {
+    $("#camadas").innerHTML = `<div class="veu escuro" id="veu"></div>
+      <div class="modal" style="width:760px" role="dialog" aria-label="Escolher foto">
+        <div class="modal-topo"><h2>Foto de ${esc(l.nome)}</h2>
+          <button class="fechar" id="fecharFoto">${IC.fechar(14)}</button></div>
+        <div style="padding:4px 26px 0">
+          <div class="logo-campo">
+            <input id="termoBusca" value="${esc(termo)}">
+            <button class="botao botao-forte" id="refazer">Buscar</button>
+          </div>
+          <p class="dica">Clique na imagem que for mesmo deste comércio. Se nenhuma for,
+          ajuste o termo e busque de novo — ou feche e deixe o monograma.</p>
+        </div>
+        <div class="modal-corpo" style="grid-template-columns:1fr">
+          ${estado === "buscando" ? `<p class="carregando">Buscando imagens…</p>`
+           : !cands.length ? `<p class="hist-vazio">Nada encontrado para esse termo.</p>`
+           : `<div class="fotos-grade">${cands.map(u => `
+              <button class="foto-op" data-url="${esc(u)}" title="${esc(u)}">
+                <img src="/api/proxy-img?u=${encodeURIComponent(u)}" alt="" loading="lazy"
+                     onerror="this.closest('.foto-op').remove()">
+              </button>`).join("")}</div>`}
+        </div>
+        <div class="modal-pe"><span class="erro" id="fotoErro"></span>
+          <button class="botao" id="cancelarFoto">Fechar</button></div>
+      </div>`;
+
+    const fechar = () => { $("#camadas").innerHTML=""; abrirPainel(l.id); };
+    $("#veu").onclick = fechar; $("#fecharFoto").onclick = fechar; $("#cancelarFoto").onclick = fechar;
+    $("#refazer").onclick = () => { termo = $("#termoBusca").value.trim(); buscar(); };
+    document.querySelectorAll(".foto-op").forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      $("#fotoErro").textContent = "Salvando…";
+      try {
+        await API.salvarImagem(l.id, b.dataset.url);
+        await carregar();
+        $("#camadas").innerHTML = "";
+        aviso("Foto salva.");
+        abrirPainel(l.id);
+      } catch(e){ $("#fotoErro").textContent = "Não consegui baixar: " + e.message; b.disabled = false; }
+    });
+  };
+
+  const buscar = async () => {
+    desenhar("buscando", []);
+    try { const r = await API.buscarImagens(termo); desenhar("pronto", r.candidatos || []); }
+    catch(e){ desenhar("pronto", []); aviso("Falha na busca: " + e.message, true); }
+  };
+  SOM.toca("abre");
+  buscar();
+}
+
 /* colar (Ctrl+V) ou arrastar arquivo sobre o avatar */
 function ligarDropLogo(l){
   const alvo = $(".avatar-g"); if (!alvo) return;

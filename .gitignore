@@ -24,3 +24,6 @@ exemplo-dados.json
 
 # protótipos de design: têm os leads reais embutidos no HTML
 design-demos/
+assets/logos/*.jpg
+assets/logos/*.png
+assets/logos/*.webp
