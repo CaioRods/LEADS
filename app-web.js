@@ -1244,6 +1244,19 @@ const mensagensDe = l => Array.isArray(l.mensagens) ? l.mensagens : [];
 
 const numeroDoLead = l => String(l.telefone || "").replace(/\D/g, "").slice(-11);
 
+/* Abre um endereço fora do app. Um <a> clicado programaticamente passa pelo
+   mesmo caminho de um link de verdade, o que o Electron entrega ao sistema
+   operacional e o navegador trata como navegação, não como pop-up. */
+function abrirFora(url){
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 /* wa.me quer o número com código do país e sem sinais. Fixos de Prudente têm
    10 dígitos e celulares 11 — os dois viram 55 + número. */
 function linkWhatsApp(numero, texto){
@@ -1417,12 +1430,15 @@ function ligarConversa(l){
     const texto = campo.value.trim();
     if (!texto) return;
 
-    // Registra primeiro, abre depois: se o registro falhar, você fica sabendo
-    // antes de mandar a mensagem e o histórico não sai mentindo.
-    if (!await registrar(texto, "saida")) return;
+    /* A abertura vem PRIMEIRO e de forma síncrona. Tentei registrar antes,
+       para o histórico nunca mentir, mas qualquer `await` antes do open
+       quebra a cadeia do gesto do usuário e o navegador barra a janela como
+       pop-up — foi por isso que o WhatsApp não abria. Registrar depois é o
+       preço; se falhar, o aviso aparece e a mensagem já foi. */
+    abrirFora(linkWhatsApp(numeroDoLead(l), texto));
 
     campo.value = "";
-    window.open(linkWhatsApp(numeroDoLead(l), texto), "_blank", "noopener");
+    await registrar(texto, "saida");
     iniciarConversa(l);
     renderizarWhatsApp();
   };

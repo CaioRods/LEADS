@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -36,6 +36,28 @@ function createWindow() {
   // Com show:false a janela só aparece quando há o que mostrar — evita o
   // retângulo branco piscando antes da página carregar.
   mainWindow.once('ready-to-show', () => mainWindow.show());
+
+  /* Links para fora vão para o sistema operacional, não para dentro do app.
+
+     Sem isto o botão "Abrir no WhatsApp" não fazia nada: desde o Electron 22
+     o window.open é bloqueado por padrão, e um <a target="_blank"> viraria
+     uma janela do Electron sem barra de endereço — que não é o que se quer
+     de um wa.me, de um Instagram ou do site do lead. */
+  const paraFora = (url) => {
+    if (/^https?:\/\//i.test(url) || url.startsWith('mailto:') || url.startsWith('tel:')) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  };
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => paraFora(url));
+
+  // Navegação na própria janela também sai, exceto o servidor local do app.
+  mainWindow.webContents.on('will-navigate', (evento, url) => {
+    if (url.startsWith('http://localhost:3000')) return;
+    evento.preventDefault();
+    paraFora(url);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
