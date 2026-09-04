@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 
-const whatsapp = require('./whatsapp-module');
 const app = express();
 const PORT = 3000;
 /* No app empacotado o dados.json fica dentro do app.asar, que é somente
@@ -283,6 +282,60 @@ app.post('/api/salvar-imagem', (req, res) => {
     });
 });
 
+/* ===== CONVERSAS =====
+   O histórico é do PRÓPRIO app: cada mensagem que você registra fica gravada
+   no lead. Não há conexão com o WhatsApp Web.
+
+   Motivo: a whatsapp-web.js perdeu acesso ao Store do WhatsApp Web — o
+   diagnóstico mostrou zero chaves — e desde então sendMessage devolvia
+   undefined sem erro e getChats estourava. Sustentar aquilo custava um
+   Chromium de 350 MB, minutos de partida, QR code e uma sessão que corrompia
+   a cada reinício, tudo para uma funcionalidade que não funcionava.
+   O envio de verdade acontece abrindo o WhatsApp por link wa.me.            */
+
+// POST /api/leads/:id/mensagens — registra uma mensagem na conversa do lead
+app.post('/api/leads/:id/mensagens', (req, res) => {
+  const { texto, tipo } = req.body || {};
+  if (!texto || !String(texto).trim()) {
+    return res.status(400).json({ error: 'texto é obrigatório' });
+  }
+
+  const dados = loadData();
+  const lead = (dados.leads || []).find(l => String(l.id) === String(req.params.id));
+  if (!lead) return res.status(404).json({ error: 'lead não encontrado' });
+
+  const msg = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    texto: String(texto).slice(0, 4000),
+    tipo: tipo === 'entrada' ? 'entrada' : 'saida',
+    data: new Date().toISOString()
+  };
+
+  (lead.mensagens = lead.mensagens || []).push(msg);
+  lead.atualizado_em = msg.data;
+
+  if (!saveData(dados)) return res.status(500).json({ error: 'não consegui salvar' });
+  res.json(msg);
+});
+
+// DELETE /api/leads/:id/mensagens/:msg — apaga uma mensagem registrada
+app.delete('/api/leads/:id/mensagens/:msg', (req, res) => {
+  const dados = loadData();
+  const lead = (dados.leads || []).find(l => String(l.id) === String(req.params.id));
+  if (!lead || !Array.isArray(lead.mensagens)) {
+    return res.status(404).json({ error: 'não encontrado' });
+  }
+
+  const antes = lead.mensagens.length;
+  lead.mensagens = lead.mensagens.filter(m => m.id !== req.params.msg);
+  if (lead.mensagens.length === antes) {
+    return res.status(404).json({ error: 'mensagem não encontrada' });
+  }
+
+  if (!saveData(dados)) return res.status(500).json({ error: 'não consegui salvar' });
+  res.json({ ok: true });
+});
+
 // Servir index.html na raiz
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -301,78 +354,3 @@ app.listen(PORT, () => {
   console.log(`║                                        ║`);
   console.log(`╚════════════════════════════════════════╝\n`);
 });
-
-// ===== ENDPOINTS WHATSAPP =====
-
-// GET /api/whatsapp/status - Retorna status de conexão
-app.get('/api/whatsapp/status', (req, res) => {
-  res.json({ 
-    conectado: whatsapp.isConnected(),
-    timestamp: new Date().toISOString()
-  });
-});
-
-// POST /api/whatsapp/enviar - Envia mensagem
-app.post('/api/whatsapp/enviar', async (req, res) => {
-  const { numero, mensagem } = req.body;
-  
-  if (!numero || !mensagem) {
-    return res.status(400).json({ error: 'numero e mensagem são obrigatórios' });
-  }
-
-  try {
-    const resultado = await whatsapp.enviarMensagem(numero, mensagem);
-    res.json({ sucesso: true, resultado });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/whatsapp/conversa/:numero - Retorna conversa de um número
-app.get('/api/whatsapp/conversa/:numero', (req, res) => {
-  const conversa = whatsapp.obterConversa(req.params.numero);
-  res.json(conversa);
-});
-
-// GET /api/whatsapp/conversas - Retorna todas as conversas
-app.get('/api/whatsapp/conversas', (req, res) => {
-  res.json(whatsapp.obterConversas());
-});
-
-// GET /api/whatsapp/diagnostico - o que a biblioteca conseguiu injetar
-app.get('/api/whatsapp/diagnostico', async (req, res) => {
-  try { res.json(await whatsapp.diagnosticar()); }
-  catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// GET /api/whatsapp/qr - QR code (data URL) enquanto não há sessão.
-// Diz também por que ele pode não existir, para a tela não ficar mentindo
-// "gerando…" quando na verdade o WhatsApp nem foi ligado.
-app.get('/api/whatsapp/qr', (req, res) => {
-  res.json({
-    qr: whatsapp.obterQr(),
-    texto: whatsapp.obterQrTexto(),
-    conectado: whatsapp.isConnected(),
-    desligado: process.env.WPP === '0',
-    erro: whatsapp.obterErro()
-  });
-});
-
-
-// Inicializar WhatsApp em background. WPP=0 sobe o servidor sem o WhatsApp
-// (útil para mexer no front sem esperar o Chromium).
-setImmediate(() => {
-  if (process.env.WPP === '0') {
-    console.log('WhatsApp desligado (WPP=0).');
-    return;
-  }
-  try {
-    console.log('Inicializando WhatsApp em background...');
-    whatsapp.initWhatsApp((conectado) => {
-      console.log(`WhatsApp: ${conectado ? 'conectado' : 'desconectado'}`);
-    });
-  } catch (err) {
-    console.error('Erro ao inicializar WhatsApp:', err.message);
-  }
-});
-

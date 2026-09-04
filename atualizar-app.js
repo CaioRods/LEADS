@@ -19,7 +19,7 @@ const os = require('os');
 const ARQUIVOS = [
   'main.js', 'preload.js', 'server.js', 'index.html', 'styles.css',
   'app-web.js', 'score.js', 'buscar-fotos.js', 'geocodificar.js',
-  'whatsapp-module.js', 'whatsapp-worker.js', 'package.json', 'dados.json'
+  'package.json', 'dados.json'
 ];
 
 const alvo = process.argv[2] || path.join(__dirname, 'dist', 'mac', 'ProspecApp.app');
@@ -66,11 +66,7 @@ if (depsValidas) {
 
 /* O worker e o Puppeteer precisam existir como arquivos de verdade, fora do
    asar — é a mesma lista de asarUnpack do package.json. */
-const forcarFora = [
-  'whatsapp-worker.js',
-  'node_modules/puppeteer', 'node_modules/puppeteer-core',
-  'node_modules/whatsapp-web.js', 'node_modules/sharp', 'node_modules/@img'
-];
+const forcarFora = ['node_modules/sharp', 'node_modules/@img'];
 
 console.log('Empacotando o app.asar…');
 execFileSync('npx', ['asar', 'pack', temp, path.join(recursos, 'app.asar'),

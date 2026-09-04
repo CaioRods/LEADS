@@ -294,6 +294,8 @@ function filtrados(){
     if (S.status !== "todos" && l.status !== S.status) return false;
     if (S.rapido === "ligar"   && !(temTel(l) && l.status === "novo")) return false;
     if (S.rapido === "visitar" && (temTel(l) || l.status === "descartado")) return false;
+    if (S.rapido === "aberta"    && !estaAberta(l).aberto) return false;
+    if (S.rapido === "encerrada"  && !encerrada(l)) return false;
     if (S.rapido === "insta"   && !instaSemSite(l)) return false;
     if (S.rapido === "capital" && !capital(l)) return false;
     if (S.rapido === "perto"   && nivelProx(l) > 3) return false;
@@ -455,6 +457,8 @@ function barraFiltros(){
   $("#barraFiltros").innerHTML = `
     <div class="grupo">${seg}</div>
     ${chip("quente","Quente",nQ)}${chip("morno","Morno",nM)}${chip("frio","Frio",nF)}
+    ${chip("aberta","Aberta agora", S.leads.filter(l => !emConversa(l) && estaAberta(l).aberto).length)}
+    ${chip("encerrada","Encerradas", S.leads.filter(l => !emConversa(l) && encerrada(l)).length)}
     ${chip("insta","Instagram sem site",nI)}
     ${chip("perto","Perto de mim",nP)}
     <button class="chip sempre ${S.chance?"chance-on":""}" id="btnChance" aria-pressed="${S.chance}"
@@ -526,7 +530,7 @@ function cartao(l, i){
       <span class="pocinho">${IC.local(15)}</span>
       <span class="txt">${esc(enderecoCurto(l))}${n>1?` · ${n} na via`:""}</span>
     </span>
-    <span class="cartao-pe" data-resumo="${esc(STATUS_NOME[l.status])} · ${temTel(l)?"tem telefone":"exige visita"}">${seloHTML(l)}${proxHTML(l)}${redesHTML(l)}</span>
+    <span class="cartao-pe" data-resumo="${esc(STATUS_NOME[l.status])} · ${temTel(l)?"tem telefone":"exige visita"}">${selinhoAberta(l)}${seloHTML(l)}${proxHTML(l)}${redesHTML(l)}</span>
   </button>`;
 }
 
@@ -547,7 +551,7 @@ function linha(l, i){
     <span>${telHTML(l)}</span>
     <span class="cat">${esc(enderecoCurto(l))}${n>1?` · ${n}`:""}</span>
     <span>${proxHTML(l)}</span>
-    <span>${seloHTML(l)}</span>
+    <span>${selinhoAberta(l)}${seloHTML(l)}</span>
   </button>`;
 }
 
@@ -836,6 +840,20 @@ async function abrirPainel(id){
           </div>
         </div>` : ""}
 
+        <div class="secao"><span class="rotulo">Funcionamento</span>
+          <div class="poco bloco-hora">
+            <label class="hora-sit">
+              <span>Situação</span>
+              <select id="situacaoLead" class="mover">
+                ${Object.keys(SITUACAO_NOME).map(k => `<option value="${k}"
+                  ${situacaoDe(l) === k ? "selected" : ""}>${SITUACAO_NOME[k]}</option>`).join("")}
+              </select>
+            </label>
+            <div id="editorHora">${editorHorarios(l)}</div>
+            <button class="botao botao-forte" id="salvarHora">Salvar funcionamento</button>
+          </div>
+        </div>
+
         <div class="secao"><span class="rotulo">Contato e local</span><dl class="poco">
           ${campo("Telefone", temTel(l) ? esc(l.telefone) + (telDuvida(l)?' <span class="suave">· confirmar ao discar</span>':"") : '<span class="suave">sem número — exige visita</span>', "mono")}
           ${campo("E-mail", l.email ? esc(l.email) : "")}
@@ -892,6 +910,23 @@ async function abrirPainel(id){
      continuar afundado. */
   $("#veu").onclick = () => fecharPainel();
   $("#fecharPainel").onclick = () => fecharPainel();
+
+  const bh = $("#salvarHora");
+  if (bh) bh.onclick = async () => {
+    const horarios = lerEditorHorarios($("#editorHora"));
+    const situacao = $("#situacaoLead").value;
+    bh.disabled = true;
+    try {
+      await API.atualizarLead(l.id, { horarios, situacao, verificado_em: new Date().toISOString() });
+      Object.assign(l, { horarios, situacao });
+      aviso("Funcionamento salvo.");
+      render();
+      abrirPainel(l.id);
+    } catch (e){
+      aviso("Não consegui salvar: " + e.message, true);
+      bh.disabled = false;
+    }
+  };
 
   const bi = $("#iniciarConversa");
   if (bi) bi.onclick = async () => { await iniciarConversa(l); abrirPainel(l.id); };
@@ -1187,58 +1222,25 @@ document.addEventListener("keydown", e => {
 
 carregar();
 
-// ===== WHATSAPP INTEGRATION =====
+// ===== CONVERSAS =====
+/* O histórico é do próprio app: cada mensagem que você registra fica gravada
+   no lead, em dados.json. Não há conexão com o WhatsApp Web.
 
-// Adicionar ao objeto API
-API.obterStatusWhatsApp = () => API.req("GET", "/api/whatsapp/status");
-API.enviarMensagemWPP = (numero, mensagem) => API.req("POST", "/api/whatsapp/enviar", { numero, mensagem });
-API.obterConversa = (numero) => API.req("GET", `/api/whatsapp/conversa/${numero}`);
-API.obterConversas = () => API.req("GET", "/api/whatsapp/conversas");
+   Antes isto conversava com a whatsapp-web.js por um Chromium em processo
+   separado. Aquilo parou de enviar quando a biblioteca perdeu acesso ao Store
+   do WhatsApp Web (diagnóstico: zero chaves), e sustentar a estrutura custava
+   350 MB de navegador, minutos de partida, QR code e uma sessão que corrompia
+   a cada reinício — tudo para algo que não funcionava. O envio de verdade
+   acontece abrindo o WhatsApp pelo link wa.me, que não tem como quebrar. */
 
-// Estado do WhatsApp
-let estadoWPP = {
-  conectado: false,
-  conversas: {},
-  conversaAtual: null,
-  carregando: true
-};
+API.registrarMensagem = (id, texto, tipo) =>
+  API.req("POST", `/api/leads/${id}/mensagens`, { texto, tipo });
+API.apagarMensagem = (id, msg) =>
+  API.req("DELETE", `/api/leads/${id}/mensagens/${msg}`);
 
-async function inicializarWhatsApp() {
-  try {
-    const status = await API.obterStatusWhatsApp();
-    estadoWPP.conectado = status.conectado;
-    
-    if (status.conectado) {
-      const conversas = await API.obterConversas();
-      estadoWPP.conversas = conversas || {};
-    }
-    
-    estadoWPP.carregando = false;
-    
-    // Ligar listener no botão
-    const btnWPP = document.getElementById("navWhatsApp");
-    if (btnWPP) {
-      btnWPP.onclick = () => {
-        S.visao = "whatsapp";
-        SOM.toca("clique");
-        render();
-      };
-    }
-    
-    renderizarWhatsApp();
-  } catch (err) {
-    console.error("Erro ao inicializar WhatsApp:", err);
-    estadoWPP.carregando = false;
-    aviso("Erro ao conectar com WhatsApp", true);
-  }
-}
+let leadEmFoco = null;                    // id do lead aberto na aba
 
-/* A aba é montada sobre os SEUS leads, não sobre os contatos do WhatsApp.
-   Motivo: getChats() da biblioteca está quebrado contra o WhatsApp Web atual
-   (erro "r", persistente em 5 tentativas). E, de todo modo, a pergunta que
-   interessa aqui é "com quais leads eu estou falando", não "todos os meus
-   contatos". Mensagens recebidas chegam pelo evento 'message', que não usa a
-   API quebrada, então a conversa se monta sozinha conforme as coisas chegam. */
+const mensagensDe = l => Array.isArray(l.mensagens) ? l.mensagens : [];
 
 const numeroDoLead = l => String(l.telefone || "").replace(/\D/g, "").slice(-11);
 
@@ -1250,51 +1252,18 @@ function linkWhatsApp(numero, texto){
   return texto ? url + "?text=" + encodeURIComponent(texto) : url;
 }
 
-/* Usa o MESMO filtrados() da visão de leads: mesma ordem, mesmos filtros
-   rápidos, mesma busca. Antes esta aba tinha ordenação própria (quem
-   respondeu primeiro), e o mesmo lead aparecia em posições diferentes nas
-   duas telas — o que torna impossível confiar na posição. */
-function leadsComTelefone(){
-  const conversas = estadoWPP.conversas || {};
-
-  return filtrados()
-    .filter(l => temTel(l) && l.status !== "descartado")
-    .map(l => {
-      const num  = numeroDoLead(l);
-      const msgs = conversas[num] || [];
-      return {
-        lead: l,
-        numero: num,
-        msgs,
-        ultima: msgs.length ? msgs[msgs.length - 1] : null,
-        respondeu: msgs.some(m => m.tipo === "entrada"),
-        jaFalou: msgs.some(m => m.tipo === "saida") || jaContatado(l)
-      };
-    });
+/* Usa o mesmo filtrados() da visão de leads, então ordem, filtros rápidos e
+   busca são idênticos nas duas telas. */
+function leadsDaAba(){
+  return filtrados().filter(l => temTel(l) && l.status !== "descartado")
+    .concat(S.leads.filter(l => emConversa(l) && temTel(l)))
+    .filter((l, i, a) => a.indexOf(l) === i);
 }
 
-/* "Já mandei mensagem para este?" — o histórico do WhatsApp é só metade da
-   resposta, porque só guardamos o que passou pelo app. A outra metade está no
-   funil: um lead que saiu de "novo" já foi abordado de alguma forma. */
-const jaContatado = l => l.status && l.status !== "novo";
-
-function renderizarWhatsApp() {
+function renderizarWhatsApp(){
   if (S.visao !== "whatsapp") return;
-
   const painel = document.getElementById("painelWhatsApp");
   if (!painel) return;
-
-  if (!estadoWPP.conectado){
-    painel.innerHTML = `<div class="wpp-vazio">
-      <div>
-        <h2>WhatsApp não conectado</h2>
-        <p>Escaneie o QR code com seu telefone para conectar.</p>
-        <div id="wppQr" style="margin-top:22px"></div>
-      </div>
-    </div>`;
-    carregarQrWPP();
-    return;
-  }
 
   if (S.carregando || !S.leads.length){
     painel.innerHTML = `<div class="wpp-grade"><div class="wpp-lista">${
@@ -1302,103 +1271,65 @@ function renderizarWhatsApp() {
     return;
   }
 
-  const itens = leadsComTelefone();
-  const atual = estadoWPP.conversaAtual;
-  const emFoco = itens.find(i => i.numero === atual);
-  const respondendo = itens.filter(i => i.respondeu).length;
+  const itens = leadsDaAba();
+  const emFoco = itens.find(l => l.id === leadEmFoco);
+  const comConversa = itens.filter(l => mensagensDe(l).length).length;
 
   painel.innerHTML = `<div class="wpp-grade">
     <div class="wpp-lista">
       <div class="wpp-cabeca">
-        <button class="chip sempre ${S.chance ? "chance-on" : ""}" id="wppChance"
-                aria-pressed="${S.chance}" title="Colorir por chance de fechar">
-          <span class="ponto"></span> Chance
-        </button>
-        ${S.chance ? `<span class="wpp-escala"></span>` : ""}
         ${S.termo
-          ? `<b>${itens.length}</b> ${itens.length === 1 ? "resultado" : "resultados"} para "${esc(S.termo)}"`
-          : respondendo
-            ? `<b>${respondendo}</b> ${respondendo === 1 ? "lead respondeu" : "leads responderam"}`
-            : "Nenhum lead respondeu ainda"}
+          ? `<b>${itens.length}</b> ${itens.length === 1 ? "resultado" : "resultados"}`
+          : comConversa
+            ? `<b>${comConversa}</b> com conversa registrada`
+            : "Nenhuma conversa registrada ainda"}
       </div>
 
       ${itens.length === 0 ? `<p class="wpp-nada">Nada encontrado.</p>` : ""}
 
-      ${itens.map((i, k) => `
-        <div class="wpp-conversa" data-numero="${esc(i.numero)}"
-             aria-selected="${atual === i.numero}"
-             style="--hc:${hueChance(i.lead).toFixed(0)};--atraso:${Math.min(k,25)*16}ms">
-          ${avatarHTML(i.lead)}
+      ${itens.map(l => {
+        const msgs = mensagensDe(l);
+        const ultima = msgs[msgs.length - 1];
+        return `
+        <div class="wpp-conversa" data-lead="${l.id}"
+             aria-selected="${leadEmFoco === l.id}">
+          ${avatarHTML(l)}
           <span class="wpp-txt">
-            <b>${esc(i.lead.nome || i.lead.empresa)}</b>
-            <span>${i.ultima ? esc(i.ultima.texto).slice(0, 38) : esc(i.lead.telefone)}</span>
+            <b>${esc(l.nome || l.empresa)}</b>
+            <span>${ultima ? esc(ultima.texto).slice(0, 38) : esc(l.telefone)}</span>
           </span>
-          ${i.respondeu ? `<em class="wpp-marca">respondeu</em>`
-            : i.jaFalou ? `<em class="wpp-marca fria">já falei</em>` : ""}
-        </div>`).join("")}
+          ${msgs.length ? `<em class="wpp-marca">${msgs.length}</em>` : ""}
+        </div>`;
+      }).join("")}
     </div>
 
     ${emFoco ? fichaWhatsApp(emFoco)
              : `<div class="wpp-vazio" style="flex:1">Escolha um lead para conversar</div>`}
   </div>`;
 
-  painel.querySelectorAll("[data-numero]").forEach(el =>
-    el.onclick = () => abrirConversaWPP(el.dataset.numero));
-
-  // Mesmo comportamento do botão da visão de leads: alterna, guarda a
-  // escolha e dispara a varredura de luz.
-  const bc = $("#wppChance");
-  if (bc) bc.onclick = () => {
-    S.chance = !S.chance;
-    localStorage.setItem("prospec.chance", S.chance ? "1" : "0");
-    SOM.toca(S.chance ? "chance" : "chanceOff");
-    if (S.chance) varrer();
-    document.querySelector(".app").classList.toggle("chance", S.chance);
+  painel.querySelectorAll("[data-lead]").forEach(el => el.onclick = () => {
+    leadEmFoco = +el.dataset.lead;
     renderizarWhatsApp();
-  };
+  });
 
   if (!emFoco) return;
-
-  pintarMensagensWPP(emFoco.msgs);
-
-  /* O envio abre o WhatsApp com a conversa e o texto prontos, em vez de sair
-     pela biblioteca. Motivo medido, não preferência: o whatsapp-web.js perdeu
-     o acesso ao Store do WhatsApp Web (diagnóstico: zero chaves), então o
-     sendMessage devolve undefined e não dá para saber se a mensagem saiu. */
-  const enviar = () => {
-    const campo = $("#inputMsg");
-    const texto = campo.value.trim();
-    if (!texto) return;
-
-    window.open(linkWhatsApp(emFoco.numero, texto), "_blank", "noopener");
-    campo.value = "";
-    aviso("WhatsApp aberto com a mensagem pronta.");
-    iniciarConversa(emFoco.lead);      // sai da fila de Leads, entra no quadro
-  };
-
-  $("#btnEnviarMsg").onclick = enviar;
-  $("#inputMsg").onkeydown = e => {
-    if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); enviar(); }
-  };
-
-  const verLead = $("#wppVerLead");
-  if (verLead) verLead.onclick = () => { S.visao = "leads"; render(); abrirPainel(emFoco.lead.id); };
+  pintarMensagensWPP(emFoco);
+  ligarConversa(emFoco);
 }
 
 /* A ficha existe para uma coisa: você saber com quem está falando ANTES de
    escrever. Foto, ramo, onde fica, o que já rolou e o gancho da abordagem. */
-function fichaWhatsApp(i){
-  const l = i.lead;
-
-  const historico = i.msgs.length
-    ? `${i.msgs.length} ${i.msgs.length === 1 ? "mensagem" : "mensagens"}`
-    : i.jaFalou ? "já abordado, sem conversa no app" : "nunca conversado";
+function fichaWhatsApp(l){
+  const msgs = mensagensDe(l);
+  const historico = msgs.length
+    ? `${msgs.length} ${msgs.length === 1 ? "mensagem" : "mensagens"}`
+    : emConversa(l) ? "em conversa, nada registrado" : "nunca conversado";
 
   const gancho = semSite(l)
     ? "Sem site — é exatamente o que você vende."
     : "Já tem site: ofereça reforma, landing page ou sistema.";
 
-  return `<div id="chatArea" style="--hc:${hueChance(l).toFixed(0)}">
+  return `<div id="chatArea">
     <div class="chat-cabeca">
       ${avatarHTML(l, true)}
       <span class="chat-quem">
@@ -1409,9 +1340,7 @@ function fichaWhatsApp(i){
     </div>
 
     <div class="wpp-ficha">
-      <div class="wpp-ficha-topo">
-        ${scoreHTML(l)}${seloHTML(l)}${proxHTML(l)}
-      </div>
+      <div class="wpp-ficha-topo">${scoreHTML(l)}${seloHTML(l)}${proxHTML(l)}</div>
 
       <dl class="wpp-dados">
         <div><dt>Onde</dt><dd>${esc(l.endereco || "endereço não informado")}${
@@ -1423,8 +1352,6 @@ function fichaWhatsApp(i){
           <dd><a href="${esc(urlInsta(l))}" target="_blank" rel="noopener">@${
             esc(String(l.instagram).replace(/^@/,""))}</a></dd></div>` : ""}
         <div><dt>Conversa</dt><dd>${esc(historico)}</dd></div>
-        ${l.observacoes ? `<div><dt>Anotações</dt>
-          <dd>${esc(l.observacoes)}</dd></div>` : ""}
       </dl>
 
       <p class="wpp-gancho">${esc(gancho)}</p>
@@ -1436,163 +1363,107 @@ function fichaWhatsApp(i){
       <textarea id="inputMsg" placeholder="Escreva sua mensagem…"></textarea>
       <button class="botao botao-forte" id="btnEnviarMsg">Abrir no WhatsApp</button>
     </div>
-    <p class="chat-nota">O envio abre o WhatsApp com a mensagem pronta.
-      As respostas voltam para cá.</p>
+    <p class="chat-nota">Isto registra a mensagem aqui e abre o WhatsApp com ela
+      pronta. Recebeu resposta? <button class="elo" id="btnAnotarResposta">anote
+      aqui</button> para o histórico ficar completo.</p>
   </div>`;
 }
 
-/* Mensagens que chegam entram pelo evento 'message' do worker, então basta
-   reperguntar de tempos em tempos enquanto a aba está aberta. */
-let convTimer = null;
+function pintarMensagensWPP(l){
+  const area = $("#mensagensArea");
+  if (!area) return;
 
-function acompanharConversas(){
-  clearInterval(convTimer);
+  const msgs = mensagensDe(l);
+  if (!msgs.length){
+    area.innerHTML = `<p class="wpp-sem-msg">Nada registrado ainda.</p>`;
+    return;
+  }
 
-  convTimer = setInterval(async () => {
-    if (S.visao !== "whatsapp" || !estadoWPP.conectado){
-      clearInterval(convTimer);
-      return;
-    }
-    try {
-      const novas = await API.obterConversas();
-      if (JSON.stringify(novas) === JSON.stringify(estadoWPP.conversas)) return;
-      estadoWPP.conversas = novas;
-      renderizarWhatsApp();
-    } catch (_) {}
-  }, 5000);
+  area.innerHTML = msgs.map(m => `
+    <div class="msg ${m.tipo}">
+      <span class="msg-texto">${esc(m.texto)}</span>
+      <span class="msg-pe">
+        ${new Date(m.data).toLocaleString("pt-BR", {
+          day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
+        <button class="msg-x" data-apagar="${m.id}" title="Apagar">×</button>
+      </span>
+    </div>`).join("");
+
+  area.scrollTop = area.scrollHeight;
+
+  area.querySelectorAll("[data-apagar]").forEach(b => b.onclick = async () => {
+    const msgId = b.dataset.apagar;
+    l.mensagens = mensagensDe(l).filter(m => m.id !== msgId);
+    pintarMensagensWPP(l);
+    try { await API.apagarMensagem(l.id, msgId); }
+    catch (e){ aviso("Não consegui apagar: " + e.message, true); }
+  });
 }
 
-let qrTimer = null;
-
-async function carregarQrWPP(){
-  clearInterval(qrTimer);
-
-  let tentativas = 0;
-  let qrMostrado = null;   // evita repintar a imagem a cada 3s sem necessidade
-
-  const busca = async () => {
-    const alvo = $("#wppQr");
-    if (!alvo || S.visao !== "whatsapp"){ clearInterval(qrTimer); return; }
-
-    let r;
-    try { r = await API.req("GET", "/api/whatsapp/qr"); }
-    catch (_) {
-      alvo.innerHTML = `<p>Servidor fora do ar.</p>`;
-      clearInterval(qrTimer);
-      return;
-    }
-
-    // Conectou enquanto esperávamos: sai da tela de QR.
-    if (r && r.conectado){
-      clearInterval(qrTimer);
-      estadoWPP.conectado = true;
-      estadoWPP.conversas = await API.obterConversas().catch(() => ({}));
-      renderizarWhatsApp();
-      return;
-    }
-
-    // NÃO paramos de buscar ao achar o QR: o WhatsApp troca de código a cada
-    // ~20s, e um QR velho na tela simplesmente não escaneia. Seguimos pedindo
-    // e trocamos a imagem quando ela muda; só paramos quando a sessão conecta.
-    if (r && r.qr){
-      if (r.qr !== qrMostrado){
-        qrMostrado = r.qr;
-        alvo.innerHTML = `<img src="${r.qr}" alt="QR code do WhatsApp"
-                               width="240" height="240"
-                               style="border-radius:12px;background:#fff;padding:8px">`;
-      }
-      tentativas = 0;   // enquanto há QR válido, não corre o relógio de falha
-      return;
-    }
-
-    if (r && r.desligado){
-      clearInterval(qrTimer);
-      alvo.innerHTML = `<p>WhatsApp desligado neste servidor (WPP=0).<br>
-        Reinicie com <code>node server.js</code> para conectar.</p>`;
-      return;
-    }
-
-    // Sem imagem mas com o texto do QR: dá para gerar o código em qualquer
-    // leitor, então mostramos em vez de travar a tela.
-    if (r && !r.qr && r.texto){
-      clearInterval(qrTimer);
-      alvo.innerHTML = `<p>Não consegui desenhar a imagem do QR.
-        Código para colar num gerador:</p>
-        <textarea readonly rows="3"
-          style="width:100%;max-width:420px;margin-top:10px;font:12px var(--mono)"
-        >${esc(r.texto)}</textarea>`;
-      return;
-    }
-
-    if (r && r.erro){
-      clearInterval(qrTimer);
-      alvo.innerHTML = `<p>${esc(r.erro)}</p>`;
-      return;
-    }
-
-    tentativas++;
-    alvo.innerHTML = `<p>Abrindo o WhatsApp… (${tentativas})</p>`;
-
-    if (tentativas > 40){          // ~2 min
-      clearInterval(qrTimer);
-      alvo.innerHTML = `<p>O WhatsApp não respondeu. Veja o terminal do servidor.</p>`;
+function ligarConversa(l){
+  const registrar = async (texto, tipo) => {
+    try {
+      const msg = await API.registrarMensagem(l.id, texto, tipo);
+      (l.mensagens = mensagensDe(l)).push(msg);
+      return true;
+    } catch (e){
+      aviso("Não consegui registrar: " + e.message, true);
+      return false;
     }
   };
 
-  await busca();
-  qrTimer = setInterval(busca, 3000);
+  const enviar = async () => {
+    const campo = $("#inputMsg");
+    const texto = campo.value.trim();
+    if (!texto) return;
+
+    // Registra primeiro, abre depois: se o registro falhar, você fica sabendo
+    // antes de mandar a mensagem e o histórico não sai mentindo.
+    if (!await registrar(texto, "saida")) return;
+
+    campo.value = "";
+    window.open(linkWhatsApp(numeroDoLead(l), texto), "_blank", "noopener");
+    iniciarConversa(l);
+    renderizarWhatsApp();
+  };
+
+  $("#btnEnviarMsg").onclick = enviar;
+  $("#inputMsg").onkeydown = e => {
+    if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); enviar(); }
+  };
+
+  $("#btnAnotarResposta").onclick = async () => {
+    const texto = prompt(`O que ${l.nome} respondeu?`);
+    if (!texto || !texto.trim()) return;
+    if (await registrar(texto.trim(), "entrada")) renderizarWhatsApp();
+  };
+
+  $("#wppVerLead").onclick = () => { S.visao = "leads"; render(); abrirPainel(l.id); };
 }
 
-function abrirConversaWPP(numero) {
-  estadoWPP.conversaAtual = numero;
-  renderizarWhatsApp();
-}
-
-function pintarMensagensWPP(msgs){
-  const area = $("#mensagensArea");
-  if (!area) return;
-  area.innerHTML = (msgs || []).map(m => `
-    <div class="msg ${m.tipo === "saida" ? "saida" : "entrada"}">
-      <div class="balao">
-        ${esc(m.texto)}
-        <div class="hora">${new Date(m.data)
-          .toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" })}</div>
-      </div>
-    </div>`).join("");
-  area.scrollTop = area.scrollHeight;
-}
-
-async function carregarMensagensWPP(numero) {
-  try { pintarMensagensWPP(await API.obterConversa(numero)); }
-  catch (_) {}
-}
-
-// Inicializar WhatsApp quando a página carregar
-setTimeout(inicializarWhatsApp, 1000);
-
-// Adicionar WhatsApp ao render()
+/* A aba de conversas entra no render junto com as outras visões. */
 const renderOriginal = render;
-render = function() {
+render = function(){
   renderOriginal.apply(this, arguments);
-  
-  // Ocultar/mostrar visões
-  const VISOES = { leads:"visaoLeads", panorama:"visaoPanorama",
-                   mapa:"visaoMapa", whatsapp:"visaoWhatsApp" };
+
+  const VISOES = { leads:"visaoLeads", estados:"visaoEstados",
+                   panorama:"visaoPanorama", mapa:"visaoMapa",
+                   whatsapp:"visaoWhatsApp" };
   Object.keys(VISOES).forEach(v => {
     const el = document.getElementById(VISOES[v]);
     if (el) el.classList.toggle("ocultar", S.visao !== v);
   });
 
-  if (S.visao === "whatsapp") {
+  if (S.visao === "whatsapp"){
+    const comConversa = S.leads.filter(l => mensagensDe(l).length).length;
     const comTel = S.leads.filter(l => temTel(l) && l.status !== "descartado").length;
 
-    $("#tituloVisao").textContent = "WhatsApp";
-    $("#subTitulo").textContent = estadoWPP.conectado
-      ? `${comTel} leads com telefone`
-      : "Aguardando conexão";
+    $("#tituloVisao").textContent = "Conversas";
+    $("#subTitulo").textContent = comConversa
+      ? `${comConversa} com conversa · ${comTel} leads com telefone`
+      : `${comTel} leads com telefone`;
 
     renderizarWhatsApp();
-    if (estadoWPP.conectado) acompanharConversas();
   }
 };
 
@@ -1924,4 +1795,118 @@ async function iniciarConversa(l){
 
   aviso(`${l.nome} entrou em Conversando.`);
   render();
+}
+
+/* ===========================================================================
+   HORÁRIOS E SITUAÇÃO
+   Duas perguntas diferentes que a tela precisa responder de relance:
+   1. a empresa ainda existe?  (situacao)
+   2. está aberta AGORA?       (calculado do horário, a cada render)
+=========================================================================== */
+
+const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
+const DIA_NOME = { dom:"Domingo", seg:"Segunda", ter:"Terça", qua:"Quarta",
+                   qui:"Quinta", sex:"Sexta", sab:"Sábado" };
+
+const SITUACAO_NOME = {
+  ativa:              "Em atividade",
+  fechada_temp:       "Fechada temporariamente",
+  fechada_permanente: "Fechada em definitivo",
+  desconhecida:       "Situação não verificada"
+};
+
+const situacaoDe = l => l.situacao || "desconhecida";
+const encerrada  = l => situacaoDe(l) === "fechada_permanente";
+
+/* horarios: { seg: [["08:00","18:00"]], dom: [] , ... }
+   Uma lista de faixas por dia aceita o intervalo de almoço, que é a regra e
+   não a exceção no comércio daqui. Dia sem faixa nenhuma = fechado. */
+function faixasDoDia(l, dia){
+  const h = l.horarios;
+  if (!h || typeof h !== "object") return null;      // null = não sabemos
+  const f = h[dia];
+  return Array.isArray(f) ? f : [];
+}
+
+const emMinutos = hhmm => {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm).trim());
+  return m ? (+m[1]) * 60 + (+m[2]) : null;
+};
+
+/* Devolve { aberto, texto, sabemos }. `sabemos` separa "está fechada" de
+   "não faço ideia" — misturar as duas seria informar errado. */
+function estaAberta(l, quando){
+  if (encerrada(l)) return { aberto: false, sabemos: true, texto: "encerrada" };
+
+  const agora = quando || new Date();
+  const dia = DIAS[agora.getDay()];
+  const faixas = faixasDoDia(l, dia);
+
+  if (faixas === null) return { aberto: false, sabemos: false, texto: "horário não informado" };
+  if (!faixas.length)  return { aberto: false, sabemos: true, texto: "fechada hoje" };
+
+  const min = agora.getHours() * 60 + agora.getMinutes();
+
+  for (const [ini, fim] of faixas){
+    const a = emMinutos(ini), b = emMinutos(fim);
+    if (a === null || b === null) continue;
+
+    // Faixa que atravessa a meia-noite (bar que fecha às 02:00).
+    const dentro = b > a ? (min >= a && min < b) : (min >= a || min < b);
+    if (dentro) return { aberto: true, sabemos: true, texto: `aberta até ${fim}` };
+  }
+
+  const proxima = faixas.map(([i]) => emMinutos(i)).filter(v => v !== null && v > min).sort((x,y)=>x-y)[0];
+  return {
+    aberto: false, sabemos: true,
+    texto: proxima !== undefined
+      ? `abre às ${String(Math.floor(proxima/60)).padStart(2,"0")}:${String(proxima%60).padStart(2,"0")}`
+      : "fechada agora"
+  };
+}
+
+function selinhoAberta(l){
+  const e = estaAberta(l);
+
+  if (encerrada(l))
+    return `<span class="sit sit-encerrada" title="Fechada em definitivo">encerrada</span>`;
+  if (situacaoDe(l) === "fechada_temp")
+    return `<span class="sit sit-temp" title="Fechada temporariamente">fechada temp.</span>`;
+  if (!e.sabemos)
+    return `<span class="sit sit-nao-sei" title="Horário não informado">horário?</span>`;
+
+  return `<span class="sit ${e.aberto ? "sit-aberta" : "sit-fechada"}"
+                title="${esc(e.texto)}">${e.aberto ? "aberta" : "fechada"}</span>`;
+}
+
+/* Editor de horários: sete linhas, uma por dia, com as faixas em texto livre
+   ("08:00-12:00, 14:00-18:00"). Digitar é mais rápido que clicar em relógio,
+   e o comércio daqui tem horário irregular demais para um seletor fixo. */
+function editorHorarios(l){
+  const h = l.horarios || {};
+  return `<div class="horarios-editor">
+    ${DIAS.map(d => {
+      const faixas = Array.isArray(h[d]) ? h[d] : [];
+      const txt = faixas.map(([a,b]) => `${a}-${b}`).join(", ");
+      return `<label class="hora-linha">
+        <span>${DIA_NOME[d].slice(0,3)}</span>
+        <input type="text" data-dia="${d}" value="${esc(txt)}"
+               placeholder="fechado" aria-label="${DIA_NOME[d]}">
+      </label>`;
+    }).join("")}
+    <p class="hora-dica">Exemplo: <code>08:00-12:00, 14:00-18:00</code>.
+    Deixe vazio para fechado.</p>
+  </div>`;
+}
+
+function lerEditorHorarios(raiz){
+  const h = {};
+  raiz.querySelectorAll("[data-dia]").forEach(inp => {
+    const faixas = inp.value.split(",").map(p => {
+      const m = /^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/.exec(p);
+      return m ? [m[1], m[2]] : null;
+    }).filter(Boolean);
+    h[inp.dataset.dia] = faixas;
+  });
+  return h;
 }

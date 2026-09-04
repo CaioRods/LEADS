@@ -129,11 +129,6 @@ function prepararBanco() {
     }
   }
   process.env.PROSPEC_DADOS = destino;
-
-  /* A sessão do WhatsApp também precisa de um lugar gravável e estável. Sem
-     isto o LocalAuth caía na raiz do sistema e não conseguia nem criar a
-     pasta. Fora do .app o worker continua usando a pasta do projeto. */
-  process.env.PROSPEC_SESSAO = path.join(app.getPath('userData'), 'wwebjs');
 }
 
 function startServer() {
@@ -177,8 +172,5 @@ app.on('activate', () => {
   }
 });
 
-app.on('quit', () => {
-  // O WhatsApp roda em processo filho e precisa fechar a sessão com calma,
-  // senão o .wwebjs_auth corrompe e o usuário tem de escanear o QR de novo.
-  try { require('./whatsapp-module').fecharWhatsApp(); } catch (_) {}
-});
+// Nada a encerrar: o servidor vive neste mesmo processo e as conversas são
+// gravadas em disco a cada mensagem registrada.

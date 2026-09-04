@@ -1052,8 +1052,41 @@ select.suave.pq{height:38px;font-size:13px}
   display:flex; flex-direction:column; gap:8px;
 }
 
-.msg{ display:flex }
-.msg.saida{ justify-content:flex-end }
+/* Balões da conversa registrada no app. Saída à direita, resposta anotada à
+   esquerda — a mesma leitura de qualquer mensageiro. */
+.msg{ display:flex; flex-direction:column; max-width:76%; gap:3px }
+.msg.saida{ align-self:flex-end; align-items:flex-end }
+.msg.entrada{ align-self:flex-start; align-items:flex-start }
+
+.msg-texto{
+  padding:9px 13px; border-radius:var(--r-m);
+  box-shadow:var(--relevo-p); font-size:13.5px; line-height:1.45;
+  white-space:pre-wrap; word-break:break-word;
+}
+.msg.saida .msg-texto{ background:var(--acento-fraco); color:var(--acento-tinta) }
+
+.msg-pe{
+  display:flex; align-items:center; gap:6px;
+  font-size:10.5px; color:var(--tinta-2);
+}
+.msg-x{
+  border:0; background:none; cursor:pointer; padding:0 2px;
+  color:var(--tinta-2); font-size:13px; line-height:1;
+  opacity:0; transition:opacity var(--t), color var(--t);
+}
+.msg:hover .msg-x{ opacity:1 }
+.msg-x:hover{ color:var(--acento-tinta) }
+
+.wpp-sem-msg{
+  margin:auto; font-size:12.5px; color:var(--tinta-2); font-style:italic;
+}
+
+/* Botão que se lê como link, para uma ação secundária dentro de um texto. */
+.elo{
+  border:0; background:none; padding:0; font:inherit; cursor:pointer;
+  color:var(--acento-tinta); text-decoration:underline; text-underline-offset:2px;
+}
+
 .msg .balao{
   max-width:70%; padding:9px 14px; border-radius:var(--r-m);
   font-size:14px; word-wrap:break-word; box-shadow:var(--relevo-p);
@@ -1511,3 +1544,67 @@ select.suave.pq{height:38px;font-size:13px}
 
 .painel-estado{ display:grid; gap:12px; padding:14px }
 .painel-estado .mover{ width:100%; font-size:13px; padding:9px 11px }
+
+/* ===========================================================================
+   FUNCIONAMENTO — aberta agora, encerrada, horários
+=========================================================================== */
+
+.sit{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:2px 8px; border-radius:99px;
+  font-size:10.5px; font-weight:650; letter-spacing:.03em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.sit::before{ content:""; width:6px; height:6px; border-radius:50% }
+
+.sit-aberta { color:hsl(145 44% 28%); background:hsl(145 40% 90%) }
+.sit-aberta::before { background:hsl(145 46% 42%) }
+
+.sit-fechada{ color:hsl(28 42% 32%); background:hsl(38 46% 90%) }
+.sit-fechada::before{ background:hsl(32 52% 52%) }
+
+.sit-encerrada{ color:hsl(8 44% 34%); background:hsl(8 40% 91%) }
+.sit-encerrada::before{ background:hsl(8 52% 52%) }
+
+.sit-temp{ color:hsl(8 34% 36%); background:hsl(14 38% 91%) }
+.sit-temp::before{ background:hsl(12 44% 56%) }
+
+/* "Não sei" precisa parecer diferente de "fechada": misturar as duas seria
+   informar errado. Fica cinza e sem bolinha acesa. */
+.sit-nao-sei{ color:var(--tinta-2); background:rgba(var(--sombra-rgb),.07) }
+.sit-nao-sei::before{ background:var(--tinta-2); opacity:.45 }
+
+[data-theme="dark"] .sit-aberta   { color:hsl(145 44% 72%); background:hsl(145 26% 20%) }
+[data-theme="dark"] .sit-fechada  { color:hsl(38 48% 72%);  background:hsl(34 24% 20%) }
+[data-theme="dark"] .sit-encerrada{ color:hsl(8 52% 74%);   background:hsl(8 26% 21%) }
+[data-theme="dark"] .sit-temp     { color:hsl(14 46% 74%);  background:hsl(12 24% 21%) }
+[data-theme="dark"] .sit-nao-sei  { background:rgba(var(--marca-rgb),.10) }
+
+/* Cartão de empresa encerrada perde destaque: continua na base, mas não
+   compete com quem ainda pode comprar. */
+.cartao:has(.sit-encerrada), .linha:has(.sit-encerrada){ opacity:.62 }
+
+/* ---- editor ---- */
+.bloco-hora{ display:grid; gap:12px; padding:14px }
+.hora-sit{ display:grid; gap:6px }
+.hora-sit > span{ font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--tinta-2) }
+.hora-sit .mover{ width:100%; font-size:13px; padding:9px 11px }
+
+.horarios-editor{ display:grid; gap:6px }
+.hora-linha{ display:flex; align-items:center; gap:10px }
+.hora-linha > span{
+  flex:0 0 34px; font-size:11.5px; color:var(--tinta-2);
+  text-transform:uppercase; letter-spacing:.03em;
+}
+.hora-linha input{
+  flex:1; min-width:0; font:inherit; font-size:12.5px;
+  padding:7px 10px; border:0; border-radius:var(--r-p);
+  background:var(--fundo); color:var(--tinta); box-shadow:var(--fundo-p);
+}
+.hora-linha input:focus{ outline:none; box-shadow:var(--fundo-p), 0 0 0 2px var(--acento) }
+.hora-dica{ font-size:11.5px; color:var(--tinta-2); margin-top:2px }
+.hora-dica code{
+  font-family:var(--mono, ui-monospace, monospace); font-size:11px;
+  padding:1px 5px; border-radius:4px; background:rgba(var(--sombra-rgb),.07);
+}
+[data-theme="dark"] .hora-dica code{ background:rgba(var(--marca-rgb),.12) }
