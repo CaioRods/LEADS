@@ -15,9 +15,10 @@
       relevo — trilha de 5 pontos na etapa, barras na proximidade, palavra
       da faixa no score, glifo cheio/riscado no telefone.
 
-   Acento único: terracota #B4552F — a terra roxa da região de Prudente e a
-   crosta das 10 padarias da lista. É o único calor sobre um fundo frio, então
-   aparece pouco e sempre quer dizer a mesma coisa: aqui é o ponto quente.
+   Acento único: azul fosco #41708F — dessaturado de propósito, para pousar
+   sobre o fundo cinza-frio sem gritar. Aparece pouco e sempre quer dizer a
+   mesma coisa: aqui é o ponto quente. O tom de texto (#2F5875) mede 6,27:1
+   sobre o fundo — o mesmo contraste do terracota que ele substituiu.
 =========================================================================== */
 
 :root{
@@ -27,39 +28,63 @@
 
   --tinta:      #2A3444;             /* 10.3:1 sobre o fundo */
   --tinta-2:    #5A6472;             /* 4.96:1 sobre o fundo */
-  --acento:     #B4552F;
-  --acento-tinta:#8A3D1E;            /* 6.2:1 sobre o fundo — para texto */
-  --acento-fraco: rgba(180, 85, 47, .14);
+  --acento:     #41708F;
+  --acento-tinta:#2F5875;            /* 6.27:1 sobre o fundo — para texto */
+  --acento-fraco: rgba(65, 112, 143, .16);
 
   /* ---- escada de relevo. g ≈ 320px · m ≈ 140px · p ≈ 40px ----
      Os valores de m e p são os de g escalados por 0.44 e 0.16, senão
      uma sombra de 43px de blur num controle de 40px vira borrão. */
+  /* IMPORTANTE — por que cada valor tem QUATRO sombras.
+     O CSS não interpola entre uma sombra externa e uma `inset`: ele troca de
+     uma para a outra num salto seco. Como o repouso é externo e o afundado é
+     inset, a transição elevado→afundado simplesmente não existia, por mais
+     duração que se colocasse no `transition`.
+     A saída é toda camada declarar as MESMAS quatro sombras, na mesma ordem
+     (2 externas + 2 inset), e apagar as que não usa levando a opacidade a
+     zero. Aí o navegador tem o que interpolar, e o movimento acontece. */
   --relevo-g:
     -31px -31px 43px rgba(var(--luz-rgb), 1),
-     8px 8px 10px rgba(var(--sombra-rgb), .04);
+     8px 8px 10px rgba(var(--sombra-rgb), .04),
+    inset -33px -33px 46px rgba(var(--luz-rgb), 0),
+    inset 28px 28px 54px rgba(var(--sombra-rgb), 0);
   --relevo-m:
     -14px -14px 20px rgba(var(--luz-rgb), .95),
-     4px 4px 6px rgba(var(--sombra-rgb), .05);
+     4px 4px 6px rgba(var(--sombra-rgb), .05),
+    inset -14px -14px 20px rgba(var(--luz-rgb), 0),
+    inset 12px 12px 24px rgba(var(--sombra-rgb), 0);
   --relevo-p:
     -5px -5px 7px rgba(var(--luz-rgb), .9),
-     1.5px 1.5px 2px rgba(var(--sombra-rgb), .07);
+     1.5px 1.5px 2px rgba(var(--sombra-rgb), .07),
+    inset -5px -5px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 8px rgba(var(--sombra-rgb), 0);
 
   /* hover = mesmo relevo, mais alto */
   --relevo-m-alto:
     -18px -18px 27px rgba(var(--luz-rgb), 1),
-     7px 7px 13px rgba(var(--sombra-rgb), .07);
+     7px 7px 13px rgba(var(--sombra-rgb), .07),
+    inset -14px -14px 20px rgba(var(--luz-rgb), 0),
+    inset 12px 12px 24px rgba(var(--sombra-rgb), 0);
   --relevo-p-alto:
     -7px -7px 10px rgba(var(--luz-rgb), 1),
-     3px 3px 5px rgba(var(--sombra-rgb), .09);
+     3px 3px 5px rgba(var(--sombra-rgb), .09),
+    inset -5px -5px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 8px rgba(var(--sombra-rgb), 0);
 
   /* ---- escada de poço (afundado) ---- */
   --fundo-g:
+    -31px -31px 43px rgba(var(--luz-rgb), 0),
+     8px 8px 10px rgba(var(--sombra-rgb), 0),
     inset -33px -33px 46px rgba(var(--luz-rgb), .64),
     inset 28px 28px 54px rgba(var(--sombra-rgb), .16);
   --fundo-m:
+    -14px -14px 20px rgba(var(--luz-rgb), 0),
+     4px 4px 6px rgba(var(--sombra-rgb), 0),
     inset -14px -14px 20px rgba(var(--luz-rgb), .7),
     inset 12px 12px 24px rgba(var(--sombra-rgb), .13);
   --fundo-p:
+    -5px -5px 7px rgba(var(--luz-rgb), 0),
+     1.5px 1.5px 2px rgba(var(--sombra-rgb), 0),
     inset -5px -5px 7px rgba(var(--luz-rgb), .75),
     inset 4px 4px 8px rgba(var(--sombra-rgb), .11);
 
@@ -77,6 +102,12 @@
 
   --curva: cubic-bezier(.4, 0, .2, 1);
   --t: 190ms var(--curva);
+
+  /* O relevo tem tempo próprio, mais longo que o resto: afundar é um
+     movimento físico, e a 190ms ele ainda lê como um piscar. A curva sai
+     rápido e chega devagar, como algo que assenta. */
+  --curva-relevo: cubic-bezier(.34, .78, .26, 1);
+  --t-relevo: 300ms var(--curva-relevo);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -124,6 +155,7 @@ button{background:none;border:0;cursor:pointer}
   font-size:14px;font-weight:500;color:var(--tinta-2);text-align:left;
   transition:box-shadow var(--t), color var(--t), transform var(--t);
 }
+.nav-item{transition:box-shadow var(--t-relevo), color var(--t), transform var(--t)}
 .nav-item:hover{box-shadow:var(--relevo-p);color:var(--tinta)}
 .nav-item:active{box-shadow:var(--fundo-p)}
 .nav-item[aria-current="page"]{
@@ -170,6 +202,7 @@ button{background:none;border:0;cursor:pointer}
   display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
   transition:box-shadow var(--t), color var(--t);
 }
+.botao{transition:box-shadow var(--t-relevo), color var(--t)}
 .botao:hover{box-shadow:var(--relevo-p-alto)}
 .botao:active{box-shadow:var(--fundo-p)}
 .botao svg{color:var(--tinta-2)}
@@ -194,6 +227,7 @@ a.botao{text-decoration:none}
   padding:7px 12px;border-radius:var(--r-p);text-align:left;min-width:78px;
   transition:box-shadow var(--t);
 }
+.etapa{transition:box-shadow var(--t-relevo)}
 .etapa:hover{box-shadow:var(--relevo-p)}
 .etapa[aria-pressed="true"]{box-shadow:var(--fundo-p)}
 .etapa .n{display:block;font-size:22px;font-weight:700;letter-spacing:-.035em;line-height:1.1}
@@ -254,6 +288,7 @@ a.botao{text-decoration:none}
   display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
   transition:box-shadow var(--t), color var(--t);
 }
+.chip{transition:box-shadow var(--t-relevo), color var(--t)}
 .chip:hover{box-shadow:var(--relevo-p);color:var(--tinta)}
 .chip[aria-pressed="true"]{box-shadow:var(--fundo-p);color:var(--acento-tinta)}
 .chip .c{font-size:12px;font-weight:600;opacity:.75}
@@ -401,14 +436,32 @@ a.botao{text-decoration:none}
 /* ============================== PAINEL DE DETALHE ============================== */
 .veu{position:fixed;inset:0;z-index:40;background:transparent}
 .veu.escuro{background:rgba(var(--sombra-rgb),.22)}
+.painel.saindo{ animation:painel-sai 300ms cubic-bezier(.5,.05,.75,.6) forwards !important }
 .painel{
   position:fixed;top:14px;right:14px;bottom:14px;width:452px;z-index:41;
   background:var(--fundo);border-radius:var(--r-g);
   box-shadow:-31px -31px 43px rgba(var(--luz-rgb),1), 8px 8px 26px rgba(var(--sombra-rgb),.16);
   display:flex;flex-direction:column;overflow:hidden;
-  animation:entra 220ms var(--curva);
+  /* Entra deslizando da borda direita, de fora da tela. Antes eram 20px de
+     deslocamento com fade — lia como um piscar, não como um painel chegando.
+     A curva sai rápida e freia longo, então o painel parece ter peso e
+     encostar, em vez de aparecer. */
+  animation:painel-entra 420ms cubic-bezier(.22,.78,.24,1) both;
+  will-change:transform;
 }
-@keyframes entra{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+@keyframes painel-entra{
+  from{ transform:translateX(calc(100% + 22px)); opacity:.4 }
+  to  { transform:none; opacity:1 }
+}
+@keyframes painel-sai{
+  from{ transform:none; opacity:1 }
+  to  { transform:translateX(calc(100% + 22px)); opacity:.35 }
+}
+
+/* Quem pediu menos movimento recebe só o fade. */
+@media (prefers-reduced-motion: reduce){
+  .painel{ animation:surgir 200ms var(--curva) both }
+}
 
 .painel-topo{padding:22px 24px 16px;flex:none}
 .painel-cab{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -417,7 +470,7 @@ a.botao{text-decoration:none}
 .avatar-g{width:64px;height:64px;flex:none;border-radius:20px;background:var(--fundo);box-shadow:var(--relevo-p);display:grid;place-items:center;position:relative;overflow:hidden}
 .avatar-g .glifo{position:absolute;inset:0;display:grid;place-items:center;color:var(--tinta);opacity:.12}
 .avatar-g .iniciais{position:relative;font-size:21px;font-weight:700;letter-spacing:-.02em}
-.avatar-g img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:20px}
+.avatar-g img{ loading: lazy;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:20px}
 .fechar{
   width:38px;height:38px;flex:none;border-radius:var(--r-p);
   box-shadow:var(--relevo-p);display:grid;place-items:center;color:var(--tinta-2);
@@ -491,6 +544,7 @@ select.suave:focus{box-shadow:var(--fundo-p), 0 0 0 2px var(--acento)}
 select.suave.pq{height:38px;font-size:13px}
 
 /* ============================== MODAL ============================== */
+.modal.saindo { animation: sai-m 200ms var(--curva) forwards !important; }
 .modal{
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:41;
   width:640px;max-height:calc(100vh - 60px);overflow-y:auto;
@@ -631,7 +685,7 @@ select.suave.pq{height:38px;font-size:13px}
    Verde = mais chance · âmbar = meio · vermelho = menos.
    A luminosidade fica travada em 91%, igual ao fundo, senão o relevo se perde.
 =========================================================================== */
-.cartao, .linha{ transition:box-shadow var(--t), transform var(--t),
+.cartao, .linha{ transition:box-shadow var(--t-relevo), transform var(--t-relevo),
                             background-color 620ms var(--curva) }
 
 .app.chance .cartao{
@@ -780,3 +834,560 @@ select.suave.pq{height:38px;font-size:13px}
 .foto-op:active{ box-shadow:var(--fundo-p) }
 .foto-op img{ width:100%;height:100%;object-fit:cover;display:block }
 .foto-op[disabled]{ opacity:.5 }
+
+/* ------------------------- PRÉVIA DA FOTO -------------------------
+   Abre por cima do painel de detalhe, como camada extra — o painel
+   continua montado atrás. Fecha no véu, no X ou no Esc. */
+.previa{ position:fixed;inset:0;z-index:50;display:grid;place-items:center }
+.previa-veu{ position:absolute;inset:0;background:rgba(var(--sombra-rgb),.42) }
+.previa-caixa.saindo { animation: sai-p 200ms var(--curva) forwards !important; }
+.previa-caixa{
+  position:relative;z-index:1;margin:0;padding:14px;
+  max-width:min(78vw,720px);max-height:82vh;
+  display:flex;flex-direction:column;gap:10px;
+  background:var(--fundo);border-radius:var(--r-g);
+  box-shadow:-31px -31px 43px rgba(var(--luz-rgb),1), 10px 10px 40px rgba(var(--sombra-rgb),.18);
+  animation:entra-p 200ms var(--curva);
+}
+@keyframes entra-p{ from{transform:scale(.97);opacity:0}
+
+@keyframes sai-m{from{transform:translate(-50%,-50%) scale(1);opacity:1}to{transform:translate(-50%,-48%) scale(.98);opacity:0}}
+@keyframes sai-p{from{transform:scale(1);opacity:1}to{transform:scale(.97);opacity:0}}
+@keyframes sai{from{transform:translateY(0);opacity:1}to{transform:translateY(-12px);opacity:0}}
+ to{transform:scale(1);opacity:1} }
+.previa-caixa img{
+  display:block;max-width:100%;max-height:calc(82vh - 76px);
+  object-fit:contain;border-radius:calc(var(--r-g) - 8px);
+}
+.previa-caixa figcaption{
+  display:flex;align-items:center;gap:12px;padding:0 4px 2px;font-size:13px;
+}
+.previa-nome{
+  flex:1;min-width:0;font-weight:700;letter-spacing:-.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.previa-caixa figcaption a{ font-weight:600;opacity:.72 }
+.previa-caixa figcaption a:hover{ opacity:1 }
+.previa-x{ position:absolute;top:12px;right:12px }
+
+
+/* ========================= TEMA =========================
+   Light é o padrão (definido em :root, acima).
+   Dark só entra quando o usuário liga: <html data-theme="dark">.
+   Nada de prefers-color-scheme — a preferência do SO não manda aqui.
+   ========================================================= */
+
+[data-theme="dark"]{
+  /* A página é MAIS ESCURA que as superfícies: é isso que faz o cartão
+     existir. Antes fundo e cartão eram a mesma cor e o relevo sumia. */
+  --pagina:     #0E0F13;
+  --fundo:      #1C1E26;   /* superfície dos cartões/painéis */
+  --fundo-alto: #242733;   /* superfície elevada: hover, chat, popover */
+
+  --luz-rgb:    72, 78, 96;   /* brilho real, bem acima do #1C1E26 */
+  --sombra-rgb: 0, 0, 0;
+
+  --tinta:      #ECEEF3;
+  --tinta-2:    #9AA3B4;
+  --acento:     #6E9BBC;
+  --acento-tinta:#8FB4CE;            /* 7,59:1 sobre a superfície escura */
+  --acento-fraco: rgba(110, 155, 188, .20);
+
+  --contorno:   rgba(255, 255, 255, .075);
+
+  /* Escada de relevo redesenhada: no escuro a sombra precisa de MUITA
+     mais opacidade, senão preto sobre quase-preto não aparece. */
+  /* Mesma estrutura de quatro sombras do tema claro — ver a nota lá em cima:
+     é o que permite a transição entre elevado e afundado acontecer. */
+  --relevo-g:
+    -26px -26px 44px rgba(var(--luz-rgb), .34),
+     18px 18px 38px rgba(var(--sombra-rgb), .62),
+    inset -24px -24px 42px rgba(var(--luz-rgb), 0),
+    inset 22px 22px 46px rgba(var(--sombra-rgb), 0);
+  --relevo-m:
+    -12px -12px 22px rgba(var(--luz-rgb), .30),
+     10px 10px 22px rgba(var(--sombra-rgb), .56),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p:
+    -4px -4px 8px rgba(var(--luz-rgb), .26),
+     3px 3px 8px rgba(var(--sombra-rgb), .50),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+
+  --relevo-m-alto:
+    -16px -16px 28px rgba(var(--luz-rgb), .40),
+     14px 14px 30px rgba(var(--sombra-rgb), .70),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p-alto:
+    -6px -6px 11px rgba(var(--luz-rgb), .34),
+     5px 5px 11px rgba(var(--sombra-rgb), .62),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+
+  --fundo-g:
+    -26px -26px 44px rgba(var(--luz-rgb), 0),
+     18px 18px 38px rgba(var(--sombra-rgb), 0),
+    inset -24px -24px 42px rgba(var(--luz-rgb), .22),
+    inset 22px 22px 46px rgba(var(--sombra-rgb), .70);
+  --fundo-m:
+    -12px -12px 22px rgba(var(--luz-rgb), 0),
+     10px 10px 22px rgba(var(--sombra-rgb), 0),
+    inset -12px -12px 20px rgba(var(--luz-rgb), .20),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), .62);
+  --fundo-p:
+    -4px -4px 8px rgba(var(--luz-rgb), 0),
+     3px 3px 8px rgba(var(--sombra-rgb), 0),
+    inset -4px -4px 7px rgba(var(--luz-rgb), .18),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), .55);
+
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .55),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .22);
+}
+
+[data-theme="dark"] body{ background: var(--pagina); color: var(--tinta); }
+
+/* Fio de contorno: a segunda prova de que ali começa uma superfície.
+   Sombra sozinha no escuro é frágil; a linha garante o recorte. */
+[data-theme="dark"] .cartao,
+[data-theme="dark"] .lista,
+[data-theme="dark"] .bloco,
+[data-theme="dark"] .painel,
+[data-theme="dark"] .previa-caixa,
+[data-theme="dark"] .trilho,
+[data-theme="dark"] #chatArea{
+  border: 1px solid var(--contorno);
+}
+
+[data-theme="dark"] .cartao:hover{ background: var(--fundo-alto); }
+
+/* O trilho é a página, não um cartão: fica no tom escuro do fundo. */
+[data-theme="dark"] .trilho{ background: var(--pagina); }
+
+/* Imagem no escuro: sem véu branco atrás. */
+[data-theme="dark"] .cartao img,
+[data-theme="dark"] .previa-caixa img{ background: var(--fundo-alto); }
+
+
+/* ========================= WHATSAPP ========================= */
+
+/* A altura vem por flex, não por height:100%: o contêiner pai (.area) não
+   tem altura definida, então a porcentagem resolvia para zero e a aba inteira
+   ficava 0x0 — presente no DOM, invisível na tela. */
+#visaoWhatsApp{ display:flex; flex-direction:column; min-height:0 }
+
+#painelWhatsApp{
+  flex:1; min-height:0; display:flex; flex-direction:column;
+  animation: entra-p 220ms var(--curva);
+}
+
+.wpp-vazio{
+  flex:1; display:grid; place-items:center; text-align:center;
+  color:var(--tinta-2); padding:40px;
+}
+.wpp-vazio h2{ color:var(--tinta); margin-bottom:8px }
+
+.wpp-grade{ display:flex; flex:1; gap:18px; min-height:0 }
+
+.wpp-lista{
+  flex:0 0 240px; overflow-y:auto; padding:10px;
+  background:var(--fundo); border-radius:var(--r-g);
+  box-shadow:var(--relevo-m);
+}
+
+.wpp-conversa{
+  display:flex; align-items:center; gap:11px;
+  padding:10px 12px; margin-bottom:8px; border-radius:var(--r-m);
+  cursor:pointer; color:var(--tinta);
+  transition: box-shadow var(--t), color var(--t);
+}
+.wpp-conversa .avatar{ flex:0 0 auto }
+.wpp-txt{ min-width:0; flex:1 }
+.wpp-conversa:hover{ box-shadow:var(--relevo-p) }
+.wpp-conversa[aria-selected="true"]{ box-shadow:var(--fundo-p); color:var(--acento-tinta) }
+.wpp-txt b{ display:block; font-size:14px; line-height:1.25 }
+.wpp-txt > span{
+  display:block; font-size:12px; color:var(--tinta-2);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.wpp-marca.fria{ color:var(--tinta-2); background:rgba(var(--sombra-rgb),.07) }
+[data-theme="dark"] .wpp-marca.fria{ background:rgba(var(--marca-rgb),.12) }
+.wpp-nada{ padding:18px 14px; color:var(--tinta-2); font-size:13px }
+
+#chatArea{
+  flex:1; display:flex; flex-direction:column; min-height:0;
+  background:var(--fundo); border-radius:var(--r-g);
+  box-shadow:var(--relevo-m); overflow:hidden;
+}
+.chat-cabeca{
+  display:flex; align-items:center; gap:12px;
+  padding:14px 18px; font-weight:600; box-shadow:var(--sulco);
+}
+.chat-quem{ flex:1; min-width:0 }
+.chat-quem b{ display:block; font-size:15px }
+.chat-quem > span{ display:block; font-weight:400; font-size:12px; color:var(--tinta-2) }
+
+/* A ficha: o que você precisa saber antes de escrever a primeira frase. */
+.wpp-ficha{ padding:14px 18px; box-shadow:var(--sulco) }
+.wpp-ficha-topo{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px }
+
+.wpp-dados{ margin:0; display:grid; gap:7px }
+.wpp-dados > div{ display:flex; gap:10px; font-size:13px }
+.wpp-dados dt{
+  flex:0 0 78px; color:var(--tinta-2); font-size:11px;
+  text-transform:uppercase; letter-spacing:.05em; padding-top:2px;
+}
+.wpp-dados dd{ margin:0; flex:1; min-width:0; color:var(--tinta) }
+.wpp-dados a{ color:var(--acento-tinta) }
+.wpp-sem{ color:var(--acento-tinta) }
+
+.wpp-gancho{
+  margin:12px 0 0; padding:9px 12px; border-radius:var(--r-p);
+  background:var(--acento-fraco); color:var(--acento-tinta); font-size:13px;
+}
+
+#mensagensArea{
+  flex:1; overflow-y:auto; padding:18px;
+  display:flex; flex-direction:column; gap:8px;
+}
+
+.msg{ display:flex }
+.msg.saida{ justify-content:flex-end }
+.msg .balao{
+  max-width:70%; padding:9px 14px; border-radius:var(--r-m);
+  font-size:14px; word-wrap:break-word; box-shadow:var(--relevo-p);
+  background:var(--fundo); color:var(--tinta);
+}
+.msg.saida .balao{ background:var(--acento-fraco); color:var(--acento-tinta) }
+.msg .hora{ font-size:11px; opacity:.65; margin-top:3px; text-align:right }
+
+.chat-rodape{ padding:14px; display:flex; gap:10px; box-shadow:var(--sulco) }
+
+#inputMsg{
+  flex:1; font:inherit; padding:10px 14px; height:44px; resize:none;
+  border:0; border-radius:var(--r-m); background:var(--fundo);
+  color:var(--tinta); box-shadow:var(--fundo-p);
+}
+#inputMsg:focus{ outline:0; box-shadow:var(--fundo-p), 0 0 0 2px var(--acento) }
+
+/* Indicadores pequenos são pintados com --sombra-rgb, que no escuro é preto:
+   preto sobre quase-preto some. No escuro eles viram tinta clara. */
+[data-theme="dark"]{ --marca-rgb: 200, 208, 224; }
+
+[data-theme="dark"] .medidor i,
+[data-theme="dark"] .score .trilho i,
+[data-theme="dark"] .trilha i,
+[data-theme="dark"] .barras i{
+  background: rgba(var(--marca-rgb), .34);
+}
+[data-theme="dark"] .medidor i.fora{ background: rgba(var(--marca-rgb), .12) }
+[data-theme="dark"] .score .trilho i{ background: rgba(var(--marca-rgb), .55) }
+
+[data-theme="dark"] .selo.s-descartado{ border-color: rgba(var(--marca-rgb), .30) }
+[data-theme="dark"] .selo.s-descartado .trilha i{
+  background: none; box-shadow: inset 0 0 0 1px rgba(var(--marca-rgb), .28);
+}
+
+[data-theme="dark"] .bloco + .bloco{ box-shadow: inset 1px 0 0 rgba(var(--marca-rgb), .10) }
+[data-theme="dark"] .area::-webkit-scrollbar-thumb{
+  background: rgba(var(--marca-rgb), .18); border-color: var(--pagina);
+}
+
+/* Cabeçalho da coluna de leads na aba WhatsApp */
+.wpp-cabeca{
+  padding:10px 14px 14px; font-size:12px; color:var(--tinta-2);
+  letter-spacing:.04em; text-transform:uppercase;
+}
+.wpp-cabeca b{ color:var(--acento-tinta); font-size:14px }
+
+/* "respondeu" é o estado que importa: o lead devolveu mensagem. */
+.wpp-marca{
+  display:inline-block; margin-top:5px; font-style:normal;
+  font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--acento-tinta); background:var(--acento-fraco);
+  padding:2px 7px; border-radius:99px;
+}
+
+.chat-cabeca span{
+  display:block; font-weight:400; font-size:12px;
+  color:var(--tinta-2); margin-top:2px;
+}
+
+#btnEnviarMsg[disabled]{ opacity:.5; cursor:default }
+
+/* As duas colunas roláveis da aba WhatsApp precisam da mesma barra discreta
+   de .area — sem isto o navegador desenha a barra branca padrão, que no tema
+   escuro vira um risco luminoso no meio da tela. */
+.wpp-lista::-webkit-scrollbar,
+#mensagensArea::-webkit-scrollbar{ width:10px }
+
+.wpp-lista::-webkit-scrollbar-thumb,
+#mensagensArea::-webkit-scrollbar-thumb{
+  background: rgba(var(--sombra-rgb), .13);
+  border-radius:5px; border:3px solid var(--fundo);
+}
+
+[data-theme="dark"] .wpp-lista::-webkit-scrollbar-thumb,
+[data-theme="dark"] #mensagensArea::-webkit-scrollbar-thumb{
+  background: rgba(var(--marca-rgb), .18); border-color: var(--fundo);
+}
+
+/* Nota do rodapé do chat: o envio sai pelo WhatsApp, não pelo app. Melhor
+   dizer isso na tela do que deixar a pessoa descobrir ao clicar. */
+.chat-nota{
+  padding:0 14px 12px; margin:0;
+  font-size:12px; color:var(--tinta-2); text-align:center;
+}
+
+#inputMsg::-webkit-scrollbar{ width:8px }
+#inputMsg::-webkit-scrollbar-thumb{
+  background: rgba(var(--sombra-rgb), .16); border-radius:4px;
+  border:2px solid var(--fundo);
+}
+[data-theme="dark"] #inputMsg::-webkit-scrollbar-thumb{
+  background: rgba(var(--marca-rgb), .20); border-color: var(--fundo);
+}
+
+/* Nomes longos ("CDI Hospital Nossa Senhora das Graças") quebravam em quatro
+   linhas e inchavam a fileira, deixando a lista impossível de varrer com o
+   olho. Duas linhas no máximo, com reticências. */
+.wpp-txt b{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.chat-quem b{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.chat-cabeca{ align-items:flex-start }
+.chat-cabeca .avatar-g{ flex:0 0 auto }
+.chat-cabeca .botao{ flex:0 0 auto; white-space:nowrap }
+
+/* ===== MODO CHANCE NA ABA WHATSAPP =====
+   Mesma gramática dos cartões: o matiz vem do score, do vermelho (menos
+   chance) ao verde (mais chance). Antes o modo não existia aqui, então a
+   mesma informação sumia ao trocar de aba. */
+.wpp-conversa{ transition: box-shadow var(--t), color var(--t),
+                           background-color 620ms var(--curva) }
+
+.app.chance .wpp-conversa{
+  background: hsl(var(--hc) 50% 91%);
+  animation: tingir 700ms var(--curva) both;
+  animation-delay: var(--atraso, 0ms);
+}
+.app.chance .wpp-conversa .avatar{ background: hsl(var(--hc) 38% 86%) }
+.app.chance .wpp-conversa[aria-selected="true"]{ box-shadow: var(--fundo-p) }
+
+/* A ficha do lead em foco também se tinge, senão a cor da lista não se
+   conecta com quem está aberto ao lado. */
+.app.chance .wpp-ficha{ background: hsl(var(--hc) 46% 93%) }
+.app.chance .chat-cabeca{ background: hsl(var(--hc) 44% 94%) }
+
+/* No escuro a mesma escala precisa de muito menos luminosidade, senão vira
+   um bloco pastel brilhante sobre o fundo quase preto. */
+[data-theme="dark"] .app.chance .wpp-conversa{ background: hsl(var(--hc) 26% 20%) }
+[data-theme="dark"] .app.chance .wpp-conversa .avatar{ background: hsl(var(--hc) 24% 26%) }
+[data-theme="dark"] .app.chance .wpp-ficha{ background: hsl(var(--hc) 22% 17%) }
+[data-theme="dark"] .app.chance .chat-cabeca{ background: hsl(var(--hc) 22% 19%) }
+[data-theme="dark"] .app.chance .cartao{ background: hsl(var(--hc) 26% 21%) }
+[data-theme="dark"] .app.chance .corpo .linha{ background: hsl(var(--hc) 24% 19%) }
+[data-theme="dark"] .app.chance .cartao .avatar{ background: hsl(var(--hc) 24% 27%) }
+
+/* Cabeça da lista: o botão do modo chance mora aqui, com a escala de cor ao
+   lado quando ligado — a mesma legenda "menos chance → mais chance". */
+.wpp-cabeca{ display:flex; align-items:center; gap:9px; flex-wrap:wrap }
+.wpp-cabeca #wppChance{ text-transform:none; letter-spacing:0; font-size:12px }
+.wpp-escala{
+  flex:1 1 100%; height:7px; border-radius:4px;
+  background:linear-gradient(90deg,hsl(8 46% 78%),hsl(45 52% 76%),hsl(145 42% 74%));
+}
+
+/* ===========================================================================
+   SPLASH E SKELETONS
+   A regra dos dois: nada de spinner girando no vazio. A splash mostra a marca
+   enquanto o servidor responde; o skeleton mostra a FORMA do que vem aí, para
+   a página não saltar quando o conteúdo chega.
+=========================================================================== */
+
+#splash{
+  position:fixed; inset:0; z-index:90;
+  display:grid; place-items:center;
+  background:var(--fundo);
+  transition:opacity 420ms var(--curva);
+}
+#splash.saindo{ opacity:0; pointer-events:none }
+
+.splash-miolo{ display:grid; justify-items:center; gap:16px; animation:surgir 460ms var(--curva) both }
+.splash-miolo img{ border-radius:22px; box-shadow:var(--relevo-m) }
+
+.splash-nome{
+  font-size:15px; font-weight:650; letter-spacing:-.01em; color:var(--tinta);
+}
+
+/* Barra indeterminada: vai e volta, sem fingir que sabe a porcentagem. */
+.splash-barra{
+  width:132px; height:6px; border-radius:4px;
+  box-shadow:var(--fundo-p); overflow:hidden;
+}
+.splash-barra i{
+  display:block; width:42%; height:100%; border-radius:4px;
+  background:var(--acento); opacity:.75;
+  animation:splash-vai 1150ms var(--curva) infinite;
+}
+@keyframes splash-vai{
+  0%  { transform:translateX(-105%) }
+  100%{ transform:translateX(245%) }
+}
+
+/* ---- Skeletons ---- */
+@keyframes brilho{ from{ background-position:-180% 0 } to{ background-position:180% 0 } }
+
+.sk{
+  border-radius:8px;
+  /* .07/.13 sumia no fundo claro: o skeleton precisa LER como conteúdo em
+     espera, não como um borrão. */
+  background:linear-gradient(90deg,
+    rgba(var(--sombra-rgb),.13) 28%,
+    rgba(var(--sombra-rgb),.22) 50%,
+    rgba(var(--sombra-rgb),.13) 72%);
+  background-size:180% 100%;
+  animation:brilho 1400ms linear infinite;
+}
+[data-theme="dark"] .sk{
+  background:linear-gradient(90deg,
+    rgba(var(--marca-rgb),.10) 28%,
+    rgba(var(--marca-rgb),.20) 50%,
+    rgba(var(--marca-rgb),.10) 72%);
+  background-size:180% 100%;
+}
+
+.sk-cartao{
+  background:var(--fundo); border-radius:var(--r-g); box-shadow:var(--relevo-m);
+  padding:20px; display:grid; gap:13px;
+  animation:surgir 380ms var(--curva) both; animation-delay:var(--atraso,0ms);
+}
+.sk-topo{ display:flex; align-items:center; gap:13px }
+.sk-avatar{ width:46px; height:46px; border-radius:14px; flex:0 0 auto }
+.sk-linhas{ flex:1; display:grid; gap:7px }
+
+.sk-l{ height:11px }
+.sk-l.curta{ width:45% }
+.sk-l.media{ width:70% }
+.sk-l.longa{ width:88% }
+
+.sk-lista{ display:grid; gap:9px; padding:10px }
+.sk-fila{ display:flex; align-items:center; gap:11px; padding:10px 12px }
+
+/* Quem prefere menos movimento não precisa de brilho varrendo a tela. */
+@media (prefers-reduced-motion: reduce){
+  .sk{ animation:none }
+  .splash-barra i{ animation:none; width:100% }
+  .sk-cartao{ animation:none }
+}
+
+/* A logo no trilho é uma imagem agora, não um SVG que herdava currentColor. */
+.marca-selo img{ display:block; border-radius:9px }
+
+/* ===========================================================================
+   MAPA — interruptor Rotas | Mapa, e o mapa real
+=========================================================================== */
+
+.mapa-troca{
+  display:inline-flex; gap:4px; padding:4px; margin-bottom:18px;
+  border-radius:var(--r-m); box-shadow:var(--fundo-p);
+}
+.mapa-troca button{
+  padding:8px 20px; border:0; background:transparent; cursor:pointer;
+  border-radius:var(--r-p); font:inherit; font-size:13px; font-weight:600;
+  color:var(--tinta-2); transition:box-shadow var(--t), color var(--t);
+}
+.mapa-troca button:hover{ color:var(--tinta) }
+.mapa-troca button[aria-selected="true"]{
+  background:var(--fundo); box-shadow:var(--relevo-p); color:var(--acento-tinta);
+}
+
+.mapa-caixa{
+  background:var(--fundo); border-radius:var(--r-g); box-shadow:var(--relevo-m);
+  padding:14px; display:flex; flex-direction:column; gap:12px; min-height:0; flex:1;
+}
+#mapaReal{
+  flex:1; min-height:420px; border-radius:var(--r-m); overflow:hidden;
+  box-shadow:var(--fundo-p);
+}
+.mapa-erro{ padding:40px; text-align:center; color:var(--tinta-2) }
+
+/* Pino: a cor carrega a faixa do score; o tracejado carrega a incerteza da
+   coordenada. Duas informações, dois canais visuais distintos. */
+.pin{
+  display:block; width:15px; height:15px; border-radius:50%;
+  border:2.5px solid var(--fundo);
+  box-shadow:0 1px 4px rgba(var(--sombra-rgb),.5);
+}
+.pin.quente{ background:#C4553A }
+.pin.morno { background:#C9A227 }
+.pin.frio  { background:#5B7A94 }
+.pin.aprox { border-style:dashed; opacity:.72 }
+
+.mapa-legenda{
+  display:flex; gap:18px; flex-wrap:wrap;
+  font-size:12px; color:var(--tinta-2);
+}
+.mapa-legenda span{ display:inline-flex; align-items:center; gap:7px }
+.mapa-legenda .pin{ width:12px; height:12px; border-width:2px }
+
+/* Popup do Leaflet vestido com a linguagem do app, senão fica um balão
+   branco de navegador no meio do neumorfismo. */
+.leaflet-popup-content-wrapper{
+  background:var(--fundo); color:var(--tinta);
+  border-radius:var(--r-m); box-shadow:var(--relevo-m);
+}
+.leaflet-popup-tip{ background:var(--fundo) }
+.leaflet-popup-content{ margin:14px 16px; font:inherit }
+.leaflet-container{ background:var(--fundo); font:inherit }
+
+.mapa-pop{ display:grid; gap:5px; font-size:13px; min-width:190px }
+.mapa-pop b{ font-size:14px }
+.mapa-pop .cat{ color:var(--acento-tinta); font-size:12px }
+.mapa-pop span{ color:var(--tinta-2) }
+.mapa-pop .aviso-aprox{ color:var(--acento-tinta); font-size:11px; font-style:italic }
+.mapa-pop .botao{ margin-top:7px; justify-content:center }
+
+/* Os tiles do OSM são claros; no tema escuro eles ofuscam ao lado do resto.
+   Um leve rebaixamento os traz para o mesmo nível de luz da interface. */
+/* O OSM padrão é saturado — mata verde, água azul, rodovia vermelha — e
+   brigava com a interface sem cor. Em vez de trocar de provedor (o Carto
+   passou a exigir chave), o tema é aplicado por filtro sobre os tiles.
+   No claro: dessatura e clareia até virar o mesmo cinza do app.
+   No escuro: inverte e gira o matiz, truque clássico que escurece o mapa
+   mantendo os rótulos legíveis em vez de virar um negativo colorido. */
+.leaflet-tile-pane{ filter:saturate(.24) brightness(1.07) contrast(.93) }
+
+[data-theme="dark"] .leaflet-tile-pane{
+  filter:invert(1) hue-rotate(180deg) saturate(.22) brightness(.94) contrast(.92);
+}
+[data-theme="dark"] .leaflet-control-attribution{
+  background:rgba(28,30,38,.85) !important; color:var(--tinta-2) !important;
+}
+[data-theme="dark"] .leaflet-control-attribution a{ color:var(--acento-tinta) !important }
+[data-theme="dark"] .leaflet-bar a{
+  background:var(--fundo); color:var(--tinta); border-color:var(--contorno);
+}
+
+/* Controles do Leaflet vestidos como os do app: relevo em vez de caixinha
+   branca com borda cinza. */
+.leaflet-bar{ border:0 !important; box-shadow:var(--relevo-p) !important; border-radius:var(--r-p) !important; overflow:hidden }
+.leaflet-bar a{
+  background:var(--fundo) !important; color:var(--tinta) !important;
+  border-bottom:1px solid rgba(var(--sombra-rgb),.08) !important;
+  width:32px !important; height:32px !important; line-height:32px !important;
+}
+.leaflet-bar a:hover{ background:var(--fundo) !important; color:var(--acento-tinta) !important }
+.leaflet-bar a:last-child{ border-bottom:0 !important }
+
+.leaflet-control-attribution{
+  background:rgba(var(--luz-rgb),.82) !important;
+  color:var(--tinta-2) !important; font-size:10px !important;
+  border-radius:var(--r-p) 0 0 0; padding:3px 8px !important;
+}
+.leaflet-control-attribution a{ color:var(--acento-tinta) !important }

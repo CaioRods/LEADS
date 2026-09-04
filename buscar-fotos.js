@@ -65,7 +65,7 @@ function provar(url, palavras){
     const palavras = distintivas(l.nome);
     if (!palavras.length){ semProva++; pendentes.push(l.nome); continue; }
 
-    const cidade = (l.cidade || '').includes('capital') ? 'São Paulo' : 'Regente Feijó';
+    const cidade = (l.cidade || '').includes('capital') ? 'São Paulo' : (l.cidade || 'Regente Feijó');
     const cands = await candidatos(`${l.nome} ${cidade} SP`);
 
     let melhor = null;

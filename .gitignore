@@ -10,16 +10,14 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-dados.json
 AppData/
 
 # skill instalada via npx (33 MB de assets de terceiros)
 .agents/
 .claude/skills/
 
-# base de leads: contém nome, telefone e endereço de pessoas reais.
-# NÃO versionar em repositório público — ver README.
-dados.json
+# base de leads: contém dados de empresas reais. Versionada por decisão
+# explícita do autor em 03/09/2026, com o repositório público.
 exemplo-dados.json
 
 # protótipos de design: têm os leads reais embutidos no HTML
@@ -27,3 +25,15 @@ design-demos/
 assets/logos/*.jpg
 assets/logos/*.png
 assets/logos/*.webp
+
+# Sessão autenticada do WhatsApp: são as credenciais que dão acesso à conta.
+# Publicar isto permitiria a qualquer um sequestrar o WhatsApp. Nunca versionar.
+.wwebjs_auth/
+.wwebjs_auth.backup/
+.wwebjs_cache/
+
+# Configuração local do Claude Code
+.claude/
+
+# saída do electron-builder (155 MB por arquivo)
+dist/

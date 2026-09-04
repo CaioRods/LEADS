@@ -1,12 +1,10 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
-const fs = require('fs');
-const os = require('os');
+const { spawn } = require('child_process');
 
 let mainWindow;
-let dataPath = path.join(app.getPath('userData'), 'dados.json');
+let serverProcess;
 
-// Criar janela principal
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -19,25 +17,33 @@ function createWindow() {
       contextIsolation: true,
       enableRemoteModule: false
     },
-    icon: path.join(__dirname, 'assets', 'icon.png')
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    title: 'ProspecApp',
+    backgroundColor: '#E8EAE9',
+    show: false
   });
 
-  mainWindow.loadFile('index.html');
-
-  // Abrir dev tools em desenvolvimento
-  if (process.env.NODE_ENV === 'development') {
+  mainWindow.webContents.backgroundColor = '#ffffff';
+  
+  // Carregar URL direto
+  mainWindow.loadURL('http://localhost:3000');
+  
+  // Abrir dev tools em caso de erro
+  mainWindow.webContents.on('crashed', () => {
     mainWindow.webContents.openDevTools();
-  }
+  });
+
+  // Com show:false a janela só aparece quando há o que mostrar — evita o
+  // retângulo branco piscando antes da página carregar.
+  mainWindow.once('ready-to-show', () => mainWindow.show());
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  // Criar menu
   createMenu();
 }
 
-// Menu da aplicação
 function createMenu() {
   const template = [
     {
@@ -46,9 +52,7 @@ function createMenu() {
         {
           label: 'Sair',
           accelerator: 'CmdOrCtrl+Q',
-          click: () => {
-            app.quit();
-          }
+          click: () => app.quit()
         }
       ]
     },
@@ -64,16 +68,27 @@ function createMenu() {
       ]
     },
     {
+      label: 'Desenvolvimento',
+      submenu: [
+        {
+          label: 'Ferramentas do desenvolvedor',
+          accelerator: 'F12',
+          click: () => mainWindow && mainWindow.webContents.toggleDevTools()
+        }
+      ]
+    },
+    {
       label: 'Ajuda',
       submenu: [
         {
           label: 'Sobre',
           click: () => {
-            require('electron').dialog.showMessageBox(mainWindow, {
+            const { dialog } = require('electron');
+            dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'ProspecApp',
               message: 'ProspecApp v1.0.0',
-              detail: 'Seu gerenciador de prospecção de clientes'
+              detail: 'Gerenciador de prospecção de clientes.\n\nTodos os dados em dados.json no seu disco.'
             });
           }
         }
@@ -85,171 +100,67 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-// Carregar dados
-function loadData() {
+/* O servidor roda DENTRO deste processo, não como um `node` separado.
+
+   Antes era `spawn('node', [.../server.js])`, e no app empacotado isso
+   quebrava com ENOTDIR: __dirname aponta para dentro do app.asar, que é um
+   arquivo compactado e não uma pasta — não há como um processo externo
+   abrir um caminho lá dentro. E dependia de haver um `node` instalado na
+   máquina de quem usa, o que não se pode assumir.
+
+   O processo principal do Electron já É Node, então basta exigir o módulo.
+   O trabalho pesado (WhatsApp) continua em processo separado, que é o que
+   de fato precisava de isolamento. */
+/* O banco vive dentro do app.asar (somente leitura). Na primeira execução
+   copiamos para a pasta de dados do usuário, e é lá que o app grava daí em
+   diante — assim as edições sobrevivem a uma atualização do app. */
+function prepararBanco() {
+  const fs = require('fs');
+  const destino = path.join(app.getPath('userData'), 'dados.json');
+
+  if (!fs.existsSync(destino)) {
+    try {
+      fs.mkdirSync(path.dirname(destino), { recursive: true });
+      fs.copyFileSync(path.join(__dirname, 'dados.json'), destino);
+      console.log('[Electron] Banco copiado para', destino);
+    } catch (err) {
+      console.error('[Electron] Não consegui preparar o banco:', err.message);
+      return;
+    }
+  }
+  process.env.PROSPEC_DADOS = destino;
+}
+
+function startServer() {
+  console.log('[Electron] Subindo o servidor Express no processo principal…');
+  prepararBanco();
   try {
-    if (fs.existsSync(dataPath)) {
-      const data = fs.readFileSync(dataPath, 'utf-8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Erro ao carregar dados:', error);
-  }
-  return { leads: [], activities: [] };
-}
-
-// Salvar dados
-function saveData(data) {
-  try {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
-  } catch (error) {
-    console.error('Erro ao salvar dados:', error);
-    return false;
+    require('./server.js');
+  } catch (err) {
+    console.error('[Electron] O servidor não subiu:', err);
+    const { dialog } = require('electron');
+    dialog.showErrorBox('ProspecApp',
+      'Não consegui iniciar o servidor interno.\n\n' + err.message);
   }
 }
 
-// IPC Handlers
-
-// Carregar todos os leads
-ipcMain.handle('load-leads', () => {
-  const data = loadData();
-  return data.leads || [];
-});
-
-// Adicionar novo lead
-ipcMain.handle('add-lead', (event, lead) => {
-  const data = loadData();
-  const newLead = {
-    id: Date.now(),
-    ...lead,
-    criado_em: new Date().toISOString(),
-    atualizado_em: new Date().toISOString()
-  };
-
-  if (!data.leads) data.leads = [];
-  data.leads.push(newLead);
-
-  if (saveData(data)) {
-    return newLead;
-  }
-  throw new Error('Erro ao salvar lead');
-});
-
-// Atualizar lead
-ipcMain.handle('update-lead', (event, lead) => {
-  const data = loadData();
-  const index = data.leads.findIndex(l => l.id === lead.id);
-
-  if (index !== -1) {
-    data.leads[index] = {
-      ...data.leads[index],
-      ...lead,
-      atualizado_em: new Date().toISOString()
-    };
-
-    if (saveData(data)) {
-      return data.leads[index];
-    }
-  }
-  throw new Error('Lead não encontrado');
-});
-
-// Deletar lead
-ipcMain.handle('delete-lead', (event, id) => {
-  const data = loadData();
-  const index = data.leads.findIndex(l => l.id === id);
-
-  if (index !== -1) {
-    const deleted = data.leads.splice(index, 1);
-
-    if (saveData(data)) {
-      return deleted[0];
-    }
-  }
-  throw new Error('Lead não encontrado');
-});
-
-// Adicionar atividade/anotação
-ipcMain.handle('add-activity', (event, leadId, activity) => {
-  const data = loadData();
-
-  if (!data.activities) data.activities = [];
-
-  const newActivity = {
-    id: Date.now(),
-    leadId,
-    ...activity,
-    criado_em: new Date().toISOString()
-  };
-
-  data.activities.push(newActivity);
-
-  if (saveData(data)) {
-    return newActivity;
-  }
-  throw new Error('Erro ao salvar atividade');
-});
-
-// Carregar atividades de um lead
-ipcMain.handle('load-activities', (event, leadId) => {
-  const data = loadData();
-  return (data.activities || []).filter(a => a.leadId === leadId);
-});
-
-// Deletar atividade
-ipcMain.handle('delete-activity', (event, activityId) => {
-  const data = loadData();
-  const index = data.activities.findIndex(a => a.id === activityId);
-
-  if (index !== -1) {
-    const deleted = data.activities.splice(index, 1);
-
-    if (saveData(data)) {
-      return deleted[0];
-    }
-  }
-  throw new Error('Atividade não encontrada');
-});
-
-// Exportar dados
-ipcMain.handle('export-data', () => {
-  const data = loadData();
-  const csv = generateCSV(data.leads);
-  return csv;
-});
-
-// Gerar CSV
-function generateCSV(leads) {
-  if (!leads || leads.length === 0) {
-    return 'Nenhum lead para exportar';
+app.on('ready', () => {
+  /* No macOS a opção `icon` da BrowserWindow não muda o ícone do Dock — só
+     app.dock.setIcon faz isso. Sem esta chamada o app aparecia com o ícone
+     genérico do Electron enquanto rodava a partir do código-fonte. */
+  if (process.platform === 'darwin' && app.dock) {
+    try { app.dock.setIcon(path.join(__dirname, 'assets', 'icon-512.png')); }
+    catch (err) { console.error('[Electron] ícone do Dock:', err.message); }
   }
 
-  const headers = ['ID', 'Nome', 'Empresa', 'Telefone', 'Email', 'Categoria', 'Status', 'Observações', 'Criado em', 'Atualizado em'];
-  const rows = leads.map(lead => [
-    lead.id,
-    lead.nome || '',
-    lead.empresa || '',
-    lead.telefone || '',
-    lead.email || '',
-    lead.categoria || '',
-    lead.status || '',
-    (lead.observacoes || '').replace(/"/g, '""'),
-    lead.criado_em || '',
-    lead.atualizado_em || ''
-  ]);
+  startServer();
+  // Rodando no mesmo processo, o listen é praticamente imediato; a espera
+  // curta só garante que a porta já aceita conexões antes do loadURL.
+  setTimeout(createWindow, 600);
+});
 
-  let csv = headers.map(h => `"${h}"`).join(',') + '\n';
-  csv += rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-
-  return csv;
-}
-
-// Quando Electron finaliza de inicializar
-app.on('ready', createWindow);
-
-// Fechar quando todas as janelas estão fechadas
 app.on('window-all-closed', () => {
+  
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -261,7 +172,8 @@ app.on('activate', () => {
   }
 });
 
-// Tratamento de erros
-process.on('uncaughtException', (error) => {
-  console.error('Erro não tratado:', error);
+app.on('quit', () => {
+  // O WhatsApp roda em processo filho e precisa fechar a sessão com calma,
+  // senão o .wwebjs_auth corrompe e o usuário tem de escanear o QR de novo.
+  try { require('./whatsapp-module').fecharWhatsApp(); } catch (_) {}
 });

@@ -5,23 +5,10 @@ const path = require('path');
 const arquivo = path.join(__dirname, 'dados.json');
 const dados = JSON.parse(fs.readFileSync(arquivo, 'utf-8'));
 
-// Localização do vendedor: Regente Feijó
-const MEU_BAIRRO = "Centro";
-const MEU_BAIRRO_ALT = "";
-
 const ROI = {
   restaurante: 15, loja: 15, salao_beleza: 14, bar: 13,
   oficina: 12, padaria: 11, supermercado: 9, farmacia: 7, outro: 5
 };
-
-function nivelProx(l){
-  const b = (l.bairro || "").trim();
-  if ((l.cidade || "").includes("capital")) return 6;  // São Paulo capital
-  if (/rural|Espigão/i.test(b)) return 5;               // Zona rural
-  if (b === MEU_BAIRRO || b === MEU_BAIRRO_ALT) return 2;  // Mesmo bairro
-  if (b === "Centro") return 3;                         // Centro (próximo)
-  return b ? 4 : 4;                                      // Outro bairro
-}
 
 function pontuar(l) {
   const m = [];
@@ -66,16 +53,7 @@ function pontuar(l) {
   else if (l.cnpj)     { s += 5;  m.push('empresa formalizada, CNPJ conhecido (+5)'); }
   else                 { s += 2;  m.push('porte não confirmado (+2)'); }
 
-  // 6. Proximidade de Regente Feijó (0-15) — novo critério
-  const prox = nivelProx(l);
-  const proxPts = prox === 2 ? 15 : prox === 3 ? 10 : prox === 4 ? 5 : 0;
-  if (proxPts) {
-    s += proxPts;
-    const proxNome = {2:"mesmo bairro",3:"Centro próximo",4:"outro bairro"}[prox];
-    m.push(`${proxNome} de Regente Feijó (+${proxPts})`);
-  }
-
-  // Corte geográfico: fora da cidade não entra no ranking
+  // Corte geográfico: fora da cidade não entra no ranking, por mais bem pontuado que seja
   if ((l.cidade || '').includes('capital')) {
     return { score: 0, motivos: ['FORA DE ÁREA: São Paulo capital, ~570 km — não pontua'] };
   }
@@ -88,13 +66,10 @@ dados.leads.forEach(l => {
   l.motivos = motivos;
 });
 
-// Ordena por: status ativo → score descrescente → proximidade
+// Ordena por score, ativos primeiro
 const ordem = { novo: 0, contatado: 1, agendado: 2, proposta: 3, vendido: 4, descartado: 9 };
 dados.leads.sort((a, b) =>
-  (ordem[a.status] ?? 5) - (ordem[b.status] ?? 5) ||
-  b.score - a.score ||
-  nivelProx(a) - nivelProx(b) ||
-  a.nome.localeCompare(b.nome, 'pt-BR')
+  (ordem[a.status] ?? 5) - (ordem[b.status] ?? 5) || b.score - a.score || a.nome.localeCompare(b.nome, 'pt-BR')
 );
 
 fs.writeFileSync(arquivo, JSON.stringify(dados, null, 2), 'utf-8');

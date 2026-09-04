@@ -4,21 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ProspecApp — Leads</title>
+<link rel="icon" href="assets/icon-64.png">
+<link rel="stylesheet" href="/vendor/leaflet.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- Splash: fica sobre o app até os leads chegarem. Some com fade, sem
+     empurrar layout, e é removida do DOM depois — não é um estado da
+     aplicação, é só a cortina do primeiro instante. -->
+<div id="splash" aria-hidden="true">
+  <div class="splash-miolo">
+    <img src="assets/icon-256.png" alt="" width="88" height="88">
+    <span class="splash-nome">ProspecApp</span>
+    <span class="splash-barra"><i></i></span>
+  </div>
+</div>
 
 <div class="app">
   <!-- ============================ TRILHO ============================ -->
   <nav class="trilho">
     <div class="marca">
       <span class="marca-selo" aria-hidden="true">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3.5 20V8.2L12 3.4l8.5 4.8V20"/>
-          <path d="M3.5 20h17"/>
-          <path d="M9.4 20v-6h5.2v6"/>
-        </svg>
+        <img src="assets/icon-128.png" alt="" width="26" height="26">
       </span>
       <span>
         <span class="marca-nome">ProspecApp</span>
@@ -80,6 +88,21 @@
         </svg>
         Minha localização
       </button>
+      <button class="nav-item" id="navWhatsApp">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.6 2.4c-2.4-2.4-6.3-2.4-8.7 0L4.2 11c-1.2 1.2-1.8 2.8-1.8 4.5v4.8h4.8c1.7 0 3.3-.6 4.5-1.8l8.6-8.6c2.4-2.4 2.4-6.3 0-8.7z"/>
+          <path d="M9 17v3.6"/><path d="M12 17v3.6"/><path d="M6 17v3.6"/>
+        </svg>
+        WhatsApp <span class="nav-cont" id="navContWhatsApp">—</span>
+      </button>
+      <button class="nav-item" id="navTema">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.2 14.4A8.4 8.4 0 0 1 9.6 3.8a8.4 8.4 0 1 0 10.6 10.6z"/>
+        </svg>
+        Tema <span class="marcador" id="temaEstado">claro</span>
+      </button>
       <button class="nav-item" id="navSom">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -138,12 +161,18 @@
 
     <!-- ---- visão ROTAS ---- -->
     <div id="visaoMapa" class="area ocultar"></div>
+
+    <!-- ---- visão WHATSAPP ---- -->
+    <div id="visaoWhatsApp" class="area ocultar">
+      <div id="painelWhatsApp"></div>
+    </div>
   </main>
 </div>
 
 <div id="camadas"></div>
 <div id="avisos"></div>
 
+<script src="/vendor/leaflet.js"></script>
 <script src="app-web.js"></script>
 </body>
 </html>

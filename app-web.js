@@ -2,7 +2,7 @@
    ProspecApp — front-end (Soft UI). Tudo vem de /api/*. Sem framework, sem CDN.
 =========================================================================== */
 
-/* ------------------------------- API ------------------------------- */
+
 const API = {
   async req(metodo, rota, corpo){
     const opc = { method: metodo, headers: {} };
@@ -31,7 +31,7 @@ const API = {
   salvarImagem(id, url){    return API.req("POST",   "/api/salvar-imagem", { id, url }); }
 };
 
-/* --------------------------- DICIONÁRIOS --------------------------- */
+
 const CATEGORIAS = {
   padaria:"Padaria", restaurante:"Restaurante", bar:"Bar",
   salao_beleza:"Salão de beleza", oficina:"Oficina", farmacia:"Farmácia",
@@ -47,7 +47,7 @@ const BAIRROS_CONHECIDOS = ["Centro","Vila Nova","Jardim Matilde","Sumaré","Vil
   "Jardim Regina","Jardim Tênis Clube","Barra Funda","Alto da Boa Vista",
   "Distrito do Espigão","Água Grande (zona rural)"];
 
-/* --------------------------- ÍCONES --------------------------- */
+
 const sv = (d, t) => `<svg width="${t||17}" height="${t||17}" viewBox="0 0 24 24" fill="none" `
   + `stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 
@@ -63,6 +63,7 @@ const IC = {
   aviso:    t => sv('<circle cx="12" cy="12" r="8.4"/><path d="M12 7.8v4.9"/><path d="M12 16h.01"/>', t),
   grade:    t => sv('<rect x="3.2" y="3.2" width="7.6" height="7.6" rx="2.2"/><rect x="13.2" y="3.2" width="7.6" height="7.6" rx="2.2"/><rect x="3.2" y="13.2" width="7.6" height="7.6" rx="2.2"/><rect x="13.2" y="13.2" width="7.6" height="7.6" rx="2.2"/>', t),
   linhas:   t => sv('<path d="M4 6.6h16"/><path d="M4 12h16"/><path d="M4 17.4h10"/>', t),
+  wpp:      t => sv('<path d="M20.4 11.7a8.4 8.4 0 0 1-12.3 7.5L3.6 20.4l1.3-4.4a8.4 8.4 0 1 1 15.5-4.3z"/><path d="M9.1 8.4c.2-.5.5-.5.8-.5h.6c.2 0 .5 0 .7.6l.8 1.9c.1.3 0 .5-.1.7l-.5.6c-.2.2-.3.4-.1.7a7 7 0 0 0 3.1 2.7c.3.1.5.1.7-.1l.6-.7c.2-.2.4-.2.7-.1l1.8.9c.3.1.5.3.5.5v.6c0 .4-.3.8-.7 1.1-.5.3-1.1.5-1.7.4-1.6-.2-3.6-1.2-5.2-2.8s-2.6-3.6-2.8-5.2c-.1-.6.1-1.2.4-1.7z"/>', t),
   link:     t => sv('<path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.5 1.5"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 0 0 5.7 5.7l1.5-1.5"/>', t)
 };
 
@@ -79,7 +80,7 @@ const GLIFO = {
   outro:        '<rect x="3.8" y="6.6" width="16.4" height="13" rx="2.4"/><path d="M8.6 6.6V5a1.4 1.4 0 0 1 1.4-1.4h4a1.4 1.4 0 0 1 1.4 1.4v1.6"/>'
 };
 
-/* --------------------------- HELPERS --------------------------- */
+
 const $  = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
   c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -147,7 +148,7 @@ function avatarHTML(l, grande){
     <span class="iniciais">${esc(iniciais(l.nome))}</span>${img}</span>`;
 }
 
-/* --------------------------- PROXIMIDADE --------------------------- */
+
 /* Sem geocodificação: a escada é via → bairro → Centro → cidade → rural → fora. */
 const PROX_NOME = { 1:"Mesma rua", 2:"Mesmo bairro", 3:"Centro", 4:"Outro bairro", 5:"Zona rural", 6:"Fora da cidade" };
 function nivelProx(l){
@@ -168,7 +169,7 @@ function proxHTML(l){
     <span class="barras">${b}</span>${PROX_NOME[n]}</span>`;
 }
 
-/* --------------------------- COR DA CHANCE --------------------------- */
+
 /* score 0 → vermelho (8°) · 50 → âmbar (45°) · 100 → verde (145°).
    A luminosidade nunca muda: o relevo neumórfico depende dela. */
 function hueChance(l){
@@ -176,7 +177,7 @@ function hueChance(l){
   return s < 50 ? 8 + (s/50)*37 : 45 + ((s-50)/50)*100;
 }
 
-/* --------------------------- SOM --------------------------- */
+
 /* Sintetizado na hora com Web Audio — nenhum arquivo, funciona offline.
    Timbre curto e macio, na mesma família do relevo: nada de bipe de alarme. */
 const SOM = {
@@ -227,7 +228,7 @@ const SOM = {
   }
 };
 
-/* --------------------------- ESTADO --------------------------- */
+
 const S = {
   leads: [], atividades: [], vias: {},
   termo: "", status: "todos", rapido: null,
@@ -235,9 +236,26 @@ const S = {
   modo: localStorage.getItem("prospec.modo") || "cartoes",
   chance: localStorage.getItem("prospec.chance") === "1",
   minimal: localStorage.getItem("prospec.minimal") === "1",
+  mapaModo: localStorage.getItem("prospec.mapaModo") === "mapas" ? "mapas" : "rotas",
   local: JSON.parse(localStorage.getItem("prospec.local") || '{"bairro":"Centro","via":""}')
 };
 function salvarLocal(){ localStorage.setItem("prospec.local", JSON.stringify(S.local)); }
+
+/* O subtítulo dizia "Regente Feijó e região" independentemente do que havia
+   no banco — e o levantamento inteiro é de Presidente Prudente. Agora a frase
+   é lida dos dados, então ela não pode voltar a mentir se a base mudar. */
+function cidadeDominante(){
+  const c = {};
+  S.leads.forEach(l => { const k = (l.cidade || "").trim(); if (k) c[k] = (c[k] || 0) + 1; });
+
+  const ordenadas = Object.entries(c).sort((a, b) => b[1] - a[1]);
+  if (!ordenadas.length) return "sua região";
+  if (ordenadas.length === 1) return ordenadas[0][0];
+
+  const [nome, quantos] = ordenadas[0];
+  const resto = S.leads.length - quantos;
+  return `${nome} +${resto} de outras cidades`;
+}
 
 function recalcularVias(){
   S.vias = {};
@@ -262,7 +280,7 @@ function filtrados(){
   return r;
 }
 
-/* --------------------------- AVISO --------------------------- */
+
 let avisoT = null;
 function aviso(texto, falha){
   clearTimeout(avisoT);
@@ -271,18 +289,74 @@ function aviso(texto, falha){
   avisoT = setTimeout(() => { $("#avisos").innerHTML = ""; }, falha ? 5200 : 2600);
 }
 
-/* --------------------------- CARGA --------------------------- */
-async function carregar(){
-  S.carregando = true;
+
+/* A cortina some assim que há o que mostrar — inclusive quando a API falha,
+   senão o erro ficaria escondido atrás dela para sempre. Um tempo mínimo de
+   tela evita o pisca-pisca feio quando a resposta volta em 30ms. */
+const SPLASH_MIN = 550;
+const splashNasceu = Date.now();
+
+function fecharSplash(){
+  const el = document.getElementById("splash");
+  if (!el || el.classList.contains("saindo")) return;
+
+  const espera = Math.max(0, SPLASH_MIN - (Date.now() - splashNasceu));
+  setTimeout(() => {
+    el.classList.add("saindo");
+    setTimeout(() => el.remove(), 460);   // fora do DOM: não é estado do app
+  }, espera);
+}
+
+/* Skeleton em vez de "Carregando…": mostra a FORMA do que vem, então quando
+   os dados chegam nada salta de lugar. O número de peças acompanha o que
+   costuma caber na tela. */
+function skeletonCartoes(n = 6){
+  return `<div class="grade-cartoes">${Array.from({length:n}, (_, i) => `
+    <div class="sk-cartao" style="--atraso:${i*45}ms">
+      <div class="sk-topo">
+        <div class="sk sk-avatar"></div>
+        <div class="sk-linhas">
+          <div class="sk sk-l longa"></div>
+          <div class="sk sk-l curta"></div>
+        </div>
+      </div>
+      <div class="sk sk-l media"></div>
+      <div class="sk sk-l longa"></div>
+    </div>`).join("")}</div>`;
+}
+
+function skeletonLista(n = 8){
+  return `<div class="sk-lista">${Array.from({length:n}, (_, i) => `
+    <div class="sk-fila" style="--atraso:${i*40}ms">
+      <div class="sk sk-avatar" style="width:38px;height:38px;border-radius:12px"></div>
+      <div class="sk-linhas">
+        <div class="sk sk-l media"></div>
+        <div class="sk sk-l curta"></div>
+      </div>
+    </div>`).join("")}</div>`;
+}
+
+/* `fundo` = atualizar sem espetáculo. Apagar a lista para escrever
+   "Carregando…" só faz sentido na primeira vez; depois de adicionar ou
+   excluir alguém, isso pisca a tela inteira e faz uma operação de 7ms
+   parecer lenta. */
+async function carregar(fundo){
   const area = $("#areaLeads");
-  if (area) area.innerHTML = `<div class="carregando">Carregando leads da API…</div>`;
+
+  if (!fundo){
+    S.carregando = true;
+    if (area) area.innerHTML = skeletonCartoes();
+  }
+
   try {
     S.leads = await API.listarLeads();
     recalcularVias();
+    fecharSplash();
     S.carregando = false;
     render();
   } catch (e){
     S.carregando = false;
+    fecharSplash();
     if (area){
       area.innerHTML = `<div class="vazio">Não consegui falar com a API em <code>/api/leads</code>.<br>
         ${esc(e.message)} — confira se o servidor está rodando em localhost:3000.<br><br>
@@ -293,7 +367,7 @@ async function carregar(){
   }
 }
 
-/* --------------------------- FAIXA PANORAMA --------------------------- */
+
 function faixaPanorama(){
   const c = s => S.leads.filter(l => l.status === s).length;
   const ativos = S.leads.filter(l => l.status !== "descartado");
@@ -336,7 +410,7 @@ function faixaPanorama(){
       <p><b>${ativos.length - tocados}</b> dos ${ativos.length} ativos ainda não foram tocados.</p></div>`;
 }
 
-/* --------------------------- FILTROS --------------------------- */
+
 function barraFiltros(){
   const cont = s => s==="todos" ? S.leads.length : S.leads.filter(l=>l.status===s).length;
   const seg = ["todos"].concat(ETAPAS).map(s => `
@@ -371,7 +445,7 @@ function barraFiltros(){
   const g = $(".direita-modo"); if (g) g.style.marginLeft = "auto";
 }
 
-/* --------------------------- PEÇAS --------------------------- */
+
 function scoreHTML(l, curto){
   const s = scoreDe(l), f = faixaDe(l);
   return `<span class="score f-${f} ${l.confianca==="verificar"?"verificar":""}"
@@ -401,7 +475,7 @@ function redesHTML(l){
   return h ? `<span class="redes-mini">${h}</span>` : "";
 }
 
-/* --------------------------- CARTÕES / LISTA --------------------------- */
+
 function cartao(l, i){
   const v = via(l), n = v ? S.vias[v] : 0;
   const est = `--h:${{padaria:38,restaurante:22,bar:310,salao_beleza:348,oficina:232,
@@ -470,11 +544,24 @@ function renderLeads(){
       <div class="corpo">${lista.map((l,i)=>linha(l,i)).join("")}</div></div>
       <p class="fim-lista">${lista.length} de ${S.leads.length} — fim da lista, não há página 2.</p>`;
   }
-  area.querySelectorAll("[data-id]").forEach(el =>
-    el.onclick = () => abrirPainel(+el.dataset.id));
+  /* Clicar num lead já selecionado o solta; clicar em outro transfere a
+     seleção. Assim o cartão afundado marca onde você parou, mesmo com o
+     painel fechado — antes a marca sumia junto com o painel. */
+  area.querySelectorAll("[data-id]").forEach(el => el.onclick = () => {
+    const id = +el.dataset.id;
+    // Clicar de novo no mesmo lead solta — com o painel aberto ou fechado.
+    if (S.selecionado === id){
+      S.selecionado = null;
+      if (document.querySelector(".painel")) return fecharPainel(true);
+      SOM.toca("fecha");
+      marcarSelecao();             // solta sem remontar a lista
+      return;
+    }
+    abrirPainel(id);
+  });
 }
 
-/* --------------------------- PANORAMA (visão) --------------------------- */
+
 function renderPanorama(){
   const ativos = S.leads.filter(l => l.status !== "descartado");
   const barra = (rot, val, max, q) => `<div class="barra-linha">
@@ -509,8 +596,8 @@ function renderPanorama(){
   </div>`;
 }
 
-/* --------------------------- ROTAS --------------------------- */
-function renderMapa(){
+
+function renderRotas(){
   const ativos = S.leads.filter(l => l.status !== "descartado");
   const grupos = {};
   ativos.forEach(l => { const v = via(l); if (v) (grupos[v] = grupos[v] || []).push(l); });
@@ -571,14 +658,14 @@ function renderMapa(){
   const desc = S.leads.filter(l => l.status === "descartado");
   const locais = desc.filter(l => !capital(l)), fora = desc.filter(capital);
 
-  $("#visaoMapa").innerHTML = `
+  $("#visaoMapa").innerHTML = interruptorMapa() + `
     <div class="mapa-topo">
       <h2>Rotas de visita</h2>
-      <p>Isto não é um mapa geográfico e não finge ser: não há geocodificação no projeto,
-      então não existe coordenada nenhuma aqui. O desenho usa só o que o levantamento
-      realmente tem — bairro, via e número de porta. Cada via vira uma linha, os leads
-      entram na ordem real da numeração, e o vão entre dois pontos vira tracejado quando
-      o salto passa de 60 números, ou seja, quando deixa de ser a mesma esquina.</p>
+      <p>Isto não é um mapa geográfico: é o desenho da caminhada. Usa bairro, via e
+      número de porta — cada via vira uma linha, os leads entram na ordem real da
+      numeração, e o vão entre dois pontos vira tracejado quando o salto passa de 60
+      números, ou seja, quando deixa de ser a mesma esquina. Para ver a posição real
+      de cada um no mundo, troque para <b>Mapa</b> no interruptor acima.</p>
     </div>
     <div class="mapa-grade">
       <div class="caixa">
@@ -612,14 +699,56 @@ function renderMapa(){
 
   $("#visaoMapa").querySelectorAll("[data-id]").forEach(el =>
     el.onclick = () => abrirPainel(+el.dataset.id));
+  ligarInterruptorMapa();
 }
 
-/* --------------------------- PAINEL DE DETALHE --------------------------- */
+
+/* Interruptor Rotas | Mapa. Duas leituras do mesmo conjunto: uma é a ordem da
+   caminhada (via e numeração), a outra é a posição real no mundo. */
+function interruptorMapa(){
+  const em = S.mapaModo === "mapas";
+  return `<div class="mapa-troca" role="tablist">
+    <button role="tab" data-mapa="rotas" aria-selected="${!em}">Rotas</button>
+    <button role="tab" data-mapa="mapas" aria-selected="${em}">Mapa</button>
+  </div>`;
+}
+
+function ligarInterruptorMapa(){
+  document.querySelectorAll("[data-mapa]").forEach(b => b.onclick = () => {
+    if (S.mapaModo === b.dataset.mapa) return;
+    S.mapaModo = b.dataset.mapa;
+    localStorage.setItem("prospec.mapaModo", S.mapaModo);
+    SOM.toca("clique");
+    render();
+  });
+}
+
+function renderMapa(){
+  if (S.mapaModo === "mapas") renderMapaReal();
+  else renderRotas();
+}
+
+
+/* Marca a seleção mexendo SÓ no atributo dos cartões já na tela.
+   Duas razões para não chamar render() aqui:
+   1. abrirPainel nunca redesenhava a lista, então o cartão só ficava afundado
+      no próximo render — na prática, nunca. Era esse o bug.
+   2. Redesenhar a lista inteira para trocar um atributo remonta os 109
+      cartões e reinicia as animações de entrada: a tela inteira "recarrega"
+      à vista, que é justamente o que incomodava ao desselecionar. */
+function marcarSelecao(){
+  document.querySelectorAll("#areaLeads [data-id]").forEach(el => {
+    const eu = String(el.dataset.id) === String(S.selecionado);
+    el.setAttribute("aria-selected", eu ? "true" : "false");
+  });
+}
+
 async function abrirPainel(id){
   const l = S.leads.find(x => x.id === id);
   if (!l) return;
   const jaAberto = !!document.querySelector(".painel");
   S.selecionado = id;
+  marcarSelecao();                 // o cartão afunda no instante do clique
   if (!jaAberto) SOM.toca("abre");
   try { S.atividades = await API.listarAtividades(id); } catch(_){ S.atividades = []; }
 
@@ -656,6 +785,7 @@ async function abrirPainel(id){
         <div class="painel-resumo">${scoreHTML(l)}${seloHTML(l)}${proxHTML(l)}</div>
         <div class="painel-acoes">
           ${temTel(l)?`<a class="botao" href="tel:${esc(String(l.telefone).replace(/\D/g,""))}">${IC.tel(15)} Ligar</a>`:""}
+          ${temTel(l)?`<a class="botao" href="${esc(linkWhatsApp(l.telefone))}" target="_blank" rel="noopener">${IC.wpp(15)} WhatsApp</a>`:""}
           ${temInsta(l)?`<a class="botao" href="${esc(urlInsta(l))}" target="_blank" rel="noopener">${IC.insta(15)} Instagram</a>`:""}
           ${temFace(l)?`<a class="botao" href="${esc(urlFace(l))}" target="_blank" rel="noopener">${IC.face(15)} Facebook</a>`:""}
           <button class="botao" id="editarLead">Editar</button>
@@ -714,12 +844,24 @@ async function abrirPainel(id){
       </div>
     </aside>`;
 
-  $("#veu").onclick = fecharPainel;
-  $("#fecharPainel").onclick = fecharPainel;
+  /* Envolvidos numa seta de propósito: ligados direto, o handler receberia o
+     objeto de evento como argumento `soltar` — que é truthy — e a seleção era
+     descartada em todo fechamento. Era esse o motivo de o cartão não
+     continuar afundado. */
+  $("#veu").onclick = () => fecharPainel();
+  $("#fecharPainel").onclick = () => fecharPainel();
   $("#editarLead").onclick = () => abrirForm(l);
   $("#excluirLead").onclick = async () => {
     if (!confirm(`Excluir "${l.nome}"? Isso não volta.`)) return;
-    try { await API.excluirLead(l.id); fecharPainel(); await carregar(); aviso("Lead excluído."); }
+    try {
+      await API.excluirLead(l.id);
+      // Tira da lista local e desenha UMA vez. Antes eram dois render()
+      // completos (um do fecharPainel, outro do carregar) e a lista piscava.
+      S.leads = S.leads.filter(x => String(x.id) !== String(l.id));
+      fecharPainel(true);          // o lead sumiu: não há o que continuar marcando
+      aviso("Lead excluído.");
+      carregar(true);          // reconcilia com o servidor, sem piscar
+    }
     catch(e){ aviso("Não consegui excluir: " + e.message, true); }
   };
   $("#salvarLogo").onclick = () => salvarLogo(l.id, $("#campoLogo").value.trim());
@@ -732,7 +874,33 @@ async function abrirPainel(id){
   ligarDropLogo(l);
   render();
 }
-function fecharPainel(){ SOM.toca("fecha"); S.selecionado = null; $("#camadas").innerHTML = ""; render(); }
+/* Fechar o painel NÃO solta o lead: o cartão continua afundado, marcando
+   onde você estava. Solta-se clicando nele de novo, ou escolhendo outro.
+   `soltar` existe para os poucos casos em que a seleção deixa de fazer
+   sentido — por exemplo quando o lead é excluído. */
+function fecharPainel(soltar){
+  SOM.toca("fecha");
+  const painel = $(".painel");
+  const idAoFechar = S.selecionado;
+
+  const encerrar = () => {
+    $("#camadas").innerHTML = "";
+
+    S.selecionado = soltar ? null : S.selecionado;
+
+    // Só remonta a lista quando ela realmente mudou (exclusão). Soltar a
+    // seleção é troca de atributo, não motivo para redesenhar 109 cartões.
+    if (soltar && !S.leads.some(l => String(l.id) === String(idAoFechar))) render();
+    else marcarSelecao();
+  };
+
+  if (painel) {
+    painel.classList.add("saindo");
+    setTimeout(encerrar, 300);   // casa com a duração de painel-sai
+  } else {
+    encerrar();
+  }
+}
 
 async function salvarLogo(id, valor){
   try { await API.atualizarLead(id, { logo: valor });
@@ -740,104 +908,7 @@ async function salvarLogo(id, valor){
     aviso(valor ? "Imagem salva." : "Imagem removida."); abrirPainel(id);
   } catch(e){ aviso("Não consegui salvar: " + e.message, true); }
 }
-/* --------------------- ESCOLHER FOTO NA BUSCA ---------------------
-   O app nunca decide sozinho qual é a foto certa: para comércio pequeno o
-   buscador devolve imagem só parecida no assunto. Você olha e escolhe. */
-async function escolherFoto(l){
-  const cidade = (l.cidade||"").includes("capital") ? "São Paulo" : "Regente Feijó";
-  let termo = `${l.nome} ${cidade} SP`;
 
-  const desenhar = (estado, cands) => {
-    $("#camadas").innerHTML = `<div class="veu escuro" id="veu"></div>
-      <div class="modal" style="width:760px" role="dialog" aria-label="Escolher foto">
-        <div class="modal-topo"><h2>Foto de ${esc(l.nome)}</h2>
-          <button class="fechar" id="fecharFoto">${IC.fechar(14)}</button></div>
-        <div style="padding:4px 26px 0">
-          <div class="logo-campo">
-            <input id="termoBusca" value="${esc(termo)}">
-            <button class="botao botao-forte" id="refazer">Buscar</button>
-          </div>
-          <p class="dica">Clique na imagem que for mesmo deste comércio. Se nenhuma for,
-          ajuste o termo e busque de novo — ou feche e deixe o monograma.</p>
-        </div>
-        <div class="modal-corpo" style="grid-template-columns:1fr">
-          ${estado === "buscando" ? `<p class="carregando">Buscando imagens…</p>`
-           : !cands.length ? `<p class="hist-vazio">Nada encontrado para esse termo.</p>`
-           : `<div class="fotos-grade">${cands.map(u => `
-              <button class="foto-op" data-url="${esc(u)}" title="${esc(u)}">
-                <img src="/api/proxy-img?u=${encodeURIComponent(u)}" alt="" loading="lazy"
-                     onerror="this.closest('.foto-op').remove()">
-              </button>`).join("")}</div>`}
-        </div>
-        <div class="modal-pe"><span class="erro" id="fotoErro"></span>
-          <button class="botao" id="cancelarFoto">Fechar</button></div>
-      </div>`;
-
-    const fechar = () => { $("#camadas").innerHTML=""; abrirPainel(l.id); };
-    $("#veu").onclick = fechar; $("#fecharFoto").onclick = fechar; $("#cancelarFoto").onclick = fechar;
-    $("#refazer").onclick = () => { termo = $("#termoBusca").value.trim(); buscar(); };
-    document.querySelectorAll(".foto-op").forEach(b => b.onclick = async () => {
-      b.disabled = true;
-      $("#fotoErro").textContent = "Salvando…";
-      try {
-        await API.salvarImagem(l.id, b.dataset.url);
-        await carregar();
-        $("#camadas").innerHTML = "";
-        aviso("Foto salva.");
-        abrirPainel(l.id);
-      } catch(e){ $("#fotoErro").textContent = "Não consegui baixar: " + e.message; b.disabled = false; }
-    });
-  };
-
-  const buscar = async () => {
-    desenhar("buscando", []);
-    try { const r = await API.buscarImagens(termo); desenhar("pronto", r.candidatos || []); }
-    catch(e){ desenhar("pronto", []); aviso("Falha na busca: " + e.message, true); }
-  };
-  SOM.toca("abre");
-  buscar();
-}
-
-/* colar (Ctrl+V) ou arrastar arquivo sobre o avatar */
-function ligarDropLogo(l){
-  const alvo = $(".avatar-g"); if (!alvo) return;
-  const usar = file => {
-    if (!file || !/^image\//.test(file.type)) return;
-    if (file.size > 200*1024)
-      return aviso("Imagem acima de 200 KB — salve em assets/logos/ e cole o caminho.", true);
-    const fr = new FileReader();
-    fr.onload = () => salvarLogo(l.id, fr.result);
-    fr.readAsDataURL(file);
-  };
-  alvo.style.cursor = "copy";
-  alvo.title = "Cole (Ctrl+V) ou arraste uma imagem aqui";
-  alvo.addEventListener("dragover", e => e.preventDefault());
-  alvo.addEventListener("drop", e => { e.preventDefault(); usar(e.dataTransfer.files[0]); });
-  const onPaste = e => {
-    if (!$(".painel")) return document.removeEventListener("paste", onPaste);
-    const it = Array.from(e.clipboardData.items).find(i => /^image\//.test(i.type));
-    if (it) usar(it.getAsFile());
-  };
-  document.addEventListener("paste", onPaste);
-}
-
-async function registrar(l){
-  const nota = $("#novaNota").value.trim();
-  const novo = $("#novoStatus").value;
-  if (!nota && novo === l.status) return aviso("Escreva uma nota ou mude a etapa.", true);
-  try {
-    if (novo !== l.status){
-      await API.atualizarLead(l.id, { status: novo });
-      await API.criarAtividade(l.id, { nota: `Etapa: ${STATUS_NOME[l.status]} → ${STATUS_NOME[novo]}` });
-    }
-    if (nota) await API.criarAtividade(l.id, { nota });
-    await carregar();
-    abrirPainel(l.id);
-    aviso("Registrado.");
-  } catch(e){ aviso("Não consegui registrar: " + e.message, true); }
-}
-
-/* --------------------------- FORMULÁRIO --------------------------- */
 function abrirForm(lead){
   const l = lead || {};
   const novo = !lead;
@@ -888,7 +959,7 @@ function abrirForm(lead){
     try {
       if (novo) await API.criarLead(d); else await API.atualizarLead(l.id, d);
       $("#camadas").innerHTML = "";
-      await carregar();
+      await carregar(true);     // sem apagar a lista e reescrever "Carregando…"
       aviso(novo ? "Lead adicionado." : "Lead atualizado.");
       if (!novo) abrirPainel(l.id);
     } catch(e){ $("#formErro").textContent = "Não consegui salvar: " + e.message; }
@@ -896,7 +967,7 @@ function abrirForm(lead){
   setTimeout(()=>{ const f=$("#fNome"); if(f) f.focus(); }, 40);
 }
 
-/* --------------------------- MINHA LOCALIZAÇÃO --------------------------- */
+
 function abrirLocal(){
   $("#camadas").innerHTML = `<div class="veu escuro" id="veu"></div>
     <div class="modal" style="width:520px" role="dialog" aria-label="Minha localização">
@@ -926,7 +997,7 @@ function abrirLocal(){
   };
 }
 
-/* --------------------------- RENDER --------------------------- */
+
 function render(){
   document.querySelector(".app").classList.toggle("chance", S.chance);
   document.querySelector(".app").classList.toggle("minimal", S.minimal);
@@ -950,7 +1021,7 @@ function render(){
   const titulos = { leads:"Leads", panorama:"Panorama", mapa:"Rotas de visita" };
   $("#tituloVisao").textContent = titulos[S.visao];
   $("#subTitulo").textContent = S.carregando ? "Carregando da API…"
-    : `${S.leads.length} levantados em Regente Feijó e região · ${ativos.length} ativos`;
+    : `${S.leads.length} levantados em ${cidadeDominante()} · ${ativos.length} ativos`;
 
   if (S.carregando) return;
   if (S.visao === "leads"){ faixaPanorama(); barraFiltros(); renderLeads(); ligarFiltros(); }
@@ -1007,7 +1078,7 @@ function varrer(){
   setTimeout(() => v.remove(), 760);
 }
 
-/* --------------------------- INÍCIO --------------------------- */
+
 document.querySelectorAll("[data-visao]").forEach(b =>
   b.onclick = () => { S.visao = b.dataset.visao; SOM.toca("clique"); render(); });
 $("#navNovo").onclick = () => { SOM.toca("abre"); abrirForm(null); };
@@ -1025,10 +1096,581 @@ $("#navExportar").onclick = async () => {
     aviso("CSV exportado.");
   } catch(e){ aviso("Falha ao exportar: " + e.message, true); }
 };
-$("#busca").oninput = e => { S.termo = e.target.value; if (S.visao==="leads") render(); };
+// A busca vale também na aba WhatsApp: antes ela só redesenhava a visão de
+// leads, então digitar com a aba aberta não fazia absolutamente nada.
+$("#busca").oninput = e => {
+  S.termo = e.target.value;
+  if (S.visao === "leads" || S.visao === "whatsapp") render();
+};
 document.addEventListener("keydown", e => {
   if (e.key === "/" && document.activeElement !== $("#busca")){ e.preventDefault(); $("#busca").focus(); }
-  if (e.key === "Escape"){ if ($(".painel")||$(".modal")) { S.selecionado=null; $("#camadas").innerHTML=""; render(); } }
+  if (e.key === "Escape"){
+    if (fecharPrevia()) return;                     /* fecha só a camada de cima */
+    // Esc fecha, mas não solta o lead — mesma regra do X e do véu.
+    if ($(".painel")) return fecharPainel();
+    if ($(".modal")) { $("#camadas").innerHTML = ""; render(); }
+  }
 });
 
 carregar();
+
+// ===== WHATSAPP INTEGRATION =====
+
+// Adicionar ao objeto API
+API.obterStatusWhatsApp = () => API.req("GET", "/api/whatsapp/status");
+API.enviarMensagemWPP = (numero, mensagem) => API.req("POST", "/api/whatsapp/enviar", { numero, mensagem });
+API.obterConversa = (numero) => API.req("GET", `/api/whatsapp/conversa/${numero}`);
+API.obterConversas = () => API.req("GET", "/api/whatsapp/conversas");
+
+// Estado do WhatsApp
+let estadoWPP = {
+  conectado: false,
+  conversas: {},
+  conversaAtual: null,
+  carregando: true
+};
+
+async function inicializarWhatsApp() {
+  try {
+    const status = await API.obterStatusWhatsApp();
+    estadoWPP.conectado = status.conectado;
+    
+    if (status.conectado) {
+      const conversas = await API.obterConversas();
+      estadoWPP.conversas = conversas || {};
+    }
+    
+    estadoWPP.carregando = false;
+    
+    // Ligar listener no botão
+    const btnWPP = document.getElementById("navWhatsApp");
+    if (btnWPP) {
+      btnWPP.onclick = () => {
+        S.visao = "whatsapp";
+        SOM.toca("clique");
+        render();
+      };
+    }
+    
+    renderizarWhatsApp();
+  } catch (err) {
+    console.error("Erro ao inicializar WhatsApp:", err);
+    estadoWPP.carregando = false;
+    aviso("Erro ao conectar com WhatsApp", true);
+  }
+}
+
+/* A aba é montada sobre os SEUS leads, não sobre os contatos do WhatsApp.
+   Motivo: getChats() da biblioteca está quebrado contra o WhatsApp Web atual
+   (erro "r", persistente em 5 tentativas). E, de todo modo, a pergunta que
+   interessa aqui é "com quais leads eu estou falando", não "todos os meus
+   contatos". Mensagens recebidas chegam pelo evento 'message', que não usa a
+   API quebrada, então a conversa se monta sozinha conforme as coisas chegam. */
+
+const numeroDoLead = l => String(l.telefone || "").replace(/\D/g, "").slice(-11);
+
+/* wa.me quer o número com código do país e sem sinais. Fixos de Prudente têm
+   10 dígitos e celulares 11 — os dois viram 55 + número. */
+function linkWhatsApp(numero, texto){
+  const n = String(numero).replace(/\D/g, "").slice(-11);
+  const url = "https://wa.me/55" + n;
+  return texto ? url + "?text=" + encodeURIComponent(texto) : url;
+}
+
+/* Usa o MESMO filtrados() da visão de leads: mesma ordem, mesmos filtros
+   rápidos, mesma busca. Antes esta aba tinha ordenação própria (quem
+   respondeu primeiro), e o mesmo lead aparecia em posições diferentes nas
+   duas telas — o que torna impossível confiar na posição. */
+function leadsComTelefone(){
+  const conversas = estadoWPP.conversas || {};
+
+  return filtrados()
+    .filter(l => temTel(l) && l.status !== "descartado")
+    .map(l => {
+      const num  = numeroDoLead(l);
+      const msgs = conversas[num] || [];
+      return {
+        lead: l,
+        numero: num,
+        msgs,
+        ultima: msgs.length ? msgs[msgs.length - 1] : null,
+        respondeu: msgs.some(m => m.tipo === "entrada"),
+        jaFalou: msgs.some(m => m.tipo === "saida") || jaContatado(l)
+      };
+    });
+}
+
+/* "Já mandei mensagem para este?" — o histórico do WhatsApp é só metade da
+   resposta, porque só guardamos o que passou pelo app. A outra metade está no
+   funil: um lead que saiu de "novo" já foi abordado de alguma forma. */
+const jaContatado = l => l.status && l.status !== "novo";
+
+function renderizarWhatsApp() {
+  if (S.visao !== "whatsapp") return;
+
+  const painel = document.getElementById("painelWhatsApp");
+  if (!painel) return;
+
+  if (!estadoWPP.conectado){
+    painel.innerHTML = `<div class="wpp-vazio">
+      <div>
+        <h2>WhatsApp não conectado</h2>
+        <p>Escaneie o QR code com seu telefone para conectar.</p>
+        <div id="wppQr" style="margin-top:22px"></div>
+      </div>
+    </div>`;
+    carregarQrWPP();
+    return;
+  }
+
+  if (S.carregando || !S.leads.length){
+    painel.innerHTML = `<div class="wpp-grade"><div class="wpp-lista">${
+      skeletonLista()}</div><div class="wpp-vazio" style="flex:1"></div></div>`;
+    return;
+  }
+
+  const itens = leadsComTelefone();
+  const atual = estadoWPP.conversaAtual;
+  const emFoco = itens.find(i => i.numero === atual);
+  const respondendo = itens.filter(i => i.respondeu).length;
+
+  painel.innerHTML = `<div class="wpp-grade">
+    <div class="wpp-lista">
+      <div class="wpp-cabeca">
+        <button class="chip sempre ${S.chance ? "chance-on" : ""}" id="wppChance"
+                aria-pressed="${S.chance}" title="Colorir por chance de fechar">
+          <span class="ponto"></span> Chance
+        </button>
+        ${S.chance ? `<span class="wpp-escala"></span>` : ""}
+        ${S.termo
+          ? `<b>${itens.length}</b> ${itens.length === 1 ? "resultado" : "resultados"} para "${esc(S.termo)}"`
+          : respondendo
+            ? `<b>${respondendo}</b> ${respondendo === 1 ? "lead respondeu" : "leads responderam"}`
+            : "Nenhum lead respondeu ainda"}
+      </div>
+
+      ${itens.length === 0 ? `<p class="wpp-nada">Nada encontrado.</p>` : ""}
+
+      ${itens.map((i, k) => `
+        <div class="wpp-conversa" data-numero="${esc(i.numero)}"
+             aria-selected="${atual === i.numero}"
+             style="--hc:${hueChance(i.lead).toFixed(0)};--atraso:${Math.min(k,25)*16}ms">
+          ${avatarHTML(i.lead)}
+          <span class="wpp-txt">
+            <b>${esc(i.lead.nome || i.lead.empresa)}</b>
+            <span>${i.ultima ? esc(i.ultima.texto).slice(0, 38) : esc(i.lead.telefone)}</span>
+          </span>
+          ${i.respondeu ? `<em class="wpp-marca">respondeu</em>`
+            : i.jaFalou ? `<em class="wpp-marca fria">já falei</em>` : ""}
+        </div>`).join("")}
+    </div>
+
+    ${emFoco ? fichaWhatsApp(emFoco)
+             : `<div class="wpp-vazio" style="flex:1">Escolha um lead para conversar</div>`}
+  </div>`;
+
+  painel.querySelectorAll("[data-numero]").forEach(el =>
+    el.onclick = () => abrirConversaWPP(el.dataset.numero));
+
+  // Mesmo comportamento do botão da visão de leads: alterna, guarda a
+  // escolha e dispara a varredura de luz.
+  const bc = $("#wppChance");
+  if (bc) bc.onclick = () => {
+    S.chance = !S.chance;
+    localStorage.setItem("prospec.chance", S.chance ? "1" : "0");
+    SOM.toca(S.chance ? "chance" : "chanceOff");
+    if (S.chance) varrer();
+    document.querySelector(".app").classList.toggle("chance", S.chance);
+    renderizarWhatsApp();
+  };
+
+  if (!emFoco) return;
+
+  pintarMensagensWPP(emFoco.msgs);
+
+  /* O envio abre o WhatsApp com a conversa e o texto prontos, em vez de sair
+     pela biblioteca. Motivo medido, não preferência: o whatsapp-web.js perdeu
+     o acesso ao Store do WhatsApp Web (diagnóstico: zero chaves), então o
+     sendMessage devolve undefined e não dá para saber se a mensagem saiu. */
+  const enviar = () => {
+    const campo = $("#inputMsg");
+    const texto = campo.value.trim();
+    if (!texto) return;
+
+    window.open(linkWhatsApp(emFoco.numero, texto), "_blank", "noopener");
+    campo.value = "";
+    aviso("WhatsApp aberto com a mensagem pronta.");
+  };
+
+  $("#btnEnviarMsg").onclick = enviar;
+  $("#inputMsg").onkeydown = e => {
+    if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); enviar(); }
+  };
+
+  const verLead = $("#wppVerLead");
+  if (verLead) verLead.onclick = () => { S.visao = "leads"; render(); abrirPainel(emFoco.lead.id); };
+}
+
+/* A ficha existe para uma coisa: você saber com quem está falando ANTES de
+   escrever. Foto, ramo, onde fica, o que já rolou e o gancho da abordagem. */
+function fichaWhatsApp(i){
+  const l = i.lead;
+
+  const historico = i.msgs.length
+    ? `${i.msgs.length} ${i.msgs.length === 1 ? "mensagem" : "mensagens"}`
+    : i.jaFalou ? "já abordado, sem conversa no app" : "nunca conversado";
+
+  const gancho = semSite(l)
+    ? "Sem site — é exatamente o que você vende."
+    : "Já tem site: ofereça reforma, landing page ou sistema.";
+
+  return `<div id="chatArea" style="--hc:${hueChance(l).toFixed(0)}">
+    <div class="chat-cabeca">
+      ${avatarHTML(l, true)}
+      <span class="chat-quem">
+        <b>${esc(l.nome || l.empresa)}</b>
+        <span>${esc(l.telefone)} · ${esc(CATEGORIAS[l.categoria] || "Outro")}</span>
+      </span>
+      <button class="botao" id="wppVerLead">Ver lead</button>
+    </div>
+
+    <div class="wpp-ficha">
+      <div class="wpp-ficha-topo">
+        ${scoreHTML(l)}${seloHTML(l)}${proxHTML(l)}
+      </div>
+
+      <dl class="wpp-dados">
+        <div><dt>Onde</dt><dd>${esc(l.endereco || "endereço não informado")}${
+          l.bairro ? ` · ${esc(l.bairro)}` : ""}</dd></div>
+        <div><dt>Site</dt><dd>${semSite(l)
+          ? `<span class="wpp-sem">nenhum</span>`
+          : `<a href="${esc(l.site)}" target="_blank" rel="noopener">${esc(l.site)}</a>`}</dd></div>
+        ${temInsta(l) ? `<div><dt>Instagram</dt>
+          <dd><a href="${esc(urlInsta(l))}" target="_blank" rel="noopener">@${
+            esc(String(l.instagram).replace(/^@/,""))}</a></dd></div>` : ""}
+        <div><dt>Conversa</dt><dd>${esc(historico)}</dd></div>
+        ${l.observacoes ? `<div><dt>Anotações</dt>
+          <dd>${esc(l.observacoes)}</dd></div>` : ""}
+      </dl>
+
+      <p class="wpp-gancho">${esc(gancho)}</p>
+    </div>
+
+    <div id="mensagensArea"></div>
+
+    <div class="chat-rodape">
+      <textarea id="inputMsg" placeholder="Escreva sua mensagem…"></textarea>
+      <button class="botao botao-forte" id="btnEnviarMsg">Abrir no WhatsApp</button>
+    </div>
+    <p class="chat-nota">O envio abre o WhatsApp com a mensagem pronta.
+      As respostas voltam para cá.</p>
+  </div>`;
+}
+
+/* Mensagens que chegam entram pelo evento 'message' do worker, então basta
+   reperguntar de tempos em tempos enquanto a aba está aberta. */
+let convTimer = null;
+
+function acompanharConversas(){
+  clearInterval(convTimer);
+
+  convTimer = setInterval(async () => {
+    if (S.visao !== "whatsapp" || !estadoWPP.conectado){
+      clearInterval(convTimer);
+      return;
+    }
+    try {
+      const novas = await API.obterConversas();
+      if (JSON.stringify(novas) === JSON.stringify(estadoWPP.conversas)) return;
+      estadoWPP.conversas = novas;
+      renderizarWhatsApp();
+    } catch (_) {}
+  }, 5000);
+}
+
+let qrTimer = null;
+
+async function carregarQrWPP(){
+  clearInterval(qrTimer);
+
+  let tentativas = 0;
+  let qrMostrado = null;   // evita repintar a imagem a cada 3s sem necessidade
+
+  const busca = async () => {
+    const alvo = $("#wppQr");
+    if (!alvo || S.visao !== "whatsapp"){ clearInterval(qrTimer); return; }
+
+    let r;
+    try { r = await API.req("GET", "/api/whatsapp/qr"); }
+    catch (_) {
+      alvo.innerHTML = `<p>Servidor fora do ar.</p>`;
+      clearInterval(qrTimer);
+      return;
+    }
+
+    // Conectou enquanto esperávamos: sai da tela de QR.
+    if (r && r.conectado){
+      clearInterval(qrTimer);
+      estadoWPP.conectado = true;
+      estadoWPP.conversas = await API.obterConversas().catch(() => ({}));
+      renderizarWhatsApp();
+      return;
+    }
+
+    // NÃO paramos de buscar ao achar o QR: o WhatsApp troca de código a cada
+    // ~20s, e um QR velho na tela simplesmente não escaneia. Seguimos pedindo
+    // e trocamos a imagem quando ela muda; só paramos quando a sessão conecta.
+    if (r && r.qr){
+      if (r.qr !== qrMostrado){
+        qrMostrado = r.qr;
+        alvo.innerHTML = `<img src="${r.qr}" alt="QR code do WhatsApp"
+                               width="240" height="240"
+                               style="border-radius:12px;background:#fff;padding:8px">`;
+      }
+      tentativas = 0;   // enquanto há QR válido, não corre o relógio de falha
+      return;
+    }
+
+    if (r && r.desligado){
+      clearInterval(qrTimer);
+      alvo.innerHTML = `<p>WhatsApp desligado neste servidor (WPP=0).<br>
+        Reinicie com <code>node server.js</code> para conectar.</p>`;
+      return;
+    }
+
+    // Sem imagem mas com o texto do QR: dá para gerar o código em qualquer
+    // leitor, então mostramos em vez de travar a tela.
+    if (r && !r.qr && r.texto){
+      clearInterval(qrTimer);
+      alvo.innerHTML = `<p>Não consegui desenhar a imagem do QR.
+        Código para colar num gerador:</p>
+        <textarea readonly rows="3"
+          style="width:100%;max-width:420px;margin-top:10px;font:12px var(--mono)"
+        >${esc(r.texto)}</textarea>`;
+      return;
+    }
+
+    if (r && r.erro){
+      clearInterval(qrTimer);
+      alvo.innerHTML = `<p>${esc(r.erro)}</p>`;
+      return;
+    }
+
+    tentativas++;
+    alvo.innerHTML = `<p>Abrindo o WhatsApp… (${tentativas})</p>`;
+
+    if (tentativas > 40){          // ~2 min
+      clearInterval(qrTimer);
+      alvo.innerHTML = `<p>O WhatsApp não respondeu. Veja o terminal do servidor.</p>`;
+    }
+  };
+
+  await busca();
+  qrTimer = setInterval(busca, 3000);
+}
+
+function abrirConversaWPP(numero) {
+  estadoWPP.conversaAtual = numero;
+  renderizarWhatsApp();
+}
+
+function pintarMensagensWPP(msgs){
+  const area = $("#mensagensArea");
+  if (!area) return;
+  area.innerHTML = (msgs || []).map(m => `
+    <div class="msg ${m.tipo === "saida" ? "saida" : "entrada"}">
+      <div class="balao">
+        ${esc(m.texto)}
+        <div class="hora">${new Date(m.data)
+          .toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" })}</div>
+      </div>
+    </div>`).join("");
+  area.scrollTop = area.scrollHeight;
+}
+
+async function carregarMensagensWPP(numero) {
+  try { pintarMensagensWPP(await API.obterConversa(numero)); }
+  catch (_) {}
+}
+
+// Inicializar WhatsApp quando a página carregar
+setTimeout(inicializarWhatsApp, 1000);
+
+// Adicionar WhatsApp ao render()
+const renderOriginal = render;
+render = function() {
+  renderOriginal.apply(this, arguments);
+  
+  // Ocultar/mostrar visões
+  const VISOES = { leads:"visaoLeads", panorama:"visaoPanorama",
+                   mapa:"visaoMapa", whatsapp:"visaoWhatsApp" };
+  Object.keys(VISOES).forEach(v => {
+    const el = document.getElementById(VISOES[v]);
+    if (el) el.classList.toggle("ocultar", S.visao !== v);
+  });
+
+  if (S.visao === "whatsapp") {
+    const comTel = S.leads.filter(l => temTel(l) && l.status !== "descartado").length;
+
+    $("#tituloVisao").textContent = "WhatsApp";
+    $("#subTitulo").textContent = estadoWPP.conectado
+      ? `${comTel} leads com telefone`
+      : "Aguardando conexão";
+
+    renderizarWhatsApp();
+    if (estadoWPP.conectado) acompanharConversas();
+  }
+};
+
+
+
+/* ===== TEMA — claro é o padrão; escuro só quando o usuário liga ===== */
+
+const TEMA = {
+  get atual(){ return localStorage.getItem("prospec.tema") === "dark" ? "dark" : "light"; },
+
+  aplica(t){
+    const escuro = t === "dark";
+    document.documentElement.setAttribute("data-theme", escuro ? "dark" : "light");
+    localStorage.setItem("prospec.tema", escuro ? "dark" : "light");
+    const m = $("#temaEstado");
+    if (m) m.textContent = escuro ? "escuro" : "claro";
+  },
+
+  alterna(){
+    TEMA.aplica(TEMA.atual === "dark" ? "light" : "dark");
+    // O mapa tem seu próprio conjunto de tiles por tema.
+    if (typeof desenharTiles === "function") desenharTiles();
+  }
+};
+
+TEMA.aplica(TEMA.atual);
+
+document.addEventListener("DOMContentLoaded", () => {
+  TEMA.aplica(TEMA.atual);
+  const b = $("#navTema");
+  if (b) b.onclick = () => { SOM.toca("clique"); TEMA.alterna(); };
+});
+
+/* ===== MAPA REAL (Leaflet + tiles do OpenStreetMap) =====
+   As coordenadas vêm de dados.json, gravadas uma vez por `node geocodificar.js`.
+   Nada é geocodificado aqui na tela: seria uma consulta externa por lead a
+   cada abertura, e o Nominatim limita a uma por segundo. */
+
+let mapaLeaflet = null;
+let mapaCamada  = null;
+
+const temCoord = l => Number.isFinite(l.lat) && Number.isFinite(l.lon);
+
+function renderMapaReal(){
+  const ativos = S.leads.filter(l => l.status !== "descartado");
+  const comCoord = ativos.filter(temCoord);
+  const semCoord = ativos.filter(l => !temCoord(l));
+
+  const precisos = comCoord.filter(l => l.geo_precisao === "endereco").length;
+  const aprox    = comCoord.length - precisos;
+
+  $("#visaoMapa").innerHTML = interruptorMapa() + `
+    <div class="mapa-topo">
+      <h2>Mapa</h2>
+      <p>Posição real de cada lead, geocodificada a partir do endereço pelo
+      OpenStreetMap. <b>${precisos}</b> localizados na porta exata e
+      <b>${aprox}</b> apenas no bairro ou centro da cidade — estes aparecem com
+      contorno tracejado, porque a coordenada é aproximada e seria desonesto
+      desenhá-los como se fossem precisos.${semCoord.length
+        ? ` <b>${semCoord.length}</b> sem endereço utilizável ficaram de fora.` : ""}</p>
+    </div>
+
+    <div class="mapa-caixa">
+      <div id="mapaReal"></div>
+      <div class="mapa-legenda">
+        <span><i class="pin quente"></i>Quente</span>
+        <span><i class="pin morno"></i>Morno</span>
+        <span><i class="pin frio"></i>Frio</span>
+        <span><i class="pin aprox"></i>Posição aproximada</span>
+      </div>
+    </div>`;
+
+  ligarInterruptorMapa();
+
+  if (typeof L === "undefined"){
+    $("#mapaReal").innerHTML = `<p class="mapa-erro">A biblioteca do mapa não carregou.</p>`;
+    return;
+  }
+  if (!comCoord.length){
+    $("#mapaReal").innerHTML = `<p class="mapa-erro">Nenhum lead tem coordenada ainda.
+      Rode <code>node geocodificar.js</code> na pasta do projeto.</p>`;
+    return;
+  }
+
+  // O mapa é recriado a cada render da visão; o container é novo toda vez.
+  if (mapaLeaflet){ mapaLeaflet.remove(); mapaLeaflet = null; }
+
+  mapaLeaflet = L.map("mapaReal", { scrollWheelZoom: true, attributionControl: true });
+
+  /* Tiles neutros em vez do OSM padrão: o mapa colorido brigava com o cinza
+     do app — verde de mata, azul de água, rodovia vermelha, tudo saturado ao
+     lado de uma interface sem cor. O Carto tem duas variantes de mesma
+     geometria, uma clara e uma escura, então o mapa acompanha o tema em vez
+     de ser um retângulo alheio no meio da tela. */
+  desenharTiles();
+
+  mapaCamada = L.layerGroup().addTo(mapaLeaflet);
+
+  comCoord.forEach(l => {
+    const faixa = faixaDe(l);
+    const aproximado = l.geo_precisao !== "endereco";
+
+    const marca = L.divIcon({
+      className: "",
+      html: `<span class="pin ${faixa} ${aproximado ? "aprox" : ""}"></span>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    L.marker([l.lat, l.lon], { icon: marca, title: l.nome })
+      .addTo(mapaCamada)
+      .bindPopup(popupLead(l, aproximado))
+      .on("popupopen", e => {
+        const b = e.popup.getElement().querySelector("[data-abrir]");
+        if (b) b.onclick = () => abrirPainel(+b.dataset.abrir);
+      });
+  });
+
+  // Enquadra todos os pontos, com uma folga para os pinos não colarem na borda.
+  const limites = L.latLngBounds(comCoord.map(l => [l.lat, l.lon]));
+  mapaLeaflet.fitBounds(limites, { padding: [42, 42], maxZoom: 16 });
+
+  // O Leaflet mede o container na criação; se a aba abriu com ele oculto ou
+  // em transição, a medida sai errada e o mapa aparece cortado.
+  setTimeout(() => mapaLeaflet && mapaLeaflet.invalidateSize(), 220);
+}
+
+/* Trocar de tema troca o conjunto de tiles. Guardamos a camada para poder
+   remover a anterior — sem isso as duas ficariam empilhadas. */
+let mapaTiles = null;
+
+function desenharTiles(){
+  if (!mapaLeaflet) return;
+  if (mapaTiles) mapaLeaflet.removeLayer(mapaTiles);
+
+  /* OSM padrão. Tentei os basemaps do Carto, que nascem neutros, mas eles
+     passaram a exigir chave de API e estampam "API KEY REQUIRED" sobre o
+     mapa. O OSM não pede chave; o ajuste de tema vai por filtro CSS
+     (ver .leaflet-tile-pane em styles.css). */
+  mapaTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; colaboradores do OpenStreetMap'
+  }).addTo(mapaLeaflet);
+}
+
+function popupLead(l, aproximado){
+  return `<div class="mapa-pop">
+    <b>${esc(l.nome)}</b>
+    <span class="cat">${esc(CATEGORIAS[l.categoria] || "Outro")} · score ${scoreDe(l)}</span>
+    <span>${esc(l.endereco || "endereço não informado")}${l.bairro ? ` · ${esc(l.bairro)}` : ""}</span>
+    ${temTel(l) ? `<span>${esc(l.telefone)}</span>` : ""}
+    ${aproximado ? `<span class="aviso-aprox">posição aproximada (${esc(l.geo_precisao || "?")})</span>` : ""}
+    <button class="botao" data-abrir="${l.id}">Ver lead</button>
+  </div>`;
+}

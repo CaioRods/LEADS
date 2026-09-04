@@ -3,14 +3,33 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 
+const whatsapp = require('./whatsapp-module');
 const app = express();
 const PORT = 3000;
-const dataPath = path.join(__dirname, 'dados.json');
+/* No app empacotado o dados.json fica dentro do app.asar, que é somente
+   leitura: salvar um lead falharia. O Electron passa por PROSPEC_DADOS um
+   caminho gravável na pasta do usuário. Rodando pelo terminal, segue o
+   arquivo do projeto. */
+const dataPath = process.env.PROSPEC_DADOS || path.join(__dirname, 'dados.json');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+// Leaflet servido do próprio node_modules: o mapa funciona sem internet
+// para a biblioteca (os tiles ainda vêm da rede, esses não dá para embutir).
+app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'leaflet', 'dist')));
+
+// Sem cache no app-web.js/styles.css: durante o desenvolvimento o navegador
+// servia versões velhas e os erros apontavam para linhas que já não existiam.
+// __dirname, não '.': dentro do app empacotado o diretório de execução não é
+// a pasta do projeto, e os arquivos da interface voltavam 404.
+app.use(express.static(__dirname, {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, caminho) => {
+    if (/\.(js|css|html)$/.test(caminho)) res.setHeader('Cache-Control', 'no-store');
+  }
+}));
 
 // Carregar dados
 function loadData() {
@@ -282,3 +301,78 @@ app.listen(PORT, () => {
   console.log(`║                                        ║`);
   console.log(`╚════════════════════════════════════════╝\n`);
 });
+
+// ===== ENDPOINTS WHATSAPP =====
+
+// GET /api/whatsapp/status - Retorna status de conexão
+app.get('/api/whatsapp/status', (req, res) => {
+  res.json({ 
+    conectado: whatsapp.isConnected(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// POST /api/whatsapp/enviar - Envia mensagem
+app.post('/api/whatsapp/enviar', async (req, res) => {
+  const { numero, mensagem } = req.body;
+  
+  if (!numero || !mensagem) {
+    return res.status(400).json({ error: 'numero e mensagem são obrigatórios' });
+  }
+
+  try {
+    const resultado = await whatsapp.enviarMensagem(numero, mensagem);
+    res.json({ sucesso: true, resultado });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/whatsapp/conversa/:numero - Retorna conversa de um número
+app.get('/api/whatsapp/conversa/:numero', (req, res) => {
+  const conversa = whatsapp.obterConversa(req.params.numero);
+  res.json(conversa);
+});
+
+// GET /api/whatsapp/conversas - Retorna todas as conversas
+app.get('/api/whatsapp/conversas', (req, res) => {
+  res.json(whatsapp.obterConversas());
+});
+
+// GET /api/whatsapp/diagnostico - o que a biblioteca conseguiu injetar
+app.get('/api/whatsapp/diagnostico', async (req, res) => {
+  try { res.json(await whatsapp.diagnosticar()); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/whatsapp/qr - QR code (data URL) enquanto não há sessão.
+// Diz também por que ele pode não existir, para a tela não ficar mentindo
+// "gerando…" quando na verdade o WhatsApp nem foi ligado.
+app.get('/api/whatsapp/qr', (req, res) => {
+  res.json({
+    qr: whatsapp.obterQr(),
+    texto: whatsapp.obterQrTexto(),
+    conectado: whatsapp.isConnected(),
+    desligado: process.env.WPP === '0',
+    erro: whatsapp.obterErro()
+  });
+});
+
+
+// Inicializar WhatsApp em background. WPP=0 sobe o servidor sem o WhatsApp
+// (útil para mexer no front sem esperar o Chromium).
+setImmediate(() => {
+  if (process.env.WPP === '0') {
+    console.log('WhatsApp desligado (WPP=0).');
+    return;
+  }
+  try {
+    console.log('Inicializando WhatsApp em background...');
+    whatsapp.initWhatsApp((conectado) => {
+      console.log(`WhatsApp: ${conectado ? 'conectado' : 'desconectado'}`);
+    });
+  } catch (err) {
+    console.error('Erro ao inicializar WhatsApp:', err.message);
+  }
+});
+
