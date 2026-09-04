@@ -13,7 +13,9 @@ const dataPath = process.env.PROSPEC_DADOS || path.join(__dirname, 'dados.json')
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+// 6 MB: o padrão do express são 100 kb, e uma imagem arrastada chega como
+// data URL — base64 infla ~33%, então 4 MB de arquivo viram ~5,4 MB de corpo.
+app.use(express.json({ limit: '6mb' }));
 // Leaflet servido do próprio node_modules: o mapa funciona sem internet
 // para a biblioteca (os tiles ainda vêm da rede, esses não dá para embutir).
 app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'leaflet', 'dist')));
@@ -262,7 +264,31 @@ app.get('/api/proxy-img', (req, res) => {
 
 // POST /api/salvar-imagem  { id, url } -> baixa para assets/logos/<id>.<ext>
 app.post('/api/salvar-imagem', (req, res) => {
-  const { id, url } = req.body || {};
+  const { id, url, dados } = req.body || {};
+
+  /* Dois caminhos: uma URL para baixar, ou uma imagem arrastada do Finder
+     que chega como data URL. O segundo existe porque a busca automática não
+     acha nada para boa parte do comércio pequeno. */
+  if (id && typeof dados === 'string' && dados.startsWith('data:image/')) {
+    const m = /^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i.exec(dados);
+    if (!m) return res.status(415).json({ error: 'formato de imagem não suportado' });
+
+    const buf = Buffer.from(m[2], 'base64');
+    if (buf.length > 4_000_000) return res.status(413).json({ error: 'imagem muito grande' });
+
+    const ext = m[1].toLowerCase() === 'jpeg' ? 'jpg' : m[1].toLowerCase();
+    const dir = path.join(__dirname, 'assets', 'logos');
+    fs.mkdirSync(dir, { recursive: true });
+
+    const rel = `assets/logos/${id}.${ext}`;
+    fs.writeFileSync(path.join(__dirname, rel), buf);
+
+    const base = loadData();
+    const lead = (base.leads || []).find(x => String(x.id) === String(id));
+    if (lead) { lead.logo = rel; lead.atualizado_em = new Date().toISOString(); saveData(base); }
+    return res.json({ logo: rel, bytes: buf.length });
+  }
+
   if (!id || !/^https:\/\//.test(url || '')) return res.status(400).json({ error: 'id e url são obrigatórios' });
   const dir = path.join(__dirname, 'assets', 'logos');
   fs.mkdirSync(dir, { recursive: true });

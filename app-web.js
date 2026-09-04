@@ -1210,6 +1210,17 @@ $("#busca").oninput = e => {
   S.termo = e.target.value;
   if (["leads", "whatsapp", "estados"].includes(S.visao)) render();
 };
+/* No app, um <a target="_blank"> viraria janela interna do Electron. Um
+   único ouvinte na captura desvia todos eles — os do painel do lead, do
+   mapa e da aba de conversas — sem precisar tocar em cada marcação. */
+document.addEventListener("click", e => {
+  if (!window.prospec || !window.prospec.noApp) return;
+  const a = e.target.closest && e.target.closest('a[target="_blank"][href]');
+  if (!a) return;
+  e.preventDefault();
+  abrirFora(a.href);
+}, true);
+
 document.addEventListener("keydown", e => {
   if (e.key === "/" && document.activeElement !== $("#busca")){ e.preventDefault(); $("#busca").focus(); }
   if (e.key === "Escape"){
@@ -1244,10 +1255,20 @@ const mensagensDe = l => Array.isArray(l.mensagens) ? l.mensagens : [];
 
 const numeroDoLead = l => String(l.telefone || "").replace(/\D/g, "").slice(-11);
 
-/* Abre um endereço fora do app. Um <a> clicado programaticamente passa pelo
-   mesmo caminho de um link de verdade, o que o Electron entrega ao sistema
-   operacional e o navegador trata como navegação, não como pop-up. */
+/* Abre um endereço fora do app.
+
+   Dentro do Electron vai pelo processo principal, que chama o sistema
+   operacional direto — determinístico, sem depender de política de pop-up
+   nem de bloqueio de janela. No navegador cai no <a> clicado, que percorre o
+   mesmo caminho de um link de verdade e não é tratado como pop-up. */
 function abrirFora(url){
+  if (window.prospec && window.prospec.abrirFora){
+    window.prospec.abrirFora(url).then(ok => {
+      if (!ok) aviso("Não consegui abrir o WhatsApp. Número: " + url, true);
+    });
+    return;
+  }
+
   const a = document.createElement("a");
   a.href = url;
   a.target = "_blank";
@@ -1925,4 +1946,137 @@ function lerEditorHorarios(raiz){
     h[inp.dataset.dia] = faixas;
   });
   return h;
+}
+
+/* ===========================================================================
+   PRÉVIA DE FOTO, BUSCA DE IMAGEM E ARRASTAR-SOLTAR
+   As três funções abaixo eram chamadas em abrirPainel e no Esc, mas tinham
+   sumido do arquivo — perdidas numa reescrita. O efeito era pior do que
+   parece: `ligarDropLogo` estourava dentro de abrirPainel, e tudo depois
+   dela deixava de rodar, inclusive o render() final.
+=========================================================================== */
+
+function abrirPrevia(src, legenda){
+  fecharPrevia();
+
+  const v = document.createElement("div");
+  v.className = "previa";
+  v.innerHTML = `<div class="previa-veu"></div>
+    <figure class="previa-caixa">
+      <img src="${esc(src)}" alt="${esc(legenda || "")}">
+      ${legenda ? `<figcaption>${esc(legenda)}</figcaption>` : ""}
+    </figure>`;
+
+  document.body.appendChild(v);
+  SOM.toca("abre");
+
+  v.onclick = () => fecharPrevia();
+  return v;
+}
+
+/* Devolve true se havia o que fechar — é assim que o Esc sabe se já tratou o
+   evento e não deve fechar o painel atrás. */
+function fecharPrevia(){
+  const v = document.querySelector(".previa");
+  if (!v) return false;
+
+  const caixa = v.querySelector(".previa-caixa");
+  if (caixa) caixa.classList.add("saindo");
+  SOM.toca("fecha");
+  setTimeout(() => v.remove(), 200);
+  return true;
+}
+
+/* Clicar em qualquer foto de lead abre a prévia. Um ouvinte só, na captura,
+   cobre cartões, lista, painel, aba de conversas e quadro de estados. */
+document.addEventListener("click", e => {
+  const img = e.target.closest && e.target.closest(".avatar img, .avatar-g img");
+  if (!img) return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  const cartao = img.closest("[data-id], [data-lead]");
+  const id = cartao && (cartao.dataset.id || cartao.dataset.lead);
+  const lead = id && S.leads.find(l => String(l.id) === String(id));
+  abrirPrevia(img.src, lead ? (lead.nome || lead.empresa) : "");
+}, true);
+
+
+async function escolherFoto(l){
+  const alvo = $("#buscarImg");
+  if (alvo) { alvo.disabled = true; alvo.textContent = "Buscando…"; }
+
+  let achadas = [];
+  try {
+    achadas = await API.buscarImagens(`${l.nome} ${l.cidade || ""}`);
+  } catch (e){
+    aviso("Busca de imagem falhou: " + e.message, true);
+  }
+
+  if (alvo) { alvo.disabled = false; alvo.textContent = "Buscar foto"; }
+  if (!Array.isArray(achadas) || !achadas.length)
+    return aviso("Nenhuma imagem encontrada para este lead.", true);
+
+  const camada = document.createElement("div");
+  camada.className = "previa";
+  camada.innerHTML = `<div class="previa-veu"></div>
+    <div class="previa-caixa escolha-foto">
+      <h3>Escolha a foto de ${esc(l.nome)}</h3>
+      <div class="escolha-grade">
+        ${achadas.slice(0, 12).map(u => `
+          <button class="escolha-item" data-url="${esc(u)}">
+            <img src="/api/imagem?u=${encodeURIComponent(u)}" alt="" loading="lazy"
+                 onerror="this.closest('.escolha-item').remove()">
+          </button>`).join("")}
+      </div>
+      <p class="escolha-dica">Clique numa imagem para usá-la. Esc cancela.</p>
+    </div>`;
+
+  document.body.appendChild(camada);
+  camada.querySelector(".previa-veu").onclick = () => fecharPrevia();
+
+  camada.querySelectorAll("[data-url]").forEach(b => b.onclick = async () => {
+    fecharPrevia();
+    await salvarLogo(l.id, b.dataset.url);
+  });
+}
+
+
+/* Arrastar uma imagem do Finder para o painel troca a foto do lead. Atalho
+   para quando a busca automática não acha nada — o que é comum em comércio
+   pequeno. */
+function ligarDropLogo(l){
+  const painel = document.querySelector(".painel");
+  if (!painel) return;
+
+  const parar = e => { e.preventDefault(); e.stopPropagation(); };
+
+  ["dragenter", "dragover"].forEach(ev =>
+    painel.addEventListener(ev, e => { parar(e); painel.classList.add("recebendo"); }));
+
+  ["dragleave", "drop"].forEach(ev =>
+    painel.addEventListener(ev, e => { parar(e); painel.classList.remove("recebendo"); }));
+
+  painel.addEventListener("drop", async e => {
+    const arq = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!arq) return;
+
+    if (!/^image\//.test(arq.type))
+      return aviso("Isso não é uma imagem.", true);
+    if (arq.size > 4 * 1024 * 1024)
+      return aviso("Imagem muito grande (máximo 4 MB).", true);
+
+    const leitor = new FileReader();
+    leitor.onload = async () => {
+      try {
+        await API.req("POST", "/api/salvar-imagem", { id: l.id, dados: leitor.result });
+        aviso("Foto trocada.");
+        await carregar(true);
+        abrirPainel(l.id);
+      } catch (err){
+        aviso("Não consegui salvar a foto: " + err.message, true);
+      }
+    };
+    leitor.readAsDataURL(arq);
+  });
 }

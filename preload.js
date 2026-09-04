@@ -1,17 +1,22 @@
+/* preload.js — a ponte entre a página e o processo principal do Electron.
+
+   Antes este arquivo expunha uma API inteira de leads e atividades por IPC
+   (load-leads, add-lead, delete-activity…) cujos handlers nunca existiram no
+   main.js: eram restos de um desenho anterior, em que o app falaria por IPC
+   em vez de HTTP. Qualquer chamada àquilo rejeitava em silêncio. A página
+   sempre usou a API HTTP do servidor local, então foi tudo removido.
+
+   Sobra o que de fato precisa cruzar a fronteira: abrir um endereço fora do
+   app. Isso não pode partir da página — o Electron bloqueia window.open e
+   transformaria um link numa janela interna sem barra de endereço.          */
+
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('api', {
-  // Leads
-  loadLeads: () => ipcRenderer.invoke('load-leads'),
-  addLead: (lead) => ipcRenderer.invoke('add-lead', lead),
-  updateLead: (lead) => ipcRenderer.invoke('update-lead', lead),
-  deleteLead: (id) => ipcRenderer.invoke('delete-lead', id),
+contextBridge.exposeInMainWorld('prospec', {
+  /* Entrega a URL ao sistema operacional. Devolve true se o processo
+     principal aceitou, para a página saber se precisa tentar o plano B. */
+  abrirFora: (url) => ipcRenderer.invoke('abrir-fora', url),
 
-  // Atividades
-  addActivity: (leadId, activity) => ipcRenderer.invoke('add-activity', leadId, activity),
-  loadActivities: (leadId) => ipcRenderer.invoke('load-activities', leadId),
-  deleteActivity: (activityId) => ipcRenderer.invoke('delete-activity', activityId),
-
-  // Exportar
-  exportData: () => ipcRenderer.invoke('export-data')
+  // Permite à página saber que está dentro do app, e não num navegador.
+  noApp: true
 });

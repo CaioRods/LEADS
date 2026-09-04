@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell } = require('electron');
+const { app, BrowserWindow, Menu, shell, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -165,6 +165,15 @@ function startServer() {
       'Não consegui iniciar o servidor interno.\n\n' + err.message);
   }
 }
+
+/* A página pede a abertura por aqui em vez de tentar window.open. É o
+   caminho determinístico: não depende de política de pop-up, de bloqueio de
+   janela nem de qual versão do Electron está rodando. */
+ipcMain.handle('abrir-fora', async (_evento, url) => {
+  if (!/^(https?:|mailto:|tel:|whatsapp:)/i.test(String(url || ''))) return false;
+  try { await shell.openExternal(url); return true; }
+  catch (err) { console.error('[Electron] não consegui abrir', url, err.message); return false; }
+});
 
 app.on('ready', () => {
   /* No macOS a opção `icon` da BrowserWindow não muda o ícone do Dock — só

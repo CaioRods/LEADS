@@ -362,6 +362,19 @@ a.botao{text-decoration:none}
 .score .trilho{width:62px;height:7px;border-radius:4px;box-shadow:var(--fundo-p);padding:1.5px;display:flex}
 .score .trilho i{border-radius:2px;background:rgba(var(--sombra-rgb),.34)}
 .score.f-quente .trilho i{background:var(--acento)}
+
+/* Morno e frio existiam no JS (f-morno, f-frio) mas não tinham regra
+   nenhuma: os dois caíam no cinza neutro, indistinguíveis um do outro e de
+   um lead sem faixa. Agora a barra acompanha a mesma rampa do modo chance,
+   então as três faixas se leem sem precisar do rótulo. */
+.score.f-morno .faixa{ color:hsl(38 48% 34%) }
+.score.f-morno .trilho i{ background:hsl(40 58% 52%) }
+
+.score.f-frio .faixa{ color:hsl(205 22% 42%) }
+.score.f-frio .trilho i{ background:hsl(205 26% 58%) }
+
+[data-theme="dark"] .score.f-morno .faixa{ color:hsl(40 54% 68%) }
+[data-theme="dark"] .score.f-frio .faixa{ color:hsl(205 26% 66%) }
 .score.verificar .num{border-bottom:2px dotted var(--tinta-2);padding-bottom:1px}
 
 /* ============================== SELO DE ETAPA ============================== */
@@ -389,6 +402,13 @@ a.botao{text-decoration:none}
 .barras i.on{background:var(--tinta-2)}
 .prox.n1 .barras i.on,.prox.n2 .barras i.on{background:var(--acento)}
 .prox.n1,.prox.n2{color:var(--acento-tinta);font-weight:700}
+/* n3 a n5 também estavam sem regra: só n1/n2 (perto) e n6 (fora) tinham
+   tratamento, então "Centro", "outro bairro" e "zona rural" saíam idênticos. */
+.prox.n3 .barras i.on{ background:hsl(38 46% 56%) }
+.prox.n4 .barras i.on{ background:hsl(205 20% 58%) }
+.prox.n5 .barras i.on{ background:hsl(205 14% 62%) }
+.prox.n5{ color:var(--tinta-2) }
+
 .prox.n6 .barras{position:relative}
 .prox.n6 .barras::after{
   content:"";position:absolute;left:-2px;right:-2px;top:50%;height:1.5px;
@@ -1608,3 +1628,24 @@ select.suave.pq{height:38px;font-size:13px}
   padding:1px 5px; border-radius:4px; background:rgba(var(--sombra-rgb),.07);
 }
 [data-theme="dark"] .hora-dica code{ background:rgba(var(--marca-rgb),.12) }
+
+/* Escolha de foto e alvo de arrastar-soltar */
+.escolha-foto{ max-width:min(680px, 92vw); padding:22px }
+.escolha-foto h3{ font-size:15px; margin-bottom:14px }
+.escolha-grade{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr));
+  gap:10px; max-height:52vh; overflow-y:auto;
+}
+.escolha-item{
+  border:0; padding:0; aspect-ratio:1; border-radius:var(--r-m); overflow:hidden;
+  cursor:pointer; background:var(--fundo); box-shadow:var(--relevo-p);
+  transition:box-shadow var(--t-relevo), transform var(--t);
+}
+.escolha-item:hover{ box-shadow:var(--relevo-p-alto); transform:translateY(-2px) }
+.escolha-item img{ width:100%; height:100%; object-fit:cover; display:block }
+.escolha-dica{ font-size:12px; color:var(--tinta-2); margin-top:12px; text-align:center }
+
+/* O painel avisa que aceita a imagem que está sendo arrastada. */
+.painel.recebendo{ box-shadow:-31px -31px 43px rgba(var(--luz-rgb),1),
+                              8px 8px 26px rgba(var(--sombra-rgb),.16),
+                              inset 0 0 0 2.5px var(--acento) }
