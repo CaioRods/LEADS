@@ -1262,13 +1262,24 @@ const numeroDoLead = l => String(l.telefone || "").replace(/\D/g, "").slice(-11)
    nem de bloqueio de janela. No navegador cai no <a> clicado, que percorre o
    mesmo caminho de um link de verdade e não é tratado como pop-up. */
 function abrirFora(url){
+  /* Três caminhos, do mais direto ao mais teimoso. A ordem importa: cada um
+     só entra se o anterior não resolveu, e o último nunca falha — no pior
+     caso o número fica na área de transferência e na tela, então dá para
+     colar no WhatsApp à mão em vez de ficar sem saída. */
+
+  // 1. Dentro do app: o processo principal fala com o sistema operacional.
   if (window.prospec && window.prospec.abrirFora){
-    window.prospec.abrirFora(url).then(ok => {
-      if (!ok) aviso("Não consegui abrir o WhatsApp. Número: " + url, true);
-    });
+    window.prospec.abrirFora(url)
+      .then(ok => { if (!ok) planoB(url); })
+      .catch(() => planoB(url));
     return;
   }
 
+  // 2. No navegador: um <a> clicado percorre o caminho de um link de verdade.
+  planoB(url);
+}
+
+function planoB(url){
   const a = document.createElement("a");
   a.href = url;
   a.target = "_blank";
@@ -1276,6 +1287,25 @@ function abrirFora(url){
   document.body.appendChild(a);
   a.click();
   a.remove();
+
+  /* 3. Se em meio segundo a janela não tomou o foco, a abertura foi barrada.
+     Aí copiamos o link e mostramos o número, para você não ficar preso. */
+  setTimeout(() => {
+    if (document.hasFocus && !document.hasFocus()) return;   // abriu, perdeu foco
+    copiarLink(url);
+  }, 600);
+}
+
+async function copiarLink(url){
+  const numero = (url.match(/wa\.me\/(\d+)/) || [])[1];
+  const bonito = numero ? numero.replace(/^55/, "") : url;
+
+  try {
+    await navigator.clipboard.writeText(url);
+    aviso(`Não consegui abrir o WhatsApp. Link copiado — número ${bonito}.`, true);
+  } catch (_) {
+    aviso(`Não consegui abrir o WhatsApp. Número: ${bonito}`, true);
+  }
 }
 
 /* wa.me quer o número com código do país e sem sinais. Fixos de Prudente têm
