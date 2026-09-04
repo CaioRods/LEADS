@@ -75,8 +75,16 @@ if (chrome) console.log('WhatsApp: usando Chrome em', chrome);
    WPP_WEB_VERSION permite trocar sem mexer no código. */
 const versaoWeb = process.env.WPP_WEB_VERSION || '2.3000.1042620056-alpha';
 
+/* Sem dataPath explícito o LocalAuth grava em `process.cwd()/.wwebjs_auth`.
+   No app empacotado o diretório de execução é a RAIZ do sistema, então ele
+   tentava criar /.wwebjs_auth e morria com ENOENT. O Electron passa por
+   PROSPEC_SESSAO um caminho gravável; pelo terminal, segue na pasta do
+   projeto como antes. */
+const pastaSessao = process.env.PROSPEC_SESSAO || path.join(__dirname, '.wwebjs_auth');
+console.log('WhatsApp: sessão em', pastaSessao);
+
 client = new Client({
-  authStrategy: new LocalAuth({ clientId: 'prospecapp' }),
+  authStrategy: new LocalAuth({ clientId: 'prospecapp', dataPath: pastaSessao }),
   webVersion: versaoWeb,
   webVersionCache: {
     type: 'remote',

@@ -37,6 +37,31 @@ const CATEGORIAS = {
   salao_beleza:"Salão de beleza", oficina:"Oficina", farmacia:"Farmácia",
   loja:"Loja", supermercado:"Supermercado", outro:"Outro"
 };
+/* ===== ESTADOS DA CONVERSA =====
+   Eixo separado do funil. O funil descreve a etapa comercial; o estado
+   descreve onde a CONVERSA está. Um lead sem estado nunca foi abordado e vive
+   na tela de Leads; assim que a conversa começa ele sai de lá e passa a viver
+   no quadro de Estados — que é o pedido: não misturar quem falta abordar com
+   quem já está em jogo. */
+const ESTADOS = ["conversando", "aguardando", "nao_deu_certo", "fechado"];
+
+const ESTADO_NOME = {
+  conversando:   "Conversando",
+  aguardando:    "Aguardando resposta",
+  nao_deu_certo: "Não deu certo",
+  fechado:       "Fechado"
+};
+
+const ESTADO_SUB = {
+  conversando:   "a bola está com você",
+  aguardando:    "a bola está com ele",
+  nao_deu_certo: "encerrado sem venda",
+  fechado:       "deu bom"
+};
+
+const emConversa = l => !!l.estado && ESTADOS.includes(l.estado);
+const chanceDe   = l => Number.isFinite(+l.chance) ? Math.max(0, Math.min(10, +l.chance)) : 0;
+
 const FUNIL  = ["novo","contatado","agendado","proposta","vendido"];
 const ETAPAS = FUNIL.concat(["descartado"]);
 const STATUS_NOME = { novo:"Novo", contatado:"Contatado", agendado:"Agendado",
@@ -263,7 +288,9 @@ function recalcularVias(){
 }
 function filtrados(){
   const t = S.termo.trim().toLowerCase();
-  let r = S.leads.filter(l => {
+  // Quem já está em conversa vive no quadro de Estados, não aqui. A tela de
+  // Leads é a fila de quem ainda falta abordar.
+  let r = S.leads.filter(l => !emConversa(l)).filter(l => {
     if (S.status !== "todos" && l.status !== S.status) return false;
     if (S.rapido === "ligar"   && !(temTel(l) && l.status === "novo")) return false;
     if (S.rapido === "visitar" && (temTel(l) || l.status === "descartado")) return false;
@@ -788,12 +815,27 @@ async function abrirPainel(id){
           ${temTel(l)?`<a class="botao" href="${esc(linkWhatsApp(l.telefone))}" target="_blank" rel="noopener">${IC.wpp(15)} WhatsApp</a>`:""}
           ${temInsta(l)?`<a class="botao" href="${esc(urlInsta(l))}" target="_blank" rel="noopener">${IC.insta(15)} Instagram</a>`:""}
           ${temFace(l)?`<a class="botao" href="${esc(urlFace(l))}" target="_blank" rel="noopener">${IC.face(15)} Facebook</a>`:""}
+          ${emConversa(l)
+            ? ""
+            : `<button class="botao botao-forte" id="iniciarConversa">Iniciar conversa</button>`}
           <button class="botao" id="editarLead">Editar</button>
           <button class="botao" id="excluirLead">${IC.lixo(14)} Excluir</button>
         </div>
       </div>
 
       <div class="painel-corpo">
+        ${emConversa(l) ? `
+        <div class="secao"><span class="rotulo">Estado da conversa</span>
+          <div class="poco painel-estado">
+            <select id="estadoLead" class="mover" aria-label="Estado da conversa">
+              ${ESTADOS.map(e => `<option value="${e}" ${e === l.estado ? "selected" : ""}
+                >${ESTADO_NOME[e]}</option>`).join("")}
+              <option value="">↩ Devolver para Leads</option>
+            </select>
+            <div id="estadoChance">${escalaHTML(l)}</div>
+          </div>
+        </div>` : ""}
+
         <div class="secao"><span class="rotulo">Contato e local</span><dl class="poco">
           ${campo("Telefone", temTel(l) ? esc(l.telefone) + (telDuvida(l)?' <span class="suave">· confirmar ao discar</span>':"") : '<span class="suave">sem número — exige visita</span>', "mono")}
           ${campo("E-mail", l.email ? esc(l.email) : "")}
@@ -850,6 +892,29 @@ async function abrirPainel(id){
      continuar afundado. */
   $("#veu").onclick = () => fecharPainel();
   $("#fecharPainel").onclick = () => fecharPainel();
+
+  const bi = $("#iniciarConversa");
+  if (bi) bi.onclick = async () => { await iniciarConversa(l); abrirPainel(l.id); };
+
+  const se = $("#estadoLead");
+  if (se) se.onchange = async () => {
+    const destino = se.value || null;
+    l.estado = destino;
+    try { await API.atualizarLead(l.id, { estado: destino }); }
+    catch (e){ aviso("Não consegui mudar o estado: " + e.message, true); }
+    aviso(destino ? `Movido para ${ESTADO_NOME[destino]}.` : "Devolvido para Leads.");
+    render();
+    if (destino) abrirPainel(l.id); else fecharPainel(true);
+  };
+
+  const ec = $("#estadoChance");
+  if (ec) ec.querySelectorAll("[data-chance]").forEach(b => b.onclick = async () => {
+    const n = +b.dataset.chance;
+    l.chance = chanceDe(l) === n ? 0 : n;
+    abrirPainel(l.id);
+    try { await API.atualizarLead(l.id, { chance: l.chance }); }
+    catch (e){ aviso("Não consegui salvar a chance: " + e.message, true); }
+  });
   $("#editarLead").onclick = () => abrirForm(l);
   $("#excluirLead").onclick = async () => {
     if (!confirm(`Excluir "${l.nome}"? Isso não volta.`)) return;
@@ -1004,7 +1069,11 @@ function render(){
   const bs = $("#navSom");
   if (bs){ bs.classList.toggle("ativo", SOM.ligado);
            $("#somEstado").textContent = SOM.ligado ? "on" : "off"; }
-  $("#navContLeads").textContent = S.carregando ? "—" : S.leads.length;
+  const naFila  = S.leads.filter(l => !emConversa(l)).length;
+  const emJogo  = S.leads.filter(emConversa).length;
+  $("#navContLeads").textContent = S.carregando ? "—" : naFila;
+  const ce = $("#navContEstados");
+  if (ce) ce.textContent = S.carregando ? "—" : emJogo;
   const ativos = S.leads.filter(l => l.status !== "descartado");
   const podeLigar = S.leads.filter(l => temTel(l) && l.status === "novo").length;
   $("#peLocal").innerHTML = `Você em <b>${esc(S.local.bairro)}</b>${S.local.via?` · ${esc(S.local.via)}`:""}`;
@@ -1014,17 +1083,21 @@ function render(){
   document.querySelectorAll("[data-visao]").forEach(b =>
     b.setAttribute("aria-current", b.dataset.visao === S.visao ? "page" : "false"));
 
+  $("#visaoEstados").classList.toggle("ocultar", S.visao !== "estados");
   $("#visaoLeads").classList.toggle("ocultar", S.visao !== "leads");
   $("#visaoPanorama").classList.toggle("ocultar", S.visao !== "panorama");
   $("#visaoMapa").classList.toggle("ocultar", S.visao !== "mapa");
 
-  const titulos = { leads:"Leads", panorama:"Panorama", mapa:"Rotas de visita" };
+  const titulos = { leads:"Leads", estados:"Estados", panorama:"Panorama", mapa:"Rotas de visita" };
   $("#tituloVisao").textContent = titulos[S.visao];
   $("#subTitulo").textContent = S.carregando ? "Carregando da API…"
-    : `${S.leads.length} levantados em ${cidadeDominante()} · ${ativos.length} ativos`;
+    : S.visao === "estados"
+      ? `${emJogo} em conversa · ${naFila} ainda na fila`
+      : `${S.leads.length} levantados em ${cidadeDominante()} · ${ativos.length} ativos`;
 
   if (S.carregando) return;
   if (S.visao === "leads"){ faixaPanorama(); barraFiltros(); renderLeads(); ligarFiltros(); }
+  if (S.visao === "estados") renderEstados();
   if (S.visao === "panorama") renderPanorama();
   if (S.visao === "mapa") renderMapa();
 }
@@ -1100,7 +1173,7 @@ $("#navExportar").onclick = async () => {
 // leads, então digitar com a aba aberta não fazia absolutamente nada.
 $("#busca").oninput = e => {
   S.termo = e.target.value;
-  if (S.visao === "leads" || S.visao === "whatsapp") render();
+  if (["leads", "whatsapp", "estados"].includes(S.visao)) render();
 };
 document.addEventListener("keydown", e => {
   if (e.key === "/" && document.activeElement !== $("#busca")){ e.preventDefault(); $("#busca").focus(); }
@@ -1300,6 +1373,7 @@ function renderizarWhatsApp() {
     window.open(linkWhatsApp(emFoco.numero, texto), "_blank", "noopener");
     campo.value = "";
     aviso("WhatsApp aberto com a mensagem pronta.");
+    iniciarConversa(emFoco.lead);      // sai da fila de Leads, entra no quadro
   };
 
   $("#btnEnviarMsg").onclick = enviar;
@@ -1673,4 +1747,181 @@ function popupLead(l, aproximado){
     ${aproximado ? `<span class="aviso-aprox">posição aproximada (${esc(l.geo_precisao || "?")})</span>` : ""}
     <button class="botao" data-abrir="${l.id}">Ver lead</button>
   </div>`;
+}
+
+/* ===========================================================================
+   ESTADOS — o quadro de quem já está em conversa
+   Catálogo por coluna, com a chance de fechar em uma escala de 0 a 10 que usa
+   a mesma rampa de cor do modo chance (vermelho → verde), para não inventar
+   um segundo vocabulário de cor no mesmo app.
+=========================================================================== */
+
+/* A escala de 0 a 10 vira matiz na mesma curva do hueChance: abaixo da metade
+   sobe devagar (ainda é vermelho/laranja), acima dela abre para o verde. */
+function hueChance10(n){
+  const s = Math.max(0, Math.min(10, n)) * 10;
+  return s < 50 ? 8 + (s / 50) * 37 : 45 + ((s - 50) / 50) * 100;
+}
+
+function escalaHTML(l){
+  const atual = chanceDe(l);
+  const quadros = Array.from({ length: 11 }, (_, n) => {
+    const aceso = n <= atual && atual > 0;
+    return `<button class="q ${aceso ? "on" : ""}" data-chance="${n}" data-lead="${l.id}"
+              style="--hq:${hueChance10(n).toFixed(0)}"
+              title="${n} de 10" aria-label="Chance ${n} de 10"
+              aria-pressed="${n === atual}"></button>`;
+  }).join("");
+
+  return `<div class="escala" role="group" aria-label="Chance de fechar">
+    <span class="escala-n" style="--hq:${hueChance10(atual).toFixed(0)}">${atual}</span>
+    <span class="escala-q">${quadros}</span>
+  </div>`;
+}
+
+function fichaEstado(l){
+  const c = chanceDe(l);
+  return `<article class="ficha" data-id="${l.id}" style="--hq:${hueChance10(c).toFixed(0)}">
+    <div class="ficha-topo">
+      ${avatarHTML(l)}
+      <span class="ficha-id">
+        <b>${esc(l.nome || l.empresa)}</b>
+        <span>${esc(CATEGORIAS[l.categoria] || "Outro")}${
+          l.bairro ? ` · ${esc(l.bairro)}` : ""}</span>
+      </span>
+    </div>
+
+    ${temTel(l) ? `<div class="ficha-tel">${IC.tel(14)} ${esc(l.telefone)}</div>` : ""}
+
+    ${escalaHTML(l)}
+
+    <div class="ficha-acoes">
+      ${temTel(l) ? `<a class="botao" href="${esc(linkWhatsApp(l.telefone))}"
+         target="_blank" rel="noopener">${IC.wpp(14)} Falar</a>` : ""}
+      <button class="botao" data-abrir="${l.id}">Ver</button>
+      <select class="mover" data-mover="${l.id}" aria-label="Mudar de estado">
+        ${ESTADOS.map(e => `<option value="${e}" ${e === l.estado ? "selected" : ""}
+          >${ESTADO_NOME[e]}</option>`).join("")}
+        <option value="">↩ Devolver para Leads</option>
+      </select>
+    </div>
+  </article>`;
+}
+
+function renderEstados(){
+  const t = S.termo.trim().toLowerCase();
+
+  const naConversa = S.leads.filter(emConversa).filter(l => !t ||
+    [l.nome, l.empresa, l.telefone, l.endereco, l.bairro, CATEGORIAS[l.categoria]]
+      .some(c => String(c || "").toLowerCase().includes(t)));
+
+  const porEstado = {};
+  ESTADOS.forEach(e => porEstado[e] = []);
+  naConversa.forEach(l => porEstado[l.estado].push(l));
+
+  // Dentro de cada coluna, maior chance primeiro: é a ordem em que você
+  // gastaria seu tempo.
+  ESTADOS.forEach(e => porEstado[e].sort((a, b) =>
+    chanceDe(b) - chanceDe(a) || scoreDe(b) - scoreDe(a)));
+
+  const fechados = porEstado.fechado.length;
+  const vivos = porEstado.conversando.length + porEstado.aguardando.length;
+
+  if (!naConversa.length && !t){
+    $("#visaoEstados").innerHTML = `<div class="estados-vazio">
+      <div>
+        <h2>Nenhuma conversa começou ainda</h2>
+        <p>Assim que você falar com um lead — pelo botão <b>Falar no WhatsApp</b>
+        ou marcando à mão na ficha dele — ele sai da lista de Leads e aparece
+        aqui, para você acompanhar a chance de fechar.</p>
+      </div>
+    </div>`;
+    return;
+  }
+
+  $("#visaoEstados").innerHTML = `
+    <div class="estados-topo">
+      <div class="estados-resumo">
+        <span><b>${vivos}</b> em jogo</span>
+        <span><b>${fechados}</b> fechado${fechados === 1 ? "" : "s"}</span>
+        <span><b>${porEstado.nao_deu_certo.length}</b> sem sucesso</span>
+      </div>
+      <p class="estados-nota">A escala de 0 a 10 é a sua chance de fechar.
+      Clique no quadradinho para ajustar — vermelho é improvável, verde é quase certo.</p>
+    </div>
+
+    <div class="estados-grade">
+      ${ESTADOS.map(e => `
+        <section class="coluna coluna-${e}">
+          <header>
+            <h3>${ESTADO_NOME[e]}</h3>
+            <span class="coluna-sub">${ESTADO_SUB[e]}</span>
+            <span class="coluna-qt">${porEstado[e].length}</span>
+          </header>
+          <div class="coluna-corpo">
+            ${porEstado[e].length
+              ? porEstado[e].map(fichaEstado).join("")
+              : `<p class="coluna-vazia">vazio</p>`}
+          </div>
+        </section>`).join("")}
+    </div>`;
+
+  ligarEstados();
+}
+
+function ligarEstados(){
+  const raiz = $("#visaoEstados");
+  if (!raiz) return;
+
+  raiz.querySelectorAll("[data-chance]").forEach(b => b.onclick = async () => {
+    const id = +b.dataset.lead;
+    const n  = +b.dataset.chance;
+    const l  = S.leads.find(x => x.id === id);
+    if (!l) return;
+
+    // Clicar no valor atual zera: é como se desmarcasse, sem precisar de
+    // um botão separado só para isso.
+    const novo = chanceDe(l) === n ? 0 : n;
+    l.chance = novo;
+    renderEstados();
+    SOM.toca("toque");
+
+    try { await API.atualizarLead(id, { chance: novo }); }
+    catch (e){ aviso("Não consegui salvar a chance: " + e.message, true); }
+  });
+
+  raiz.querySelectorAll("[data-mover]").forEach(sel => sel.onchange = async () => {
+    const id = +sel.dataset.mover;
+    const l  = S.leads.find(x => x.id === id);
+    if (!l) return;
+
+    const destino = sel.value || null;
+    l.estado = destino;
+    renderEstados();
+    SOM.toca(destino ? "clique" : "fecha");
+
+    if (!destino) aviso(`${l.nome} voltou para a lista de Leads.`);
+
+    try { await API.atualizarLead(id, { estado: destino }); }
+    catch (e){ aviso("Não consegui mover: " + e.message, true); }
+  });
+
+  raiz.querySelectorAll("[data-abrir]").forEach(b =>
+    b.onclick = () => abrirPainel(+b.dataset.abrir));
+}
+
+/* Começar a conversa é o gatilho: quem recebe mensagem sai da fila de Leads e
+   entra no quadro. Só promove quem ainda não tem estado, para não rebaixar
+   alguém que já estava em "fechado". */
+async function iniciarConversa(l){
+  if (!l || emConversa(l)) return;
+
+  l.estado = "conversando";
+  if (!Number.isFinite(+l.chance)) l.chance = 5;   // meio-termo até você avaliar
+
+  try { await API.atualizarLead(l.id, { estado: "conversando", chance: l.chance }); }
+  catch (e){ aviso("Não consegui marcar a conversa: " + e.message, true); }
+
+  aviso(`${l.nome} entrou em Conversando.`);
+  render();
 }

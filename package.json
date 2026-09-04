@@ -10,7 +10,8 @@
     "build": "electron-builder",
     "build:mac": "electron-builder --mac",
     "build:dmg": "electron-builder --mac dmg",
-    "build:all": "electron-builder -mwl"
+    "build:all": "electron-builder -mwl",
+    "update-app": "node atualizar-app.js"
   },
   "keywords": [
     "prospecção",

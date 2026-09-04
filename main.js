@@ -129,6 +129,11 @@ function prepararBanco() {
     }
   }
   process.env.PROSPEC_DADOS = destino;
+
+  /* A sessão do WhatsApp também precisa de um lugar gravável e estável. Sem
+     isto o LocalAuth caía na raiz do sistema e não conseguia nem criar a
+     pasta. Fora do .app o worker continua usando a pasta do projeto. */
+  process.env.PROSPEC_SESSAO = path.join(app.getPath('userData'), 'wwebjs');
 }
 
 function startServer() {

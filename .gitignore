@@ -37,3 +37,4 @@ assets/logos/*.webp
 
 # saída do electron-builder (155 MB por arquivo)
 dist/
+.cache-atualizacao/

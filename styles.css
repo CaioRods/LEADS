@@ -1391,3 +1391,123 @@ select.suave.pq{height:38px;font-size:13px}
   border-radius:var(--r-p) 0 0 0; padding:3px 8px !important;
 }
 .leaflet-control-attribution a{ color:var(--acento-tinta) !important }
+
+/* ===========================================================================
+   ESTADOS — quadro de conversas
+=========================================================================== */
+
+#visaoEstados{ display:flex; flex-direction:column; gap:16px }
+
+.estados-topo{ flex:none }
+.estados-resumo{ display:flex; gap:26px; flex-wrap:wrap; margin-bottom:6px }
+.estados-resumo span{ font-size:13px; color:var(--tinta-2) }
+.estados-resumo b{ font-size:19px; color:var(--tinta); font-weight:700; margin-right:5px }
+.estados-nota{ font-size:12.5px; color:var(--tinta-2); max-width:70ch }
+
+.estados-vazio{
+  flex:1; display:grid; place-items:center; text-align:center; padding:40px;
+}
+.estados-vazio h2{ font-size:19px; margin-bottom:10px }
+.estados-vazio p{ font-size:13.5px; color:var(--tinta-2); max-width:52ch; line-height:1.6 }
+
+/* Quatro colunas de largura igual, cada uma rolando por conta própria: o
+   quadro inteiro nunca rola na horizontal. */
+.estados-grade{
+  flex:1; min-height:0;
+  display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px;
+}
+@media (max-width: 1180px){ .estados-grade{ grid-template-columns:repeat(2, minmax(0,1fr)) } }
+@media (max-width: 700px){  .estados-grade{ grid-template-columns:1fr } }
+
+.coluna{
+  display:flex; flex-direction:column; min-height:0;
+  background:var(--fundo); border-radius:var(--r-g); box-shadow:var(--fundo-p);
+  padding:14px;
+}
+.coluna header{ flex:none; margin-bottom:12px; position:relative; padding-right:34px }
+.coluna h3{ font-size:14px; font-weight:700; letter-spacing:-.01em }
+.coluna-sub{ display:block; font-size:11.5px; color:var(--tinta-2); margin-top:2px }
+.coluna-qt{
+  position:absolute; top:0; right:0;
+  min-width:24px; height:24px; padding:0 7px; border-radius:12px;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:var(--tinta-2); box-shadow:var(--fundo-p);
+}
+
+/* Cada estado tem um traço de cor no topo — o suficiente para diferenciar as
+   colunas de relance, sem pintar o fundo inteiro e competir com as fichas. */
+.coluna::before{
+  content:""; display:block; height:3px; border-radius:2px; margin:-2px 0 12px;
+}
+.coluna-conversando::before  { background:hsl(200 42% 58%) }
+.coluna-aguardando::before   { background:hsl(45 55% 58%) }
+.coluna-nao_deu_certo::before{ background:hsl(8 44% 60%) }
+.coluna-fechado::before      { background:hsl(145 40% 46%) }
+
+.coluna-corpo{ flex:1; min-height:0; overflow-y:auto; display:grid; gap:12px; align-content:start }
+.coluna-corpo::-webkit-scrollbar{ width:9px }
+.coluna-corpo::-webkit-scrollbar-thumb{
+  background:rgba(var(--sombra-rgb),.13); border-radius:5px; border:3px solid var(--fundo);
+}
+[data-theme="dark"] .coluna-corpo::-webkit-scrollbar-thumb{
+  background:rgba(var(--marca-rgb),.18); border-color:var(--fundo);
+}
+.coluna-vazia{ font-size:12px; color:var(--tinta-2); padding:10px 2px; font-style:italic }
+
+/* ---- ficha ---- */
+.ficha{
+  background:var(--fundo); border-radius:var(--r-m); box-shadow:var(--relevo-p);
+  padding:13px; display:grid; gap:10px;
+  animation:surgir 340ms var(--curva) both;
+  transition:box-shadow var(--t-relevo);
+}
+.ficha:hover{ box-shadow:var(--relevo-p-alto) }
+
+.ficha-topo{ display:flex; align-items:center; gap:10px }
+.ficha-id{ min-width:0; flex:1 }
+.ficha-id b{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; font-size:13.5px; line-height:1.28;
+}
+.ficha-id > span{ display:block; font-size:11.5px; color:var(--tinta-2); margin-top:2px }
+
+.ficha-tel{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--tinta-2) }
+.ficha-tel svg{ color:var(--acento-tinta); flex:none }
+
+/* ---- escala de 0 a 10 ---- */
+.escala{ display:flex; align-items:center; gap:9px }
+.escala-n{
+  flex:none; width:26px; height:26px; border-radius:8px;
+  display:grid; place-items:center;
+  font-size:12.5px; font-weight:700;
+  background:hsl(var(--hq) 46% 90%); color:hsl(var(--hq) 48% 26%);
+}
+[data-theme="dark"] .escala-n{
+  background:hsl(var(--hq) 26% 24%); color:hsl(var(--hq) 52% 74%);
+}
+
+.escala-q{ display:flex; gap:2.5px; flex:1 }
+.escala .q{
+  flex:1; height:17px; min-width:0; padding:0;
+  border:0; border-radius:3px; cursor:pointer;
+  background:rgba(var(--sombra-rgb),.09);
+  transition:background-color 180ms var(--curva), transform 120ms var(--curva);
+}
+[data-theme="dark"] .escala .q{ background:rgba(var(--marca-rgb),.12) }
+.escala .q.on{ background:hsl(var(--hq) 52% 62%) }
+.escala .q:hover{ transform:scaleY(1.28) }
+.escala .q[aria-pressed="true"]{ box-shadow:0 0 0 2px var(--fundo), 0 0 0 3.5px hsl(var(--hq) 48% 52%) }
+
+/* ---- ações da ficha ---- */
+.ficha-acoes{ display:flex; gap:7px; align-items:center; flex-wrap:wrap }
+.ficha-acoes .botao{ padding:6px 11px; font-size:12px }
+.mover{
+  flex:1; min-width:104px; font:inherit; font-size:11.5px;
+  padding:6px 9px; border:0; border-radius:var(--r-p);
+  background:var(--fundo); color:var(--tinta-2);
+  box-shadow:var(--fundo-p); cursor:pointer;
+}
+.mover:focus-visible{ outline:2px solid var(--acento); outline-offset:2px }
+
+.painel-estado{ display:grid; gap:12px; padding:14px }
+.painel-estado .mover{ width:100%; font-size:13px; padding:9px 11px }

@@ -31,7 +31,10 @@
       "lat": -22.1204578,
       "lon": -51.3904821,
       "geo_precisao": "endereco",
-      "geo_em": "2026-09-03T23:15:31.599Z"
+      "geo_em": "2026-09-03T23:15:31.599Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.236Z"
     },
     {
       "id": 1076,
@@ -65,7 +68,10 @@
       "lat": -22.1376774,
       "lon": -51.3967105,
       "geo_precisao": "endereco",
-      "geo_em": "2026-09-03T23:15:33.488Z"
+      "geo_em": "2026-09-03T23:15:33.488Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.243Z"
     },
     {
       "id": 1000,
@@ -99,7 +105,10 @@
       "lat": -22.1462975,
       "lon": -51.3987557,
       "geo_precisao": "endereco",
-      "geo_em": "2026-09-03T23:15:35.839Z"
+      "geo_em": "2026-09-03T23:15:35.839Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.249Z"
     },
     {
       "id": 1101,
@@ -133,7 +142,10 @@
       "lat": -22.1328771,
       "lon": -51.4053883,
       "geo_precisao": "endereco",
-      "geo_em": "2026-09-03T23:15:37.721Z"
+      "geo_em": "2026-09-03T23:15:37.721Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.256Z"
     },
     {
       "id": 1102,
@@ -167,7 +179,10 @@
       "lat": -22.1251484,
       "lon": -51.4107031,
       "geo_precisao": "endereco",
-      "geo_em": "2026-09-03T23:15:39.545Z"
+      "geo_em": "2026-09-03T23:15:39.545Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.262Z"
     },
     {
       "id": 1031,
@@ -201,7 +216,10 @@
       "lat": -22.1225167,
       "lon": -51.3882528,
       "geo_precisao": "cidade",
-      "geo_em": "2026-09-03T23:15:46.050Z"
+      "geo_em": "2026-09-03T23:15:46.050Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.269Z"
     },
     {
       "id": 1061,
@@ -235,7 +253,10 @@
       "lat": -22.1376774,
       "lon": -51.3967105,
       "geo_precisao": "endereco",
-      "geo_em": "2026-09-03T23:15:47.997Z"
+      "geo_em": "2026-09-03T23:15:47.997Z",
+      "estado": null,
+      "chance": 0,
+      "atualizado_em": "2026-09-04T19:12:55.275Z"
     },
     {
       "id": 1033,
