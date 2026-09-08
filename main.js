@@ -20,8 +20,28 @@ function createWindow() {
     icon: path.join(__dirname, 'assets', 'icon.png'),
     title: 'ProspecApp',
     backgroundColor: '#E8EAE9',
-    show: false
+    show: false,
+    /* Sem moldura do sistema: a barra é desenhada pela própria página, com os
+       três botões no estilo macOS. No Windows a moldura nativa é quadrada e
+       cinza — destoaria completamente do relevo suave do resto do app. */
+    frame: false
   });
+
+  /* A página precisa saber se a janela está em foco e se está maximizada:
+     no macOS os botões ficam cinzas quando a janela perde o foco, e o botão
+     verde troca de símbolo entre maximizar e restaurar. */
+  const avisar = () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.webContents.send('janela:estado', {
+      foco: mainWindow.isFocused(),
+      maximizada: mainWindow.isMaximized()
+    });
+  };
+  mainWindow.on('focus', avisar);
+  mainWindow.on('blur', avisar);
+  mainWindow.on('maximize', avisar);
+  mainWindow.on('unmaximize', avisar);
+  mainWindow.webContents.on('did-finish-load', avisar);
 
   mainWindow.webContents.backgroundColor = '#ffffff';
   
@@ -169,6 +189,19 @@ function startServer() {
 /* A página pede a abertura por aqui em vez de tentar window.open. É o
    caminho determinístico: não depende de política de pop-up, de bloqueio de
    janela nem de qual versão do Electron está rodando. */
+/* Botões da barra de título. Ficam no processo principal porque só ele
+   comanda a janela — a página apenas pede. */
+ipcMain.handle('janela:minimizar', () => { mainWindow && mainWindow.minimize(); });
+ipcMain.handle('janela:maximizar', () => {
+  if (!mainWindow) return false;
+  if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize();
+  return mainWindow.isMaximized();
+});
+ipcMain.handle('janela:fechar', () => { mainWindow && mainWindow.close(); });
+ipcMain.handle('janela:consultar', () => mainWindow
+  ? { foco: mainWindow.isFocused(), maximizada: mainWindow.isMaximized() }
+  : { foco: true, maximizada: false });
+
 ipcMain.handle('abrir-fora', async (_evento, url) => {
   if (!/^(https?:|mailto:|tel:|whatsapp:)/i.test(String(url || ''))) return false;
   try { await shell.openExternal(url); return true; }

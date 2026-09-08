@@ -2110,3 +2110,44 @@ function ligarDropLogo(l){
     leitor.readAsDataURL(arq);
   });
 }
+
+/* ===========================================================================
+   BARRA DE JANELA — só existe dentro do Electron.
+   No navegador não há janela para minimizar, então a barra some e o layout
+   volta ao normal (a classe no-app comanda as duas coisas no CSS).
+=========================================================================== */
+(function barraDeJanela(){
+  const J = window.prospec && window.prospec.janela;
+  if (!J){ document.body.classList.remove("no-app"); return; }
+  document.body.classList.add("no-app");
+
+  const raiz = document.body;
+  const aplicar = (e) => {
+    if (!e) return;
+    raiz.classList.toggle("app-sem-foco", e.foco === false);
+    raiz.classList.toggle("app-maximizada", e.maximizada === true);
+    const z = document.querySelector(".luz.zoom");
+    if (z) z.setAttribute("title", e.maximizada ? "Restaurar" : "Maximizar");
+  };
+
+  document.querySelectorAll("[data-janela]").forEach(b => {
+    b.addEventListener("click", async (ev) => {
+      ev.stopPropagation();
+      const acao = b.dataset.janela;
+      if (typeof SOM !== "undefined") SOM.toca(acao === "fechar" ? "fecha" : "toque");
+      if (acao === "minimizar") await J.minimizar();
+      else if (acao === "maximizar"){ await J.maximizar(); aplicar(await J.consultar()); }
+      else if (acao === "fechar") await J.fechar();
+    });
+  });
+
+  /* duplo clique na faixa maximiza/restaura, como no macOS */
+  const barra = document.getElementById("barraJanela");
+  if (barra) barra.addEventListener("dblclick", async (ev) => {
+    if (ev.target.closest("[data-janela]")) return;
+    await J.maximizar(); aplicar(await J.consultar());
+  });
+
+  J.aoMudar(aplicar);
+  J.consultar().then(aplicar).catch(()=>{});
+})();

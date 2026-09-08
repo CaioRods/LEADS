@@ -1649,3 +1649,219 @@ select.suave.pq{height:38px;font-size:13px}
 .painel.recebendo{ box-shadow:-31px -31px 43px rgba(var(--luz-rgb),1),
                               8px 8px 26px rgba(var(--sombra-rgb),.16),
                               inset 0 0 0 2.5px var(--acento) }
+
+/* ===========================================================================
+   BARRA DE JANELA — semáforo no padrão macOS
+   Diâmetro 12px, 8px de vão, 20px da borda. Cores medidas do macOS:
+   fechar #FF5F57 · minimizar #FEBC2E · zoom #28C840, cada uma com um aro
+   interno mais escuro. Sem foco viram cinza — como no sistema real. O símbolo
+   só aparece ao passar o mouse SOBRE O GRUPO, nunca sobre o botão isolado.
+=========================================================================== */
+.barra-janela{
+  position:fixed;top:0;left:0;right:0;height:38px;z-index:50;
+  display:flex;align-items:center;
+  -webkit-app-region:drag;              /* a faixa inteira arrasta a janela */
+  background:transparent;
+  user-select:none;
+}
+.titulo-janela{
+  position:absolute;left:0;right:0;text-align:center;
+  font-size:13px;font-weight:600;letter-spacing:-.01em;
+  color:var(--tinta-2);opacity:.85;pointer-events:none;
+}
+
+.semaforo{
+  display:flex;align-items:center;gap:8px;
+  padding-left:20px;
+  -webkit-app-region:no-drag;           /* botões não arrastam */
+  position:relative;z-index:1;
+}
+.luz{
+  width:12px;height:12px;border-radius:50%;padding:0;flex:none;
+  display:grid;place-items:center;
+  position:relative;
+  transition:background 140ms var(--curva), box-shadow 140ms var(--curva);
+}
+.luz svg{
+  width:12px;height:12px;opacity:0;
+  transition:opacity 110ms var(--curva);
+}
+.luz svg path{ stroke-width:1.35; stroke-linecap:round; fill:none }
+.luz .g-restaurar{ display:none }
+.luz .g-max path, .luz .g-restaurar path{ fill:currentColor; stroke:none }
+
+/* cores com foco */
+.luz.fechar   { background:#FF5F57; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.14) }
+.luz.minimizar{ background:#FEBC2E; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12) }
+.luz.zoom     { background:#28C840; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12) }
+.luz.fechar    svg{ color:#4D0000 }
+.luz.minimizar svg{ color:#5C4000 }
+.luz.zoom      svg{ color:#003D07 }
+
+/* o símbolo aparece ao passar sobre o GRUPO — comportamento do macOS */
+.semaforo:hover .luz svg{ opacity:.62 }
+.luz:active{ filter:brightness(.86) }
+
+/* janela maximizada: o verde vira restaurar */
+.app-maximizada .luz.zoom .g-max{ display:none }
+.app-maximizada .luz.zoom .g-restaurar{ display:block }
+
+/* sem foco: cinza, como no sistema. Nada de símbolo. */
+.app-sem-foco .luz{ background:#D4D5D6; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.07) }
+.app-sem-foco .semaforo:hover .luz svg{ opacity:0 }
+[data-theme="dark"] .app-sem-foco .luz{ background:#4A4D57; box-shadow:none }
+
+/* fora do Electron (aberto no navegador) não existe janela para controlar */
+body:not(.no-app) .barra-janela{ display:none }
+
+/* a barra ocupa o topo: o conteúdo desce */
+body.no-app .app{ padding-top:38px }
+body.no-app .painel{ top:44px }
+body.no-app .modal{ max-height:calc(100vh - 76px) }
+
+/* ===========================================================================
+   SUAVIZAÇÃO GERAL — mesma gramática, mão mais leve.
+   Sombra escura menos opaca e mais espalhada, cantos maiores, transições um
+   pouco mais longas. O relevo continua legível; só para de ser marcado.
+=========================================================================== */
+:root{
+  --r-g: 34px;
+  --r-m: 19px;
+  --r-p: 13px;
+  --t: 230ms var(--curva);
+  --curva: cubic-bezier(.32, .72, .26, 1);
+
+  --relevo-g:
+    -34px -34px 54px rgba(var(--luz-rgb), .96),
+     10px 10px 24px rgba(var(--sombra-rgb), .028);
+  --relevo-m:
+    -16px -16px 30px rgba(var(--luz-rgb), .90),
+     6px 6px 16px rgba(var(--sombra-rgb), .034);
+  --relevo-p:
+    -6px -6px 12px rgba(var(--luz-rgb), .82),
+     2px 2px 6px rgba(var(--sombra-rgb), .045);
+  --relevo-m-alto:
+    -20px -20px 38px rgba(var(--luz-rgb), 1),
+     9px 9px 22px rgba(var(--sombra-rgb), .05);
+  --relevo-p-alto:
+    -8px -8px 15px rgba(var(--luz-rgb), .95),
+     4px 4px 10px rgba(var(--sombra-rgb), .06);
+
+  --fundo-g:
+    inset -34px -34px 54px rgba(var(--luz-rgb), .58),
+    inset 26px 26px 58px rgba(var(--sombra-rgb), .105);
+  --fundo-m:
+    inset -16px -16px 28px rgba(var(--luz-rgb), .62),
+    inset 12px 12px 28px rgba(var(--sombra-rgb), .085);
+  --fundo-p:
+    inset -6px -6px 11px rgba(var(--luz-rgb), .66),
+    inset 5px 5px 12px rgba(var(--sombra-rgb), .072);
+
+  /* o sulco vira quase um respiro */
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .045),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .62);
+}
+
+/* movimento mais macio */
+.cartao:hover{ transform:translateY(-3px) }
+.cartao{ transition:box-shadow var(--t), transform var(--t), background-color 700ms var(--curva) }
+.grade-cartoes .cartao{ animation-duration:520ms }
+
+/* no escuro a suavização é de opacidade, não de geometria:
+   preto sobre quase-preto some fácil, então aliviamos com parcimônia */
+[data-theme="dark"]{
+  --relevo-m:
+    -13px -13px 26px rgba(var(--luz-rgb), .26),
+     11px 11px 26px rgba(var(--sombra-rgb), .50),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p:
+    -5px -5px 10px rgba(var(--luz-rgb), .22),
+     4px 4px 10px rgba(var(--sombra-rgb), .44),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+}
+
+/* ===========================================================================
+   RELEVO SUAVE — correção do halo.
+   O que causava a aparência "iluminada" com corte: o deslocamento era quase
+   do tamanho do desfoque (-34px de offset para 54px de blur), então a luz
+   branca formava uma mancha sólida com borda visível em vez de um degradê.
+
+   Regra nova: DESFOQUE ≈ 3× O DESLOCAMENTO, e opacidade da luz bem abaixo de 1.
+   O relevo continua legível — deixa de brilhar.
+=========================================================================== */
+:root{
+  --relevo-g:
+    -13px -13px 42px rgba(var(--luz-rgb), .60),
+     11px 11px 36px rgba(var(--sombra-rgb), .034);
+  --relevo-m:
+    -8px -8px 28px rgba(var(--luz-rgb), .54),
+     7px 7px 24px rgba(var(--sombra-rgb), .030);
+  --relevo-p:
+    -3px -3px 11px rgba(var(--luz-rgb), .50),
+     2px 2px 9px rgba(var(--sombra-rgb), .036);
+
+  --relevo-m-alto:
+    -10px -10px 34px rgba(var(--luz-rgb), .68),
+     9px 9px 30px rgba(var(--sombra-rgb), .044);
+  --relevo-p-alto:
+    -4px -4px 15px rgba(var(--luz-rgb), .60),
+     3px 3px 12px rgba(var(--sombra-rgb), .048);
+
+  --fundo-g:
+    inset -12px -12px 38px rgba(var(--luz-rgb), .46),
+    inset 11px 11px 34px rgba(var(--sombra-rgb), .075);
+  --fundo-m:
+    inset -8px -8px 24px rgba(var(--luz-rgb), .44),
+    inset 7px 7px 22px rgba(var(--sombra-rgb), .062);
+  --fundo-p:
+    inset -3px -3px 9px rgba(var(--luz-rgb), .46),
+    inset 3px 3px 9px rgba(var(--sombra-rgb), .055);
+
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .038),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .45);
+}
+
+/* Mesma correção no escuro. Aqui a luz é um cinza-azulado (não branco), então
+   ela nunca "brilha" — mas o deslocamento grande criava o mesmo corte. */
+[data-theme="dark"]{
+  --relevo-g:
+    -11px -11px 40px rgba(var(--luz-rgb), .26),
+     12px 12px 40px rgba(var(--sombra-rgb), .52),
+    inset -24px -24px 42px rgba(var(--luz-rgb), 0),
+    inset 22px 22px 46px rgba(var(--sombra-rgb), 0);
+  --relevo-m:
+    -7px -7px 26px rgba(var(--luz-rgb), .22),
+     8px 8px 28px rgba(var(--sombra-rgb), .46),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p:
+    -3px -3px 10px rgba(var(--luz-rgb), .20),
+     3px 3px 11px rgba(var(--sombra-rgb), .40),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+  --relevo-m-alto:
+    -9px -9px 32px rgba(var(--luz-rgb), .30),
+     10px 10px 34px rgba(var(--sombra-rgb), .56),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p-alto:
+    -4px -4px 14px rgba(var(--luz-rgb), .27),
+     4px 4px 14px rgba(var(--sombra-rgb), .48),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+  --fundo-p:
+    inset -3px -3px 9px rgba(var(--luz-rgb), .18),
+    inset 3px 3px 10px rgba(var(--sombra-rgb), .44);
+  --fundo-m:
+    inset -8px -8px 24px rgba(var(--luz-rgb), .20),
+    inset 8px 8px 26px rgba(var(--sombra-rgb), .50);
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .34),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .10);
+}
+
+/* O corte também vinha da rolagem: a sombra do cartão era ceifada na borda da
+   área rolável. Folga suficiente para o degradê terminar dentro da área. */
+.area{ padding:26px 34px 60px }
+.grade-cartoes{ padding:2px }

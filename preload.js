@@ -18,5 +18,17 @@ contextBridge.exposeInMainWorld('prospec', {
   abrirFora: (url) => ipcRenderer.invoke('abrir-fora', url),
 
   // Permite à página saber que está dentro do app, e não num navegador.
-  noApp: true
+  noApp: true,
+
+  /* Barra de título desenhada pela página. A janela não tem moldura do
+     sistema, então minimizar/maximizar/fechar precisam vir por aqui. */
+  janela: {
+    minimizar: () => ipcRenderer.invoke('janela:minimizar'),
+    maximizar: () => ipcRenderer.invoke('janela:maximizar'),
+    fechar:    () => ipcRenderer.invoke('janela:fechar'),
+    consultar: () => ipcRenderer.invoke('janela:consultar'),
+    /* foco e maximizada mudam por fora da página (clique na barra de tarefas,
+       atalho do sistema), então o principal avisa em vez de a página perguntar. */
+    aoMudar: (fn) => ipcRenderer.on('janela:estado', (_e, estado) => fn(estado))
+  }
 });
