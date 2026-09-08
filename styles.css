@@ -1865,3 +1865,96 @@ body.no-app .modal{ max-height:calc(100vh - 76px) }
    área rolável. Folga suficiente para o degradê terminar dentro da área. */
 .area{ padding:26px 34px 60px }
 .grade-cartoes{ padding:2px }
+
+/* ===========================================================================
+   OS DOIS EFEITOS — elevado e afundado precisam ser DISTINGUÍVEIS.
+
+   Neumorfismo tem duas leituras, e elas são opostas:
+     ELEVADO  = luz FORA em cima-esquerda,  escuro FORA embaixo-direita
+     AFUNDADO = luz DENTRO embaixo-direita, escuro DENTRO em cima-esquerda
+
+   Na suavização anterior eu baixei os dois lados por igual e a sombra escura
+   foi para .03 — sobre #E8EAE9 isso é quase invisível. Sem corpo escuro sobra
+   só o brilho, e brilho sozinho não informa direção: tudo virou plano.
+
+   Correção: a LUZ continua contida (nada de halo), mas o ESCURO volta a ter
+   presença — é ele que faz o objeto parecer ter corpo e projetar sombra.
+   Desfoque em torno de 2,4x o deslocamento: suave o bastante para não cortar,
+   direcional o bastante para ler.
+=========================================================================== */
+:root{
+  --relevo-g:
+    -16px -16px 38px rgba(var(--luz-rgb), .92),
+     14px 14px 34px rgba(var(--sombra-rgb), .095);
+  --relevo-m:
+    -11px -11px 26px rgba(var(--luz-rgb), .88),
+     9px 9px 22px rgba(var(--sombra-rgb), .085);
+  --relevo-p:
+    -4px -4px 10px rgba(var(--luz-rgb), .82),
+     3px 3px 8px rgba(var(--sombra-rgb), .090);
+
+  /* hover: sobe mais — cresce o deslocamento, não a opacidade */
+  --relevo-m-alto:
+    -15px -15px 34px rgba(var(--luz-rgb), .95),
+     13px 13px 30px rgba(var(--sombra-rgb), .105);
+  --relevo-p-alto:
+    -6px -6px 14px rgba(var(--luz-rgb), .90),
+     5px 5px 12px rgba(var(--sombra-rgb), .105);
+
+  /* afundado: aqui o escuro precisa ser MAIS forte que no elevado, senão
+     não se lê como buraco — é a parede interna que recebe a sombra */
+  --fundo-g:
+    inset -16px -16px 34px rgba(var(--luz-rgb), .80),
+    inset 14px 14px 32px rgba(var(--sombra-rgb), .135);
+  --fundo-m:
+    inset -10px -10px 22px rgba(var(--luz-rgb), .76),
+    inset 9px 9px 21px rgba(var(--sombra-rgb), .125);
+  --fundo-p:
+    inset -4px -4px 9px rgba(var(--luz-rgb), .74),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), .115);
+
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .07),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .62);
+}
+
+/* No escuro a lógica inverte de peso: preto sobre quase-preto some, então
+   quem carrega a forma é a LUZ (o cinza-azulado #484E60). O escuro sustenta
+   o corpo, a luz desenha a quina — sem ela o cartão evapora no fundo. */
+[data-theme="dark"]{
+  --relevo-g:
+    -15px -15px 36px rgba(var(--luz-rgb), .42),
+     15px 15px 36px rgba(var(--sombra-rgb), .66),
+    inset -24px -24px 42px rgba(var(--luz-rgb), 0),
+    inset 22px 22px 46px rgba(var(--sombra-rgb), 0);
+  --relevo-m:
+    -10px -10px 24px rgba(var(--luz-rgb), .38),
+     10px 10px 24px rgba(var(--sombra-rgb), .60),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p:
+    -4px -4px 10px rgba(var(--luz-rgb), .34),
+     4px 4px 10px rgba(var(--sombra-rgb), .54),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+  --relevo-m-alto:
+    -13px -13px 30px rgba(var(--luz-rgb), .46),
+     13px 13px 30px rgba(var(--sombra-rgb), .70),
+    inset -12px -12px 20px rgba(var(--luz-rgb), 0),
+    inset 10px 10px 22px rgba(var(--sombra-rgb), 0);
+  --relevo-p-alto:
+    -6px -6px 14px rgba(var(--luz-rgb), .42),
+     6px 6px 14px rgba(var(--sombra-rgb), .62),
+    inset -4px -4px 7px rgba(var(--luz-rgb), 0),
+    inset 4px 4px 9px rgba(var(--sombra-rgb), 0);
+  --fundo-g:
+    inset -15px -15px 32px rgba(var(--luz-rgb), .30),
+    inset 14px 14px 34px rgba(var(--sombra-rgb), .72);
+  --fundo-m:
+    inset -10px -10px 22px rgba(var(--luz-rgb), .28),
+    inset 9px 9px 24px rgba(var(--sombra-rgb), .66);
+  --fundo-p:
+    inset -4px -4px 10px rgba(var(--luz-rgb), .26),
+    inset 4px 4px 11px rgba(var(--sombra-rgb), .60);
+  --sulco: inset 0 -1px 0 rgba(var(--sombra-rgb), .46),
+           inset 0 -2px 0 rgba(var(--luz-rgb), .16);
+}
