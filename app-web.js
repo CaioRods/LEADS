@@ -84,6 +84,7 @@ const IC = {
   estrela:  t => sv('<path d="M12 3.6l2.5 5.1 5.6.8-4 3.9.9 5.6L12 16.4l-5 2.6.9-5.6-4-3.9 5.6-.8z"/>', t),
   fechar:   t => sv('<path d="M6.2 6.2 17.8 17.8"/><path d="M17.8 6.2 6.2 17.8"/>', t),
   lixo:     t => sv('<path d="M4.4 6.5h15.2"/><path d="M9.5 6.5V4.7c0-.6.5-1.1 1.1-1.1h2.8c.6 0 1.1.5 1.1 1.1v1.8"/><path d="M6.3 6.5l.8 12.4c.05.7.6 1.2 1.3 1.2h7.2c.7 0 1.25-.5 1.3-1.2l.8-12.4"/>', t),
+  mapa:     t => sv('<path d="M3.6 6.6 9 4.6v13L3.6 19.6z"/><path d="M9 4.6l6 2.1v13l-6-2.1z"/><path d="M15 6.7l5.4-2.1v13L15 19.7z"/>', t),
   local:    t => sv('<path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 1 0-13 0c0 5.4 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.4"/>', t),
   aviso:    t => sv('<circle cx="12" cy="12" r="8.4"/><path d="M12 7.8v4.9"/><path d="M12 16h.01"/>', t),
   grade:    t => sv('<rect x="3.2" y="3.2" width="7.6" height="7.6" rx="2.2"/><rect x="13.2" y="3.2" width="7.6" height="7.6" rx="2.2"/><rect x="3.2" y="13.2" width="7.6" height="7.6" rx="2.2"/><rect x="13.2" y="13.2" width="7.6" height="7.6" rx="2.2"/>', t),
@@ -507,30 +508,65 @@ function redesHTML(l){
 }
 
 
+const MATIZ_RAMO = { padaria:38, restaurante:22, bar:310, salao_beleza:348, oficina:232,
+                     farmacia:158, loja:190, supermercado:62, outro:250 };
+
+/* A capa é o que dá identidade ao lead na grade. Com foto, ela é a foto.
+   Sem foto, é um campo tingido pelo ramo com o glifo da categoria grande e
+   apagado — desenho deliberado, não buraco de imagem que faltou. */
+function capaHTML(l){
+  const g = GLIFO[l.categoria] || GLIFO.outro;
+  const giro = (semente(l.nome) % 18) - 9;
+  const foto = l.logo
+    ? `<img src="${esc(l.logo)}" alt="" loading="lazy"
+         onerror="this.closest('.capa').classList.add('sem-foto');this.remove()">`
+    : "";
+  return `<span class="capa ${l.logo ? "" : "sem-foto"}">
+    <span class="capa-fundo" style="transform:rotate(${giro}deg)">${sv(g, 132)}</span>
+    ${foto}
+    <span class="capa-veu"></span>
+    <span class="capa-topo">
+      ${l.porte === "grande" ? `<span class="tag-porte">Grande porte</span>` : ""}
+      ${l.site === "nenhum" ? `<span class="tag-vaga">Sem site</span>` : ""}
+    </span>
+    ${scoreHTML(l)}
+  </span>`;
+}
+
 function cartao(l, i){
   const v = via(l), n = v ? S.vias[v] : 0;
-  const est = `--h:${{padaria:38,restaurante:22,bar:310,salao_beleza:348,oficina:232,
-    farmacia:158,loja:190,supermercado:62,outro:250}[l.categoria] ?? 250};`
+  const est = `--h:${MATIZ_RAMO[l.categoria] ?? 250};`
     + `--hc:${hueChance(l).toFixed(0)};--atraso:${Math.min(i||0,23)*26}ms`;
+
+  const local = [l.bairro, l.cidade].filter(Boolean).join(" · ") || "local não informado";
+  const linha = (ic, txt, cls) => `<span class="cartao-linha ${cls||""}">
+    <span class="pocinho">${ic}</span><span class="txt">${txt}</span></span>`;
+
   return `<button class="cartao cat-${l.categoria} ${l.status==="descartado"?"descartado":""}"
       data-id="${l.id}" style="${est}" aria-selected="${S.selecionado===l.id}">
-    <span class="cartao-topo">
-      ${avatarHTML(l)}
-      <span class="cartao-id">
-        <span class="cartao-nome">${esc(l.nome)}</span>
-        <span class="cartao-cat">${esc(CATEGORIAS[l.categoria]||"—")}${l.avaliacao?" · "+IC.estrela(12):""}</span>
+    ${capaHTML(l)}
+    <span class="cartao-corpo">
+      <span class="cartao-cab">
+        ${avatarHTML(l)}
+        <span class="cartao-id">
+          <span class="cartao-nome">${esc(l.nome)}</span>
+          <span class="cartao-cat">${esc(CATEGORIAS[l.categoria]||"—")}</span>
+        </span>
       </span>
-      ${scoreHTML(l)}
+
+      <span class="cartao-dados">
+        <span class="cartao-linha ${temTel(l)?"":"alerta"}">
+          <span class="pocinho ${temTel(l)?"ok":""}">${temTel(l)?IC.tel(15):IC.telNao(15)}</span>
+          ${telHTML(l)}
+        </span>
+        ${linha(IC.local(15), esc(enderecoCurto(l)) + (n>1?` <b>· ${n} na via</b>`:""))}
+        ${linha(IC.mapa ? IC.mapa(15) : IC.local(15), esc(local))}
+      </span>
+
+      <span class="cartao-pe" data-resumo="${esc(STATUS_NOME[l.status])} · ${temTel(l)?"tem telefone":"exige visita"}">
+        ${selinhoAberta(l)}${seloHTML(l)}${proxHTML(l)}${redesHTML(l)}
+      </span>
     </span>
-    <span class="cartao-linha">
-      <span class="pocinho ${temTel(l)?"ok":""}">${temTel(l)?IC.tel(15):IC.telNao(15)}</span>
-      ${telHTML(l)}
-    </span>
-    <span class="cartao-linha">
-      <span class="pocinho">${IC.local(15)}</span>
-      <span class="txt">${esc(enderecoCurto(l))}${n>1?` · ${n} na via`:""}</span>
-    </span>
-    <span class="cartao-pe" data-resumo="${esc(STATUS_NOME[l.status])} · ${temTel(l)?"tem telefone":"exige visita"}">${selinhoAberta(l)}${seloHTML(l)}${proxHTML(l)}${redesHTML(l)}</span>
   </button>`;
 }
 

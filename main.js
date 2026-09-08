@@ -191,14 +191,15 @@ function startServer() {
    janela nem de qual versão do Electron está rodando. */
 /* Botões da barra de título. Ficam no processo principal porque só ele
    comanda a janela — a página apenas pede. */
-ipcMain.handle('janela:minimizar', () => { mainWindow && mainWindow.minimize(); });
+ipcMain.handle('janela:minimizar', () => { console.log('[janela] minimizar'); mainWindow && mainWindow.minimize(); });
 ipcMain.handle('janela:maximizar', () => {
+  console.log('[janela] maximizar');
   if (!mainWindow) return false;
   if (mainWindow.isMaximized()) mainWindow.unmaximize(); else mainWindow.maximize();
   return mainWindow.isMaximized();
 });
-ipcMain.handle('janela:fechar', () => { mainWindow && mainWindow.close(); });
-ipcMain.handle('janela:consultar', () => mainWindow
+ipcMain.handle('janela:fechar', () => { console.log('[janela] fechar'); mainWindow && mainWindow.close(); });
+ipcMain.handle('janela:consultar', () => (console.log('[janela] ponte OK — a página consultou o estado'), mainWindow)
   ? { foco: mainWindow.isFocused(), maximizada: mainWindow.isMaximized() }
   : { foco: true, maximizada: false });
 
