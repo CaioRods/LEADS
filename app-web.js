@@ -144,7 +144,7 @@ function numeroPorta(l){
 function enderecoCurto(l){
   const t = String(l.endereco || "").split("—").map(s => s.trim())
     .filter(s => s && !/^\d{5}-\d{3}$/.test(s)
-              && !/^Regente Feijó\/SP$/.test(s) && !/^São Paulo\/SP$/.test(s))
+              && !/^Presidente Prudente\/SP$/.test(s) && !/^São Paulo\/SP$/.test(s))
     .join(" · ");
   return t || (l.bairro || "endereço não informado");
 }
@@ -755,7 +755,7 @@ function renderRotas(){
       <div class="caixa">
         <header><span class="rotulo">Descartados — e a armadilha de busca que explica ${fora.length} deles</span></header>
         <div class="distancia"><div class="eixo">
-          <div class="polo"><h4>Regente Feijó/SP · ${locais.length}</h4><ul>
+          <div class="polo"><h4>Presidente Prudente/SP · ${locais.length}</h4><ul>
             ${locais.map(l=>`<li><button data-id="${l.id}">${esc(l.nome)}</button></li>`).join("")}</ul></div>
           <div class="vao"><span class="tracejado"></span><span>≈ 570 km</span></div>
           <div class="polo"><h4>Vila Regente Feijó · SP capital · ${fora.length}</h4><ul>
@@ -1066,7 +1066,7 @@ function abrirForm(lead){
         ${sel("fStatus","Etapa",ETAPAS.map(s=>[s,STATUS_NOME[s]]),l.status||"novo")}
         ${sel("fPrio","Prioridade",Object.entries(PRIO_NOME),l.prioridade||"media")}
         ${inp("fBairro","Bairro",l.bairro,"Centro")}
-        ${inp("fEnd","Endereço",l.endereco,"Rua Exemplo, 123 — Bairro, Regente Feijó/SP")}
+        ${inp("fEnd","Endereço",l.endereco,"Rua Exemplo, 123 — Bairro, Presidente Prudente/SP")}
         ${inp("fSite","Site",l.site||"nenhum","nenhum")}
         ${inp("fInsta","Instagram",l.instagram,"@perfil")}
         ${inp("fFace","Facebook",l.facebook,"facebook.com/pagina")}
@@ -1091,7 +1091,7 @@ function abrirForm(lead){
       observacoes: $("#fObs").value.trim()
     };
     if (!d.nome) return $("#formErro").textContent = "O nome é obrigatório.";
-    if (!d.cidade) d.cidade = /São Paulo\/SP/.test(d.endereco) ? "São Paulo (capital)" : "Regente Feijó";
+    if (!d.cidade) d.cidade = /São Paulo\/SP/.test(d.endereco) ? "São Paulo (capital)" : "Presidente Prudente";
     try {
       if (novo) await API.criarLead(d); else await API.atualizarLead(l.id, d);
       $("#camadas").innerHTML = "";
@@ -1114,7 +1114,7 @@ function abrirLocal(){
           <select id="lBairro">${BAIRROS_CONHECIDOS.map(b=>
             `<option value="${esc(b)}" ${b===S.local.bairro?"selected":""}>${esc(b)}</option>`).join("")}</select></div>
         <div class="form-campo largo"><label for="lVia">Sua rua (opcional)</label>
-          <input id="lVia" value="${esc(S.local.via||"")}" placeholder="Av. Regente Feijó">
+          <input id="lVia" value="${esc(S.local.via||"")}" placeholder="Av. Manoel Goulart">
           <span class="aj">Se preencher, os leads na mesma rua sobem para o topo da proximidade.</span></div>
         <div class="form-campo largo">
           <p class="dica">Isto ordena por <b>proximidade de bairro e via</b>, não por distância medida.

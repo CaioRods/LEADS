@@ -2,7 +2,7 @@
 /* mcp-server.js — expõe o ProspecApp ao Claude via MCP.
 
    Serve para delegar a prospecção: você pede ao Claude "ache padarias em
-   Regente Feijó sem site", ele pesquisa na web e grava os leads aqui pelas
+   Presidente Prudente sem site", ele pesquisa na web e grava os leads aqui pelas
    ferramentas abaixo, já pontuados pelo mesmo score.js que a interface usa.
 
    DE ONDE VÊM OS DADOS
@@ -218,8 +218,8 @@ server.registerTool('criar_lead', {
     '(mesmo telefone, ou mesmo nome na mesma cidade).\n\n' +
     'O QUE MAIS PESA NO SCORE, em ordem: não ter site (+30) é o maior sinal, ' +
     'porque é exatamente o que se vende; telefone confirmado (+25); porte da ' +
-    'empresa; e proximidade de Regente Feijó/Centro. Então pesquise ANTES se a ' +
-    'empresa tem site e telefone — um lead sem esses campos entra com score ' +
+    'empresa; e distância até o escritório na Av. Manoel Goulart. Então pesquise ' +
+    'ANTES se a empresa tem site e telefone — um lead sem esses campos entra com score ' +
     'baixo e some no fim da fila, mesmo sendo um bom alvo.\n\n' +
     'Preencha `fonte` com onde você achou (ex.: "Google Maps", "Instagram"), ' +
     'para depois dar para auditar de onde veio a base.',

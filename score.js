@@ -2,7 +2,17 @@
 // Modelo aberto de propósito: cada ponto é rastreável até um fato pesquisado.
 const fs = require('fs');
 const path = require('path');
-const arquivo = path.join(__dirname, 'dados.json');
+/* O app empacotado lê de ~/Library/Application Support/ProspecApp, não do
+   dados.json do projeto. Um script que escreve sempre no projeto faz os dois
+   divergirem em silêncio — foi o que aconteceu: o score recalculado aqui
+   nunca chegava ao app. Agora seguimos o mesmo arquivo que o app usa, com
+   PROSPEC_DADOS podendo apontar para outro. */
+const arquivo = (() => {
+  if (process.env.PROSPEC_DADOS) return process.env.PROSPEC_DADOS;
+  const doApp = path.join(require('os').homedir(), 'Library', 'Application Support',
+                          'ProspecApp', 'dados.json');
+  return require('fs').existsSync(doApp) ? doApp : path.join(__dirname, 'dados.json');
+})();
 
 /* Este arquivo tem dois usos: rodar como script (`node score.js`, que
    repontua a base inteira e imprime a tabela) e ser importado por quem
@@ -10,22 +20,52 @@ const arquivo = path.join(__dirname, 'dados.json');
    Ler o dados.json no topo quebrava o segundo uso, então a leitura desceu
    para dentro do bloco de script.                                        */
 
-// Localização do vendedor: Regente Feijó
-const MEU_BAIRRO = "Centro";
-const MEU_BAIRRO_ALT = "";
+/* Onde você atende: escritório na Av. Manoel Goulart, Presidente Prudente.
+   PROSPEC_BASE permite mover sem mexer no código ("lat,lon"). */
+const MEU_PONTO = (() => {
+  const v = (process.env.PROSPEC_BASE || '').split(',').map(Number);
+  return v.length === 2 && v.every(Number.isFinite)
+    ? { lat: v[0], lon: v[1] }
+    : { lat: -22.1184919, lon: -51.4157624 };
+})();
+
+/* Distância em linha reta, em km. Prudente é plana e compacta o bastante
+   para a linha reta ser um bom proxy do trajeto real — e é medida, ao
+   contrário do palpite por nome de bairro que havia aqui antes: "Centro"
+   valia +15 e "Vila Santa Helena" valia +5, sendo que as duas ficam na mesma
+   avenida, a quarteirões uma da outra. */
+function distanciaKm(lat, lon){
+  const R = 6371;
+  const rad = g => g * Math.PI / 180;
+  const dLat = rad(lat - MEU_PONTO.lat);
+  const dLon = rad(lon - MEU_PONTO.lon);
+  const a = Math.sin(dLat/2) ** 2 +
+            Math.cos(rad(MEU_PONTO.lat)) * Math.cos(rad(lat)) * Math.sin(dLon/2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
 
 const ROI = {
   restaurante: 15, loja: 15, salao_beleza: 14, bar: 13,
   oficina: 12, padaria: 11, supermercado: 9, farmacia: 7, outro: 5
 };
 
+/* Níveis 2 a 6, do mais perto ao mais longe — a interface usa este número
+   para as barrinhas de proximidade, então a escala foi mantida. */
 function nivelProx(l){
+  if ((l.cidade || "").includes("capital")) return 6;          // São Paulo capital
+  if (/rural|Espigão/i.test((l.bairro || "").trim())) return 5; // Zona rural
+
+  if (Number.isFinite(l.lat) && Number.isFinite(l.lon)) {
+    const d = distanciaKm(l.lat, l.lon);
+    if (d <= 1.5) return 2;      // dá para ir a pé
+    if (d <= 4)   return 3;      // qualquer hora do dia
+    return 4;                    // outro canto da cidade
+  }
+
+  // Sem coordenada, cai no bairro — menos preciso, mas melhor que nada.
   const b = (l.bairro || "").trim();
-  if ((l.cidade || "").includes("capital")) return 6;  // São Paulo capital
-  if (/rural|Espigão/i.test(b)) return 5;               // Zona rural
-  if (b === MEU_BAIRRO || b === MEU_BAIRRO_ALT) return 2;  // Mesmo bairro
-  if (b === "Centro") return 3;                         // Centro (próximo)
-  return b ? 4 : 4;                                      // Outro bairro
+  if (/^Centro$|Santa Helena/i.test(b)) return 3;
+  return 4;
 }
 
 function pontuar(l) {
@@ -71,13 +111,17 @@ function pontuar(l) {
   else if (l.cnpj)     { s += 5;  m.push('empresa formalizada, CNPJ conhecido (+5)'); }
   else                 { s += 2;  m.push('porte não confirmado (+2)'); }
 
-  // 6. Proximidade de Regente Feijó (0-15) — novo critério
+  // 6. Proximidade do escritório (0-15)
   const prox = nivelProx(l);
   const proxPts = prox === 2 ? 15 : prox === 3 ? 10 : prox === 4 ? 5 : 0;
   if (proxPts) {
     s += proxPts;
-    const proxNome = {2:"mesmo bairro",3:"Centro próximo",4:"outro bairro"}[prox];
-    m.push(`${proxNome} de Regente Feijó (+${proxPts})`);
+    const km = Number.isFinite(l.lat) && Number.isFinite(l.lon)
+      ? ` (${distanciaKm(l.lat, l.lon).toFixed(1)} km)` : '';
+    const proxNome = {2:"a poucos minutos do escritório",
+                      3:"perto do escritório",
+                      4:"em Presidente Prudente"}[prox];
+    m.push(`${proxNome}${km} (+${proxPts})`);
   }
 
   // Corte geográfico: fora da cidade não entra no ranking
@@ -87,7 +131,7 @@ function pontuar(l) {
   return { score: Math.min(s, 100), motivos: m };
 }
 
-module.exports = { pontuar, nivelProx, ROI };
+module.exports = { pontuar, nivelProx, ROI, distanciaKm, MEU_PONTO };
 
 if (require.main === module) {
   const dados = JSON.parse(fs.readFileSync(arquivo, 'utf-8'));

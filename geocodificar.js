@@ -14,7 +14,17 @@ const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
 
-const arquivo = path.join(__dirname, 'dados.json');
+/* O app empacotado lê de ~/Library/Application Support/ProspecApp, não do
+   dados.json do projeto. Um script que escreve sempre no projeto faz os dois
+   divergirem em silêncio — foi o que aconteceu: o score recalculado aqui
+   nunca chegava ao app. Agora seguimos o mesmo arquivo que o app usa, com
+   PROSPEC_DADOS podendo apontar para outro. */
+const arquivo = (() => {
+  if (process.env.PROSPEC_DADOS) return process.env.PROSPEC_DADOS;
+  const doApp = path.join(require('os').homedir(), 'Library', 'Application Support',
+                          'ProspecApp', 'dados.json');
+  return require('fs').existsSync(doApp) ? doApp : path.join(__dirname, 'dados.json');
+})();
 const UA = 'ProspecApp/1.0 (uso pessoal, prospeccao local)';
 const refazerTudo = process.argv.includes('--tudo');
 

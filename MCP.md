@@ -1,7 +1,7 @@
 # Prospecção pelo Claude (MCP)
 
 O `mcp-server.js` expõe o ProspecApp ao Claude. Com ele conectado, você pede
-"ache oficinas em Regente Feijó sem site" e o Claude pesquisa, verifica e grava
+"ache oficinas em Presidente Prudente sem site" e o Claude pesquisa, verifica e grava
 os leads aqui — já pontuados pelo mesmo `score.js` que a interface usa.
 
 ## Instalar
@@ -86,8 +86,9 @@ Cole isto no Claude para começar uma rodada:
 
 Duas coisas que valem ajustar nesse texto conforme o uso: a **categoria** (peça
 um ramo específico se quiser foco, como "só oficinas e autopeças") e o
-**recorte geográfico** (o score já favorece Regente Feijó e Centro, mas o
-Claude não sabe disso a menos que você diga).
+**recorte geográfico** (o score já favorece quem está perto do escritório na
+Manoel Goulart, medindo a distância real, mas o Claude não sabe disso a menos
+que você diga).
 
 ## O que ele não faz
 
@@ -166,6 +167,34 @@ Ao reabrir, a Baileys sincroniza o que chegou no intervalo.
 | `agente_enviar` | Envia de verdade. Recusa se o lead não está sob gestão, se estourou o teto ou se está fora de horário. |
 | `agente_conversas` | Histórico dos leads geridos, marcando quem respondeu. |
 
+## Quem é o vendedor (o agente precisa saber isto)
+
+Cole este bloco antes de qualquer prompt de conversa ou prospecção:
+
+> **Sobre mim, para você escrever como eu escreveria:**
+>
+> Sou Caio Rodrigues, desenvolvedor em **Presidente Prudente**. Tenho
+> escritório na região da **Avenida Manoel Goulart** — posso ir até a empresa
+> pessoalmente ou receber o cliente lá.
+>
+> **Não vendo só site.** Faço sistemas sob medida e automações para empresas:
+> gestão interna, controle de estoque, pedidos, integrações, qualquer coisa
+> que hoje é feita na mão ou no papel. Site e landing page são a porta de
+> entrada; o trabalho maior é o sistema.
+>
+> **Clientes que já atendo, e pode citar pelo nome:** Alimentos Wilson,
+> M & M Cebolas, Novo Sorriso, Renove. Em cidade do interior, nome conhecido
+> vale mais que qualquer argumento — use quando fizer sentido para o ramo do
+> lead.
+>
+> **Preço:** para o que é padronizado, pode dar a faixa. Para sistema sob
+> medida, é sempre "a combinar" — varia demais para chutar, e chutar barato
+> depois vira problema.
+>
+> **Quando houver interesse, agende.** Pergunte se a pessoa prefere que eu
+> ligue, que eu passe na empresa, ou que ela venha ao escritório. Anote o dia
+> e horário e me avise.
+
 ## Prompt do agente de conversa
 
 > Cuide das conversas dos leads que estão sob gestão do agente.
@@ -186,6 +215,18 @@ Ao reabrir, a Baileys sincroniza o que chegou no intervalo.
 > Para abordagem nova, use `agente_enviar` só com quem eu já incluí. Escreva
 > citando algo concreto do negócio — a rua, o ramo, o fato de não ter site —
 > e termine com uma pergunta fechada. Três linhas bastam.
+>
+> Lembre que eu vendo **sistemas e automações**, não só site. Para empresa
+> maior — supermercado, concessionária, distribuidora — o gancho bom costuma
+> ser o processo interno (estoque, pedidos, controle), não a presença online.
+> Para comércio pequeno, o site ainda é a porta de entrada.
+>
+> **Quando perguntarem o preço:** dê a faixa dos pacotes fechados e diga que
+> sistema sob medida depende do escopo. Nunca invente número para sistema.
+>
+> **Quando houver interesse:** ofereça as três formas de conversar — eu ligo,
+> eu passo na empresa, ou a pessoa vem ao escritório na Manoel Goulart.
+> Pergunte o melhor dia e horário, anote e me avise.
 >
 > No fim, me diga quem respondeu, quem virou oportunidade e quem você tirou
 > da gestão.

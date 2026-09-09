@@ -23,7 +23,17 @@ const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
 
-const arquivo = path.join(__dirname, 'dados.json');
+/* O app empacotado lê de ~/Library/Application Support/ProspecApp, não do
+   dados.json do projeto. Um script que escreve sempre no projeto faz os dois
+   divergirem em silêncio — foi o que aconteceu: o score recalculado aqui
+   nunca chegava ao app. Agora seguimos o mesmo arquivo que o app usa, com
+   PROSPEC_DADOS podendo apontar para outro. */
+const arquivo = (() => {
+  if (process.env.PROSPEC_DADOS) return process.env.PROSPEC_DADOS;
+  const doApp = path.join(require('os').homedir(), 'Library', 'Application Support',
+                          'ProspecApp', 'dados.json');
+  return require('fs').existsSync(doApp) ? doApp : path.join(__dirname, 'dados.json');
+})();
 const CHAVE = process.env.GOOGLE_MAPS_KEY;
 const refazer = process.argv.includes('--tudo');
 
@@ -58,7 +68,7 @@ async function procurar(l) {
     { textQuery: consulta, languageCode: 'pt-BR', maxResultCount: 1 },
     [`X-Goog-Api-Key: ${CHAVE}`,
      'X-Goog-FieldMask: places.id,places.displayName,places.businessStatus,' +
-     'places.regularOpeningHours,places.formattedAddress']);
+     'places.regularOpeningHours,places.formattedAddress,places.websiteUri']);
 
   if (!r || !Array.isArray(r.places) || !r.places.length) return null;
   return r.places[0];
@@ -102,7 +112,7 @@ function converterHorarios(oh) {
   console.log(`${pendentes.length} lead(s) a verificar de ${leads.length}.\n`);
   if (!pendentes.length) return;
 
-  let achados = 0, encerradas = 0, comHorario = 0, semResultado = 0;
+  let achados = 0, encerradas = 0, comHorario = 0, semResultado = 0, corrigidos = 0;
 
   for (let i = 0; i < pendentes.length; i++) {
     const l = pendentes[i];
@@ -126,6 +136,26 @@ function converterHorarios(oh) {
     if (horarios) { l.horarios = horarios; comHorario++; }
     if (l.situacao === 'fechada_permanente') encerradas++;
 
+    /* O site é o campo mais pesado do score (+30 por não ter), e era o menos
+       verificado: veio do diretório que originou a base e nunca foi conferido.
+       Uma amostra manual já achou empresa marcada como "nenhum" que tem site
+       — cada uma dessas carrega 30 pontos indevidos e sobe na fila na frente
+       de lead melhor. Aqui ele passa a vir do Google, que é quem a própria
+       empresa atualiza.
+
+       Só sobrescrevemos quando o Google TEM a informação: ausência no Google
+       não é prova de ausência de site, e apagar um site já conhecido por
+       causa disso seria trocar um dado bom por um vazio. */
+    if (lugar.websiteUri) {
+      const antes = (l.site || '').trim();
+      const novo = lugar.websiteUri;
+      if (!antes || antes.toLowerCase() === 'nenhum') { l.site = novo; corrigidos++; }
+      l.site_verificado_em = new Date().toISOString();
+    } else if (!(l.site || '').trim()) {
+      l.site = 'nenhum';
+      l.site_verificado_em = new Date().toISOString();
+    }
+
     const marca = l.situacao === 'ativa'
       ? (horarios ? 'ativa, com horário' : 'ativa, sem horário')
       : l.situacao;
@@ -138,4 +168,6 @@ function converterHorarios(oh) {
 
   console.log(`\nResumo: ${achados} encontrados, ${semResultado} sem resultado.`);
   console.log(`${comHorario} com horário, ${encerradas} fechadas em definitivo.`);
+  if (corrigidos) console.log(`${corrigidos} tinham site sem estar registrado — ` +
+    `corrigidos, e o score deles cai 30 pontos. Rode \`node score.js\` para repontuar.`);
 })();
