@@ -1145,6 +1145,8 @@ function render(){
   $("#navContLeads").textContent = S.carregando ? "—" : naFila;
   const ce = $("#navContEstados");
   if (ce) ce.textContent = S.carregando ? "—" : emJogo;
+  const ca = $("#navContAgente");
+  if (ca) ca.textContent = S.carregando ? "—" : S.leads.filter(l => l.agente === true).length;
   const ativos = S.leads.filter(l => l.status !== "descartado");
   const podeLigar = S.leads.filter(l => temTel(l) && l.status === "novo").length;
   $("#peLocal").innerHTML = `Você em <b>${esc(S.local.bairro)}</b>${S.local.via?` · ${esc(S.local.via)}`:""}`;
@@ -1159,7 +1161,7 @@ function render(){
   $("#visaoPanorama").classList.toggle("ocultar", S.visao !== "panorama");
   $("#visaoMapa").classList.toggle("ocultar", S.visao !== "mapa");
 
-  const titulos = { leads:"Leads", estados:"Estados", panorama:"Panorama", mapa:"Rotas de visita" };
+  const titulos = { leads:"Leads", estados:"Estados", agente:"Agente", panorama:"Panorama", mapa:"Rotas de visita" };
   $("#tituloVisao").textContent = titulos[S.visao];
   $("#subTitulo").textContent = S.carregando ? "Carregando da API…"
     : S.visao === "estados"
@@ -1550,8 +1552,14 @@ render = function(){
   renderOriginal.apply(this, arguments);
 
   const VISOES = { leads:"visaoLeads", estados:"visaoEstados",
-                   panorama:"visaoPanorama", mapa:"visaoMapa",
-                   whatsapp:"visaoWhatsApp" };
+                   agente:"visaoAgente", panorama:"visaoPanorama",
+                   mapa:"visaoMapa", whatsapp:"visaoWhatsApp" };
+
+  if (S.visao === "agente"){
+    $("#tituloVisao").textContent = "Agente";
+    $("#subTitulo").textContent = "quem o agente pode conversar";
+    renderAgente(); acompanharAgente();
+  }
   Object.keys(VISOES).forEach(v => {
     const el = document.getElementById(VISOES[v]);
     if (el) el.classList.toggle("ocultar", S.visao !== v);
@@ -2187,3 +2195,125 @@ function ligarDropLogo(l){
   J.aoMudar(aplicar);
   J.consultar().then(aplicar).catch(()=>{});
 })();
+
+/* ===========================================================================
+   AGENTE — o WhatsApp que conversa sozinho
+
+   Esta tela existe para uma coisa: você ver e controlar exatamente com quem o
+   agente pode falar. Um lead só entra na lista por ação sua, aqui.
+=========================================================================== */
+
+let estadoAgente = null;
+let agenteTimer  = null;
+
+API.estadoAgente = () => API.req("GET", "/api/agente/estado");
+API.gestaoAgente = (id, ativo) => API.req("POST", "/api/agente/gestao", { id, ativo });
+
+async function renderAgente(){
+  if (S.visao !== "agente") return;
+  const raiz = $("#visaoAgente");
+  if (!raiz) return;
+
+  try { estadoAgente = await API.estadoAgente(); }
+  catch (e){
+    raiz.innerHTML = `<div class="estados-vazio"><div>
+      <h2>Não consegui falar com o agente</h2><p>${esc(e.message)}</p></div></div>`;
+    return;
+  }
+
+  const e = estadoAgente;
+  const geridos = e.sobGestao || [];
+  const lim = e.limites || {};
+
+  const conexao = e.conectado
+    ? `<div class="ag-estado ag-on">
+         <b>Conectado</b>${e.numero ? ` como ${esc(e.numero)}` : ""}
+         <span>${e.enviadasHoje ?? 0} de ${lim.abordagensPorDia ?? "?"} abordagens hoje ·
+         ${lim.horaInicio ?? "?"}h às ${lim.horaFim ?? "?"}h${lim.diasUteis ? ", dias úteis" : ""}</span>
+       </div>`
+    : e.qr
+      ? `<div class="ag-estado ag-qr">
+           <b>Escaneie para conectar</b>
+           <span>WhatsApp → Aparelhos conectados → Conectar aparelho</span>
+           <img src="${esc(e.qr)}" alt="QR code" width="220" height="220">
+         </div>`
+      : `<div class="ag-estado ag-off">
+           <b>Desconectado</b><span>${esc(e.erro || "aguardando…")}</span>
+         </div>`;
+
+  // Candidatos: quem tem telefone e ainda não está sob gestão.
+  const candidatos = S.leads
+    .filter(l => temTel(l) && l.status !== "descartado" && !geridos.some(g => g.id === l.id))
+    .sort((a,b) => (b.score||0) - (a.score||0))
+    .slice(0, 40);
+
+  raiz.innerHTML = `
+    <div class="ag-topo">
+      ${conexao}
+      <p class="ag-nota"><b>O agente só fala com quem está na lista abaixo.</b>
+      Nenhuma outra conversa do seu WhatsApp é lida, respondida ou sequer
+      registrada — nem grupos, nem contatos pessoais, nem clientes atuais.
+      Tirar alguém da lista corta o acesso na hora.</p>
+    </div>
+
+    <div class="ag-grade">
+      <section class="coluna">
+        <header><h3>Sob gestão do agente</h3>
+          <span class="coluna-sub">recebem e respondem mensagem</span>
+          <span class="coluna-qt">${geridos.length}</span></header>
+        <div class="coluna-corpo">
+          ${geridos.length ? geridos.map(g => `
+            <article class="ag-item">
+              <span><b>${esc(g.nome)}</b><span>${esc(g.telefone)}${
+                g.estado ? " · " + esc(ESTADO_NOME[g.estado] || g.estado) : ""}</span></span>
+              <button class="botao" data-tirar="${g.id}">Tirar</button>
+            </article>`).join("")
+            : `<p class="coluna-vazia">ninguém — o agente está mudo</p>`}
+        </div>
+      </section>
+
+      <section class="coluna">
+        <header><h3>Disponíveis</h3>
+          <span class="coluna-sub">com telefone, fora da gestão</span>
+          <span class="coluna-qt">${candidatos.length}</span></header>
+        <div class="coluna-corpo">
+          ${candidatos.map(l => `
+            <article class="ag-item">
+              <span><b>${esc(l.nome)}</b><span>${esc(l.telefone)} · score ${l.score ?? "?"}</span></span>
+              <button class="botao botao-forte" data-por="${l.id}">Incluir</button>
+            </article>`).join("")}
+        </div>
+      </section>
+    </div>`;
+
+  raiz.querySelectorAll("[data-por]").forEach(b => b.onclick = async () => {
+    const l = S.leads.find(x => x.id === +b.dataset.por);
+    if (!confirm(`Incluir ${l.nome} na gestão do agente?\n\n` +
+      `A partir daí o agente pode mandar mensagem de verdade para ` +
+      `${l.telefone}, e vai ler o que essa empresa responder.`)) return;
+    b.disabled = true;
+    try { await API.gestaoAgente(l.id, true); l.agente = true; renderAgente(); }
+    catch (err){ aviso("Não consegui incluir: " + err.message, true); b.disabled = false; }
+  });
+
+  raiz.querySelectorAll("[data-tirar]").forEach(b => b.onclick = async () => {
+    const id = +b.dataset.tirar;
+    b.disabled = true;
+    try {
+      await API.gestaoAgente(id, false);
+      const l = S.leads.find(x => x.id === id); if (l) l.agente = false;
+      renderAgente();
+    } catch (err){ aviso("Não consegui tirar: " + err.message, true); b.disabled = false; }
+  });
+}
+
+/* Enquanto a aba está aberta, repete a consulta: é assim que o QR aparece
+   sozinho quando o worker termina de gerar, e some quando você escaneia. */
+function acompanharAgente(){
+  clearInterval(agenteTimer);
+  if (S.visao !== "agente") return;
+  agenteTimer = setInterval(() => {
+    if (S.visao !== "agente") return clearInterval(agenteTimer);
+    renderAgente();
+  }, 4000);
+}

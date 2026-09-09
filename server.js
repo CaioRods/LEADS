@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const wa = require('./wa-ponte');
 
 const app = express();
 const PORT = 3000;
@@ -360,6 +361,90 @@ app.delete('/api/leads/:id/mensagens/:msg', (req, res) => {
 
   if (!saveData(dados)) return res.status(500).json({ error: 'não consegui salvar' });
   res.json({ ok: true });
+});
+
+/* ===== WHATSAPP DO AGENTE =====
+   O worker só fala com leads marcados `agente: true`. Esses endpoints são a
+   única forma de mexer nessa lista, e cada mudança ressincroniza o worker na
+   hora — não existe janela em que ele ache que ainda pode falar com alguém
+   que você acabou de tirar da gestão.                                      */
+
+wa.iniciar({
+  lerLeads: () => loadData().leads || [],
+  gravarMensagem: (id, texto, tipo, em) => {
+    const d = loadData();
+    const l = (d.leads || []).find(x => x.id === id);
+    if (!l) return;
+    (l.mensagens = l.mensagens || []).push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      texto, tipo, data: em || new Date().toISOString()
+    });
+    // Quem respondeu está com a bola do nosso lado de novo.
+    if (tipo === 'entrada' && l.estado === 'aguardando') l.estado = 'conversando';
+    l.atualizado_em = new Date().toISOString();
+    saveData(d);
+  }
+});
+
+// GET /api/agente/estado — conectado? QR pendente? quantos sob gestão?
+app.get('/api/agente/estado', (req, res) => {
+  const e = wa.pedirEstado();
+  const leads = loadData().leads || [];
+  res.json({
+    ...e,
+    sobGestao: leads.filter(l => l.agente === true).map(l =>
+      ({ id: l.id, nome: l.nome, telefone: l.telefone, estado: l.estado }))
+  });
+});
+
+// POST /api/agente/gestao — coloca ou tira um lead da gestão do agente
+app.post('/api/agente/gestao', (req, res) => {
+  const { id, ativo } = req.body || {};
+  const d = loadData();
+  const l = (d.leads || []).find(x => String(x.id) === String(id));
+  if (!l) return res.status(404).json({ error: 'lead não encontrado' });
+
+  if (ativo && !l.telefone)
+    return res.status(400).json({ error: 'lead sem telefone não pode ser gerido' });
+
+  l.agente = !!ativo;
+  l.atualizado_em = new Date().toISOString();
+  if (!saveData(d)) return res.status(500).json({ error: 'não consegui salvar' });
+
+  wa.sincronizarAutorizados();
+  res.json({ id: l.id, nome: l.nome, agente: l.agente });
+});
+
+// POST /api/agente/enviar — envia de verdade, pelo WhatsApp
+app.post('/api/agente/enviar', async (req, res) => {
+  const { id, texto } = req.body || {};
+  if (!texto || !String(texto).trim())
+    return res.status(400).json({ error: 'texto é obrigatório' });
+
+  const d = loadData();
+  const l = (d.leads || []).find(x => String(x.id) === String(id));
+  if (!l) return res.status(404).json({ error: 'lead não encontrado' });
+  if (!l.agente) return res.status(403).json({
+    error: 'este lead não está sob gestão do agente' });
+
+  // Responder quem já falou conosco não conta no teto diário.
+  const jaFalou = (l.mensagens || []).some(m => m.tipo === 'entrada');
+  const r = await wa.enviar(l.telefone, texto, jaFalou);
+  if (!r.ok) return res.status(r.adiavel ? 429 : 502).json({ error: r.erro });
+
+  const d2 = loadData();
+  const l2 = d2.leads.find(x => String(x.id) === String(id));
+  (l2.mensagens = l2.mensagens || []).push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    texto, tipo: 'saida', data: new Date().toISOString()
+  });
+  // Mandou e está esperando: a bola passa para o lado dele.
+  if (!l2.estado || l2.estado === 'conversando') l2.estado = 'aguardando';
+  if (l2.chance == null) l2.chance = 5;
+  l2.atualizado_em = new Date().toISOString();
+  saveData(d2);
+
+  res.json({ ok: true, enviadasHoje: r.enviadasHoje });
 });
 
 // Servir index.html na raiz

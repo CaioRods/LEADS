@@ -374,6 +374,149 @@ server.registerTool('registrar_conversa', {
   return texto('Mensagem registrada.');
 });
 
+// ------------------------------------------------- conversa real, pelo WhatsApp
+
+/* Estas quatro ferramentas mexem no mundo: mandam mensagem de verdade para
+   empresas de verdade. O isolamento vive no worker (wa-worker.js), não aqui:
+   mesmo que o agente peça para escrever a um número qualquer, só sai se o
+   lead estiver sob gestão. A checagem é dupla de propósito.                */
+
+server.registerTool('agente_estado', {
+  title: 'Estado do WhatsApp do agente',
+  description: 'Diz se o WhatsApp do agente está conectado, quantas abordagens ' +
+    'já saíram hoje, quanto ainda cabe no teto, e QUAIS leads estão sob gestão. ' +
+    'Chame antes de tentar conversar — sem conexão nada sai, e o teto diário ' +
+    'existe para o número não ser banido.',
+  inputSchema: {}
+}, async () => {
+  if (!await servidorNoAr())
+    return erro('O ProspecApp precisa estar aberto — é ele que mantém a conexão.');
+
+  const e = await (await fetch(`${BASE}/api/agente/estado`)).json();
+
+  if (!e.conectado) {
+    return texto([
+      'WhatsApp do agente: DESCONECTADO.',
+      e.qr ? 'Há um QR code esperando — abra a aba do agente no ProspecApp e escaneie.'
+           : (e.erro || 'Aguardando conexão.'),
+      '',
+      `Leads sob gestão: ${e.sobGestao.length}`
+    ].join('\n'));
+  }
+
+  const lim = e.limites || {};
+  return texto([
+    `WhatsApp do agente: CONECTADO${e.numero ? ' como ' + e.numero : ''}.`,
+    `Abordagens hoje: ${e.enviadasHoje}/${lim.abordagensPorDia ?? '?'}` +
+      ` · horário permitido ${lim.horaInicio ?? '?'}h-${lim.horaFim ?? '?'}h` +
+      (lim.diasUteis ? ', só dias úteis' : ''),
+    '',
+    `Leads sob gestão (${e.sobGestao.length}) — o agente só fala com estes:`,
+    ...e.sobGestao.map(l => `  #${l.id} · ${l.nome} · ${l.telefone}` +
+                            (l.estado ? ` · ${l.estado}` : ''))
+  ].join('\n'));
+});
+
+server.registerTool('agente_gestao', {
+  title: 'Colocar ou tirar lead da gestão do agente',
+  description:
+    'Define quais leads o agente pode conversar. Esta é a trava de segurança: ' +
+    'o agente NÃO vê nem responde nenhuma conversa fora desta lista — nem ' +
+    'família, nem amigos, nem clientes atuais, nem grupos. Uma conversa só ' +
+    'entra no radar dele depois de você colocar o lead aqui.\n\n' +
+    'Peça confirmação ao usuário antes de ativar em lote: cada lead ativado é ' +
+    'uma empresa real que vai receber mensagem.',
+  inputSchema: {
+    id:    z.number().describe('id do lead'),
+    ativo: z.boolean().describe('true coloca sob gestão, false retira')
+  }
+}, async (a) => {
+  if (!await servidorNoAr()) return erro('O ProspecApp precisa estar aberto.');
+
+  const r = await fetch(`${BASE}/api/agente/gestao`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: a.id, ativo: a.ativo })
+  });
+  if (!r.ok) return erro((await r.json()).error || `erro ${r.status}`);
+
+  const j = await r.json();
+  return texto(j.agente
+    ? `${j.nome} agora está sob gestão do agente — pode receber mensagem.`
+    : `${j.nome} saiu da gestão. O agente não vai mais falar nem ouvir este número.`);
+});
+
+server.registerTool('agente_enviar', {
+  title: 'Enviar mensagem pelo WhatsApp',
+  description:
+    'Envia DE VERDADE, pelo WhatsApp, para um lead sob gestão. Não é rascunho.\n\n' +
+    'Escreva como uma pessoa escreveria: curto (três linhas bastam), citando ' +
+    'algo concreto do negócio dele — a rua, o ramo, o fato de não ter site — e ' +
+    'terminando com UMA pergunta fechada, do tipo que se responde com sim ou ' +
+    'não. Mensagem longa e genérica é o que faz denunciar.\n\n' +
+    'Pode ser recusado por teto diário, horário ou fim de semana: isso protege ' +
+    'o número, então não tente contornar. Se recusar, aguarde e avise o usuário.',
+  inputSchema: {
+    id:    z.number().describe('id do lead, que precisa estar sob gestão'),
+    texto: z.string().describe('a mensagem, como você a mandaria de fato')
+  }
+}, async (a) => {
+  if (!await servidorNoAr()) return erro('O ProspecApp precisa estar aberto.');
+
+  const r = await fetch(`${BASE}/api/agente/enviar`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: a.id, texto: a.texto })
+  });
+
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    if (r.status === 429) return erro(`Não enviei: ${j.error}. Isto é um limite ` +
+      'de proteção do número, não um erro — espere a janela abrir.');
+    return erro(`Não enviei: ${j.error || r.status}`);
+  }
+
+  return texto(`Enviada. O lead passou para "aguardando".` +
+    (j.enviadasHoje != null ? ` Abordagens hoje: ${j.enviadasHoje}.` : ''));
+});
+
+server.registerTool('agente_conversas', {
+  title: 'Ver conversas do agente',
+  description:
+    'Mostra o histórico das conversas dos leads sob gestão, com quem respondeu ' +
+    'e quem ainda não. Use para decidir o próximo passo: responder quem falou, ' +
+    'e deixar em paz quem não falou.\n\n' +
+    'Não insista com quem não respondeu. Reabordagem é o que mais gera denúncia ' +
+    'e banimento — se não respondeu, o certo é marcar como nao_deu_certo depois ' +
+    'de um tempo, não mandar de novo.',
+  inputSchema: {
+    apenas_com_resposta: z.boolean().optional()
+      .describe('true mostra só quem respondeu — normalmente é o que interessa')
+  }
+}, async (a) => {
+  const { leads } = await lerTudo();
+  const geridos = leads.filter(l => l.agente === true);
+
+  if (!geridos.length)
+    return texto('Nenhum lead sob gestão do agente ainda. Use agente_gestao para incluir.');
+
+  const linhas = geridos.map(l => {
+    const msgs = l.mensagens || [];
+    const respondeu = msgs.some(m => m.tipo === 'entrada');
+    if (a.apenas_com_resposta && !respondeu) return null;
+
+    const hist = msgs.slice(-6).map(m =>
+      `      ${m.tipo === 'entrada' ? '← ELE' : '→ VOCÊ'}: ${m.texto.slice(0, 160)}`);
+
+    return [
+      `#${l.id} · ${l.nome} · ${l.estado || 'sem estado'}` +
+        (respondeu ? ' · RESPONDEU' : ' · sem resposta ainda'),
+      ...(hist.length ? hist : ['      (nada trocado)'])
+    ].join('\n');
+  }).filter(Boolean);
+
+  if (!linhas.length) return texto('Ninguém respondeu ainda.');
+  return texto(linhas.join('\n\n'));
+});
+
 async function principal() {
   await server.connect(new StdioServerTransport());
   // stderr, nunca stdout: o stdout é o canal do protocolo MCP.

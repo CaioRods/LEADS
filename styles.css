@@ -2155,3 +2155,50 @@ body.no-app .modal{ max-height:calc(100vh - 76px) }
    se o splash ou um painel ficasse por cima, a janela viraria uma armadilha. */
 .barra-janela{ z-index:200 }
 #splash{ padding-top:38px }
+
+/* ============================ AGENTE ============================ */
+
+#visaoAgente{ display:flex; flex-direction:column; gap:16px }
+.ag-topo{ flex:none; display:grid; gap:12px }
+
+.ag-estado{
+  display:grid; gap:4px; justify-items:start;
+  padding:16px 18px; border-radius:var(--r-g); box-shadow:var(--fundo-p);
+}
+.ag-estado b{ font-size:14px }
+.ag-estado span{ font-size:12px; color:var(--tinta-2) }
+.ag-estado img{ margin-top:12px; border-radius:var(--r-m); background:#fff; padding:8px }
+
+.ag-on b::before, .ag-off b::before, .ag-qr b::before{
+  content:""; display:inline-block; width:7px; height:7px;
+  border-radius:50%; margin-right:8px; vertical-align:middle;
+}
+.ag-on  b::before{ background:hsl(145 46% 42%) }
+.ag-off b::before{ background:hsl(8 52% 55%) }
+.ag-qr  b::before{ background:hsl(40 60% 52%) }
+
+/* O aviso do isolamento não é decoração: é a explicação de por que confiar
+   na tela. Fica em destaque permanente, não escondido num tooltip. */
+.ag-nota{
+  font-size:12.5px; line-height:1.6; color:var(--tinta-2);
+  padding:12px 14px; border-radius:var(--r-m);
+  background:var(--acento-fraco); max-width:82ch;
+}
+.ag-nota b{ color:var(--acento-tinta) }
+
+.ag-grade{
+  flex:1; min-height:0;
+  display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px;
+}
+@media (max-width: 820px){ .ag-grade{ grid-template-columns:1fr } }
+
+.ag-item{
+  display:flex; align-items:center; gap:10px; justify-content:space-between;
+  padding:11px 13px; border-radius:var(--r-m); box-shadow:var(--relevo-p);
+  transition:box-shadow var(--t-relevo);
+}
+.ag-item:hover{ box-shadow:var(--relevo-p-alto) }
+.ag-item > span{ min-width:0; display:grid; gap:2px }
+.ag-item b{ font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.ag-item span span{ font-size:11.5px; color:var(--tinta-2) }
+.ag-item .botao{ flex:none; padding:6px 12px; font-size:12px }

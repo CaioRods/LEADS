@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "baileys": "^6.17.16",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "leaflet": "^1.9.4",
@@ -56,7 +57,9 @@
       "node_modules/**/*",
       "assets/**/*",
       "dados.json",
-      "funcionamento.js"
+      "funcionamento.js",
+      "wa-worker.js",
+      "wa-ponte.js"
     ],
     "mac": {
       "target": [
@@ -95,8 +98,10 @@
       "icon": "assets/icon-512.png"
     },
     "asarUnpack": [
+      "wa-worker.js",
       "node_modules/sharp/**/*",
-      "node_modules/@img/**/*"
+      "node_modules/@img/**/*",
+      "node_modules/baileys/**/*"
     ]
   }
 }

@@ -32,10 +32,11 @@
       "lon": -51.3904821,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:15:31.599Z",
-      "atualizado_em": "2026-09-04T20:06:33.331Z",
+      "atualizado_em": "2026-09-09T13:39:54.105Z",
       "situacao": null,
       "horarios": null,
-      "verificado_em": null
+      "verificado_em": null,
+      "agente": false
     },
     {
       "id": 1076,

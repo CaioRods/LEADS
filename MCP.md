@@ -97,3 +97,95 @@ continua sendo você abrindo o WhatsApp pelo botão do app.
 
 Não valida se a empresa existe ou está aberta. Para isso é o `funcionamento.js`,
 que consulta o Google Places e precisa de chave.
+
+---
+
+# O agente conversando por WhatsApp
+
+Existe um segundo canal, além do prompt de prospecção: o agente pode **mandar
+mensagem de verdade e ler as respostas**. Isso usa a Baileys, que fala o
+protocolo do WhatsApp direto — sem Chromium, ao contrário do whatsapp-web.js
+que tivemos de arrancar.
+
+## O isolamento
+
+A regra que governa tudo: **o agente só enxerga quem está sob gestão dele.**
+Uma conversa entra nesse conjunto por ação sua, na aba Agente do app. Fora
+dela, nada existe para o agente — nem contatos pessoais, nem clientes atuais,
+nem grupos, nem status, nem listas de transmissão. Mensagem de número não
+autorizado é descartada antes de ser lida, e não fica registrada em lugar
+nenhum.
+
+A checagem acontece em duas camadas independentes: no servidor, que recusa
+enviar para lead não gerido, e dentro do worker, que recusa de novo mesmo
+recebendo a ordem. A segunda existe para que um bug na primeira não vire
+mensagem para a pessoa errada.
+
+No worker, o isolamento é a **primeira** coisa avaliada — antes até de checar
+se há conexão. Duas razões: uma trava que protege terceiros não pode depender
+de nenhum outro estado ter dado certo; e assim ela é verificável sem uma
+sessão real de WhatsApp — uma trava que não se testa é uma trava em que não
+se confia.
+
+## Os limites, e por que existem
+
+Banimento de número não vem de "ser automatizado". Vem de volume, de
+insistência e de horário. Os tetos abaixo protegem o seu número — que é o
+mesmo do portfólio, por onde seus clientes atuais falam com você:
+
+| Limite | Padrão | Variável |
+|---|---|---|
+| Abordagens novas por dia | 25 | `WA_MAX_DIA` |
+| Espera entre envios | 45 a 180s, sorteada | `WA_MIN_S`, `WA_MAX_S` |
+| Horário | 9h às 18h | `WA_HORA_INI`, `WA_HORA_FIM` |
+| Fim de semana | bloqueado | `WA_FIM_DE_SEMANA=1` libera |
+
+**Responder quem escreveu para você não conta no teto** — responder é o
+comportamento que menos gera denúncia, e limitá-lo seria punir o único caso
+em que a conversa está indo bem.
+
+Os limites são impostos no worker, não na camada que o agente controla: ele
+não consegue pedir para exceder. Se um envio for recusado por limite, a
+resposta diz qual foi — não tente contornar, é a proteção funcionando.
+
+## Conectar
+
+Abra a aba **Agente** no ProspecApp e escaneie o QR com WhatsApp → Aparelhos
+conectados → Conectar aparelho. A sessão fica em
+`~/Library/Application Support/ProspecApp/wa-agente` e sobrevive a reinícios.
+
+O worker vive junto com o app: **com o ProspecApp fechado, nada é recebido.**
+Ao reabrir, a Baileys sincroniza o que chegou no intervalo.
+
+## Ferramentas novas
+
+| Ferramenta | Para quê |
+|---|---|
+| `agente_estado` | Conectado? Quanto já saiu hoje? Quem está sob gestão? |
+| `agente_gestao` | Inclui ou tira um lead. É a trava — peça confirmação antes de ativar em lote. |
+| `agente_enviar` | Envia de verdade. Recusa se o lead não está sob gestão, se estourou o teto ou se está fora de horário. |
+| `agente_conversas` | Histórico dos leads geridos, marcando quem respondeu. |
+
+## Prompt do agente de conversa
+
+> Cuide das conversas dos leads que estão sob gestão do agente.
+>
+> Comece por `agente_estado` para ver se há conexão e quanto cabe hoje, e
+> `agente_conversas` para ver o que já foi trocado.
+>
+> **Responda quem respondeu.** Leia o que a pessoa escreveu e continue a
+> conversa como eu continuaria: curto, direto, sem parecer robô. Se ela
+> demonstrar interesse, marque `chance` alta e me avise para eu assumir. Se
+> disser que não quer, agradeça, marque `estado: nao_deu_certo` e **tire da
+> gestão** com `agente_gestao` — nunca mais mande nada.
+>
+> **Não insista com quem não respondeu.** Reabordagem é o que mais gera
+> denúncia. Se passou uma semana sem resposta, marque `nao_deu_certo` e tire
+> da gestão, em vez de mandar de novo.
+>
+> Para abordagem nova, use `agente_enviar` só com quem eu já incluí. Escreva
+> citando algo concreto do negócio — a rua, o ramo, o fato de não ter site —
+> e termine com uma pergunta fechada. Três linhas bastam.
+>
+> No fim, me diga quem respondeu, quem virou oportunidade e quem você tirou
+> da gestão.
