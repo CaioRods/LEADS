@@ -118,6 +118,17 @@ const server = new McpServer(
 const CATEGORIAS = ['restaurante', 'loja', 'salao_beleza', 'bar', 'oficina',
                     'padaria', 'supermercado', 'farmacia', 'outro'];
 
+const CATEGORIAS_NOME = {
+  restaurante:'Restaurante', loja:'Loja/comércio', salao_beleza:'Salão de beleza',
+  bar:'Bar', oficina:'Oficina', padaria:'Padaria', supermercado:'Supermercado',
+  farmacia:'Farmácia', outro:'Outro'
+};
+
+const ESTADO_NOME_MCP = {
+  conversando:'Conversando', aguardando:'Aguardando resposta',
+  nao_deu_certo:'Não deu certo', fechado:'Fechado'
+};
+
 server.registerTool('panorama', {
   title: 'Panorama da base',
   description: 'Estado geral da base de leads: quantos existem, quantos por ' +
@@ -453,10 +464,12 @@ server.registerTool('agente_enviar', {
   title: 'Enviar mensagem pelo WhatsApp',
   description:
     'Envia DE VERDADE, pelo WhatsApp, para um lead sob gestão. Não é rascunho.\n\n' +
-    'Escreva como uma pessoa escreveria: curto (três linhas bastam), citando ' +
-    'algo concreto do negócio dele — a rua, o ramo, o fato de não ter site — e ' +
-    'terminando com UMA pergunta fechada, do tipo que se responde com sim ou ' +
-    'não. Mensagem longa e genérica é o que faz denunciar.\n\n' +
+    'Você escreve como Julia, da CRdevs. Curto (três linhas bastam), citando ' +
+    'algo concreto do negócio dele — o defeito do site, o ramo, a rua — com ' +
+    'uma ideia específica para aquela empresa, e terminando com UMA pergunta ' +
+    'fechada. Cite o cliente da CRdevs mais parecido com o ramo dele. ' +
+    'Mensagem longa e genérica é o que faz denunciar.\n\n' +
+    'Chame `dossie_lead` antes, sempre: é de lá que sai o concreto.\n\n' +
     'Pode ser recusado por teto diário, horário ou fim de semana: isso protege ' +
     'o número, então não tente contornar. Se recusar, aguarde e avise o usuário.',
   inputSchema: {
@@ -519,6 +532,53 @@ server.registerTool('agente_conversas', {
 
   if (!linhas.length) return texto('Ninguém respondeu ainda.');
   return texto(linhas.join('\n\n'));
+});
+
+server.registerTool('dossie_lead', {
+  title: 'Dossiê completo de um lead',
+  description:
+    'Tudo que sabemos de um lead, reunido para você ANALISAR a empresa antes ' +
+    'de escrever. Chame sempre antes de abordar alguém: a diferença entre uma ' +
+    'mensagem que responde e uma que é ignorada é citar algo concreto daquele ' +
+    'negócio, e é aqui que esse concreto está.\n\n' +
+    'Traz o estado do site (e o defeito exato quando ele é ruim — use essa ' +
+    'frase, ela é verificável), ramo, porte, endereço, distância do escritório, ' +
+    'como o score foi formado, e o histórico da conversa.',
+  inputSchema: { id: z.number() }
+}, async (a) => {
+  const { leads } = await lerTudo();
+  const l = leads.find(x => x.id === a.id);
+  if (!l) return erro(`Não achei lead #${a.id}.`);
+
+  const msgs = l.mensagens || [];
+  const site = temSite(l)
+    ? `${l.site}  [${l.site_qualidade || 'não avaliado'}]` +
+      (l.site_notas ? `\n              defeito: ${l.site_notas}` : '')
+    : 'NENHUM';
+
+  return texto([
+    `#${l.id} · ${l.nome}`,
+    ``,
+    `Ramo:         ${CATEGORIAS_NOME[l.categoria] || l.categoria}`,
+    `Porte:        ${l.porte || 'não confirmado'}`,
+    `Onde:         ${l.endereco || '?'}${l.bairro ? ' · ' + l.bairro : ''} · ${l.cidade || '?'}`,
+    `Telefone:     ${l.telefone || 'sem telefone'}`,
+    `Site:         ${site}`,
+    l.instagram ? `Instagram:    ${l.instagram}` : null,
+    `Funcionamento:${l.situacao ? ' ' + l.situacao : ' não verificado'}`,
+    ``,
+    `Score ${l.score ?? '?'} — formado assim:`,
+    ...(l.motivos || []).map(m => `   · ${m}`),
+    ``,
+    l.agente ? 'SOB GESTÃO DO AGENTE — pode receber mensagem.'
+             : 'FORA da gestão do agente — não pode receber mensagem ainda.',
+    l.estado ? `Estado da conversa: ${ESTADO_NOME_MCP[l.estado] || l.estado}` +
+               (l.chance != null ? ` · chance ${l.chance}/10` : '') : null,
+    ``,
+    msgs.length ? `Conversa (${msgs.length} mensagens):` : 'Nenhuma conversa ainda.',
+    ...msgs.slice(-8).map(m =>
+      `   ${m.tipo === 'entrada' ? '← ELE ' : '→ NÓS '}${m.texto.slice(0, 200)}`)
+  ].filter(x => x !== null).join('\n'));
 });
 
 async function principal() {
