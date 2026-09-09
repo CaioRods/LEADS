@@ -407,7 +407,25 @@ app, some ao fechar), ou exporte antes de abrir:
 export ANTHROPIC_API_KEY=sua-chave
 ```
 
-O modelo padrão é `claude-sonnet-5`; `HELO_MODELO` troca.
+**A assinatura do Claude Code não serve aqui.** São produtos separados: a
+chave da API é cobrada por uso, à parte do que você já paga.
 
-**Custo:** cada primeira mensagem é uma chamada curta, na casa de centavos.
-Uma campanha de 25 leads sai por poucos centavos de dólar.
+## Quanto custa
+
+Medido no prompt real: 885 tokens de entrada e ~90 de saída por mensagem.
+
+| Modelo | 25 leads | Os 109 inteiros |
+|---|---|---|
+| **Opus 5** (padrão) | R$ 0,90 | R$ 3,93 |
+| Sonnet 5 | R$ 0,36 | R$ 1,57 |
+| Haiku 4.5 | R$ 0,18 | R$ 0,79 |
+
+Cotação de R$ 5,40; confira o preço atual em anthropic.com/pricing.
+
+O padrão é `claude-opus-5` porque a qualidade da primeira mensagem é o que
+decide se o lead responde — e a diferença entre ele e o mais barato é de
+R$ 0,72 na campanha inteira. `HELO_MODELO=claude-haiku-4-5` troca, se preferir.
+
+**A alternativa sem custo de API:** conduzir pelo Claude Code, com o MCP, como
+está documentado acima. Aí quem escreve é a assinatura que você já paga — o
+botão é conveniência, não necessidade.

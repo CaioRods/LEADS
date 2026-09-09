@@ -14,7 +14,11 @@
    vale igual, venha a mensagem daqui ou de você. Uma campanha não consegue
    furar limite nenhum.                                                     */
 
-const MODELO = process.env.HELO_MODELO || 'claude-sonnet-5';
+/* Opus 5 é o padrão porque a qualidade da primeira mensagem é o que decide se
+   o lead responde — e o custo, medido, é de centavos por campanha. Quem quiser
+   trocar por um modelo mais barato usa HELO_MODELO; a decisão é do dono do
+   negócio, não minha. */
+const MODELO = process.env.HELO_MODELO || 'claude-opus-5';
 
 /* A identidade fica aqui, e não no prompt de cada mensagem, porque é o que
    não muda entre um lead e outro. O que muda é o dossiê. */
