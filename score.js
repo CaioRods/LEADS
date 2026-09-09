@@ -3,7 +3,12 @@
 const fs = require('fs');
 const path = require('path');
 const arquivo = path.join(__dirname, 'dados.json');
-const dados = JSON.parse(fs.readFileSync(arquivo, 'utf-8'));
+
+/* Este arquivo tem dois usos: rodar como script (`node score.js`, que
+   repontua a base inteira e imprime a tabela) e ser importado por quem
+   precisa pontuar UM lead — o servidor MCP faz isso ao criar um lead novo.
+   Ler o dados.json no topo quebrava o segundo uso, então a leitura desceu
+   para dentro do bloco de script.                                        */
 
 // Localização do vendedor: Regente Feijó
 const MEU_BAIRRO = "Centro";
@@ -82,39 +87,46 @@ function pontuar(l) {
   return { score: Math.min(s, 100), motivos: m };
 }
 
-dados.leads.forEach(l => {
-  const { score, motivos } = pontuar(l);
-  l.score = score;
-  l.motivos = motivos;
-});
+module.exports = { pontuar, nivelProx, ROI };
 
-// Ordena por: status ativo → score descrescente → proximidade
-const ordem = { novo: 0, contatado: 1, agendado: 2, proposta: 3, vendido: 4, descartado: 9 };
-dados.leads.sort((a, b) =>
-  (ordem[a.status] ?? 5) - (ordem[b.status] ?? 5) ||
-  b.score - a.score ||
-  nivelProx(a) - nivelProx(b) ||
-  a.nome.localeCompare(b.nome, 'pt-BR')
-);
+if (require.main === module) {
+  const dados = JSON.parse(fs.readFileSync(arquivo, 'utf-8'));
 
-fs.writeFileSync(arquivo, JSON.stringify(dados, null, 2), 'utf-8');
+  dados.leads.forEach(l => {
+    const { score, motivos } = pontuar(l);
+    l.score = score;
+    l.motivos = motivos;
+  });
 
-const ativos = dados.leads.filter(l => l.status !== 'descartado');
-const faixa = n => n >= 70 ? 'QUENTE' : n >= 50 ? 'MORNO' : 'FRIO';
-console.log(`${dados.leads.length} leads · ${ativos.length} ativos\n`);
-console.log('POS  SCORE  FAIXA    LEAD                                      TELEFONE          REDE');
-console.log('─'.repeat(100));
-ativos.forEach((l, i) => {
-  const rede = l.instagram || (l.facebook ? 'Facebook' : '—');
-  console.log(
-    String(i + 1).padStart(3) + '  ' +
-    String(l.score).padStart(5) + '  ' +
-    faixa(l.score).padEnd(8) +
-    l.nome.slice(0, 40).padEnd(42) +
-    (l.telefone || '—').padEnd(18) +
-    rede.slice(0, 24)
+  // Ordena por: status ativo → score descrescente → proximidade
+  const ordem = { novo: 0, contatado: 1, agendado: 2, proposta: 3, vendido: 4, descartado: 9 };
+  dados.leads.sort((a, b) =>
+    (ordem[a.status] ?? 5) - (ordem[b.status] ?? 5) ||
+    b.score - a.score ||
+    nivelProx(a) - nivelProx(b) ||
+    a.nome.localeCompare(b.nome, 'pt-BR')
   );
-});
-const q = ativos.filter(l => l.score >= 70).length;
-const mo = ativos.filter(l => l.score >= 50 && l.score < 70).length;
-console.log(`\nQUENTES (≥70): ${q}   MORNOS (50-69): ${mo}   FRIOS (<50): ${ativos.length - q - mo}`);
+
+  fs.writeFileSync(arquivo, JSON.stringify(dados, null, 2), 'utf-8');
+
+  const ativos = dados.leads.filter(l => l.status !== 'descartado');
+  const faixa = n => n >= 70 ? 'QUENTE' : n >= 50 ? 'MORNO' : 'FRIO';
+  console.log(`${dados.leads.length} leads · ${ativos.length} ativos\n`);
+  console.log('POS  SCORE  FAIXA    LEAD                                      TELEFONE          REDE');
+  console.log('─'.repeat(100));
+  ativos.forEach((l, i) => {
+    const rede = l.instagram || (l.facebook ? 'Facebook' : '—');
+    console.log(
+      String(i + 1).padStart(3) + '  ' +
+      String(l.score).padStart(5) + '  ' +
+      faixa(l.score).padEnd(8) +
+      l.nome.slice(0, 40).padEnd(42) +
+      (l.telefone || '—').padEnd(18) +
+      rede.slice(0, 24)
+    );
+  });
+  const q = ativos.filter(l => l.score >= 70).length;
+  const mo = ativos.filter(l => l.score >= 50 && l.score < 70).length;
+  console.log(`\nQUENTES (≥70): ${q}   MORNOS (50-69): ${mo}   FRIOS (<50): ${ativos.length - q - mo}`);
+
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "prospecapp": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "env": {}
+    }
+  }
+}

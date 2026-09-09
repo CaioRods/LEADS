@@ -12,7 +12,8 @@
     "build:dmg": "electron-builder --mac dmg",
     "build:all": "electron-builder -mwl",
     "update-app": "node atualizar-app.js",
-    "funcionamento": "node funcionamento.js"
+    "funcionamento": "node funcionamento.js",
+    "mcp": "node mcp-server.js"
   },
   "keywords": [
     "prospecção",
@@ -30,6 +31,7 @@
     "sharp": "latest"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "leaflet": "^1.9.4",
