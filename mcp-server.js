@@ -581,6 +581,56 @@ server.registerTool('dossie_lead', {
   ].filter(x => x !== null).join('\n'));
 });
 
+server.registerTool('diagnosticar', {
+  title: 'Registrar o diagnóstico da conversa',
+  description:
+    'Atualiza o quadro de Estados com onde a conversa está. Chame SEMPRE que ' +
+    'algo mudar: o cliente respondeu, marcou reunião, pediu preço, sumiu, ' +
+    'recusou. É por aqui que o Caio enxerga o que está acontecendo sem ler ' +
+    'todas as conversas.\n\n' +
+    'A `nota` é a parte mais importante: escreva o que ele precisa saber ANTES ' +
+    'de assumir a conversa — o que ficou combinado, a objeção que apareceu, o ' +
+    'que a empresa precisa, o horário marcado. Uma ou duas frases, concretas. ' +
+    'Nada de "cliente demonstrou interesse".\n\n' +
+    'Sobre a chance (0 a 10), calibre assim: 0-2 recusou ou sumiu de vez; ' +
+    '3-4 respondeu por educação, sem sinal real; 5-6 conversa viva, sem ' +
+    'compromisso; 7-8 pediu preço, pediu exemplo, ou está negociando; ' +
+    '9-10 reunião marcada ou disse que vai fechar.',
+  inputSchema: {
+    id:     z.number(),
+    estado: z.enum(['conversando','aguardando','nao_deu_certo','fechado'])
+              .describe('conversando = a bola está com a gente; aguardando = ' +
+                'esperando ele responder; nao_deu_certo = recusou ou sumiu; ' +
+                'fechado = vendeu'),
+    chance: z.number().min(0).max(10).describe('chance real de fechar, 0 a 10'),
+    nota:   z.string().describe('o que o Caio precisa saber, em uma ou duas frases'),
+    reuniao: z.string().optional()
+              .describe('quando e como ficou marcado, se marcou. ex.: "quinta 14h, ' +
+                'Caio liga" ou "sexta de manhã no escritório"')
+  }
+}, async (a) => {
+  if (!await servidorNoAr()) return erro('O ProspecApp precisa estar aberto.');
+
+  const campos = {
+    estado: a.estado,
+    chance: a.chance,
+    nota_agente: a.nota,
+    nota_agente_em: new Date().toISOString()
+  };
+  if (a.reuniao) campos.reuniao = a.reuniao;
+
+  const r = await fetch(`${BASE}/api/leads/${a.id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(campos)
+  });
+  if (!r.ok) return erro(`O servidor recusou: ${r.status}`);
+
+  const l = await r.json();
+  return texto(`Registrado: ${l.nome} → ${ESTADO_NOME_MCP[a.estado]}, chance ${a.chance}/10.` +
+    (a.reuniao ? `\nReunião: ${a.reuniao}` : '') +
+    `\nNota: ${a.nota}`);
+});
+
 async function principal() {
   await server.connect(new StdioServerTransport());
   // stderr, nunca stdout: o stdout é o canal do protocolo MCP.

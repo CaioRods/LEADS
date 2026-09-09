@@ -1246,7 +1246,7 @@ $("#navExportar").onclick = async () => {
 // leads, então digitar com a aba aberta não fazia absolutamente nada.
 $("#busca").oninput = e => {
   S.termo = e.target.value;
-  if (["leads", "whatsapp", "estados"].includes(S.visao)) render();
+  if (["leads", "estados", "agente"].includes(S.visao)) render();
 };
 /* No app, um <a target="_blank"> viraria janela interna do Electron. Um
    único ouvinte na captura desvia todos eles — os do painel do lead, do
@@ -1354,198 +1354,9 @@ function linkWhatsApp(numero, texto){
   return texto ? url + "?text=" + encodeURIComponent(texto) : url;
 }
 
-/* Usa o mesmo filtrados() da visão de leads, então ordem, filtros rápidos e
-   busca são idênticos nas duas telas. */
-function leadsDaAba(){
-  return filtrados().filter(l => temTel(l) && l.status !== "descartado")
-    .concat(S.leads.filter(l => emConversa(l) && temTel(l)))
-    .filter((l, i, a) => a.indexOf(l) === i);
-}
-
-function renderizarWhatsApp(){
-  if (S.visao !== "whatsapp") return;
-  const painel = document.getElementById("painelWhatsApp");
-  if (!painel) return;
-
-  if (S.carregando || !S.leads.length){
-    painel.innerHTML = `<div class="wpp-grade"><div class="wpp-lista">${
-      skeletonLista()}</div><div class="wpp-vazio" style="flex:1"></div></div>`;
-    return;
-  }
-
-  const itens = leadsDaAba();
-  const emFoco = itens.find(l => l.id === leadEmFoco);
-  const comConversa = itens.filter(l => mensagensDe(l).length).length;
-
-  painel.innerHTML = `<div class="wpp-grade">
-    <div class="wpp-lista">
-      <div class="wpp-cabeca">
-        ${S.termo
-          ? `<b>${itens.length}</b> ${itens.length === 1 ? "resultado" : "resultados"}`
-          : comConversa
-            ? `<b>${comConversa}</b> com conversa registrada`
-            : "Nenhuma conversa registrada ainda"}
-      </div>
-
-      ${itens.length === 0 ? `<p class="wpp-nada">Nada encontrado.</p>` : ""}
-
-      ${itens.map(l => {
-        const msgs = mensagensDe(l);
-        const ultima = msgs[msgs.length - 1];
-        return `
-        <div class="wpp-conversa" data-lead="${l.id}"
-             aria-selected="${leadEmFoco === l.id}">
-          ${avatarHTML(l)}
-          <span class="wpp-txt">
-            <b>${esc(l.nome || l.empresa)}</b>
-            <span>${ultima ? esc(ultima.texto).slice(0, 38) : esc(l.telefone)}</span>
-          </span>
-          ${msgs.length ? `<em class="wpp-marca">${msgs.length}</em>` : ""}
-        </div>`;
-      }).join("")}
-    </div>
-
-    ${emFoco ? fichaWhatsApp(emFoco)
-             : `<div class="wpp-vazio" style="flex:1">Escolha um lead para conversar</div>`}
-  </div>`;
-
-  painel.querySelectorAll("[data-lead]").forEach(el => el.onclick = () => {
-    leadEmFoco = +el.dataset.lead;
-    renderizarWhatsApp();
-  });
-
-  if (!emFoco) return;
-  pintarMensagensWPP(emFoco);
-  ligarConversa(emFoco);
-}
-
-/* A ficha existe para uma coisa: você saber com quem está falando ANTES de
-   escrever. Foto, ramo, onde fica, o que já rolou e o gancho da abordagem. */
-function fichaWhatsApp(l){
-  const msgs = mensagensDe(l);
-  const historico = msgs.length
-    ? `${msgs.length} ${msgs.length === 1 ? "mensagem" : "mensagens"}`
-    : emConversa(l) ? "em conversa, nada registrado" : "nunca conversado";
-
-  const gancho = semSite(l)
-    ? "Sem site — é exatamente o que você vende."
-    : "Já tem site: ofereça reforma, landing page ou sistema.";
-
-  return `<div id="chatArea">
-    <div class="chat-cabeca">
-      ${avatarHTML(l, true)}
-      <span class="chat-quem">
-        <b>${esc(l.nome || l.empresa)}</b>
-        <span>${esc(l.telefone)} · ${esc(CATEGORIAS[l.categoria] || "Outro")}</span>
-      </span>
-      <button class="botao" id="wppVerLead">Ver lead</button>
-    </div>
-
-    <div class="wpp-ficha">
-      <div class="wpp-ficha-topo">${scoreHTML(l)}${seloHTML(l)}${proxHTML(l)}</div>
-
-      <dl class="wpp-dados">
-        <div><dt>Onde</dt><dd>${esc(l.endereco || "endereço não informado")}${
-          l.bairro ? ` · ${esc(l.bairro)}` : ""}</dd></div>
-        <div><dt>Site</dt><dd>${semSite(l)
-          ? `<span class="wpp-sem">nenhum</span>`
-          : `<a href="${esc(l.site)}" target="_blank" rel="noopener">${esc(l.site)}</a>${
-              l.site_qualidade === "ruim" ? ` <b class="sit sit-temp">ruim</b>` : ""}`}</dd></div>
-        ${temInsta(l) ? `<div><dt>Instagram</dt>
-          <dd><a href="${esc(urlInsta(l))}" target="_blank" rel="noopener">@${
-            esc(String(l.instagram).replace(/^@/,""))}</a></dd></div>` : ""}
-        <div><dt>Conversa</dt><dd>${esc(historico)}</dd></div>
-      </dl>
-
-      <p class="wpp-gancho">${esc(gancho)}</p>
-    </div>
-
-    <div id="mensagensArea"></div>
-
-    <div class="chat-rodape">
-      <textarea id="inputMsg" placeholder="Escreva sua mensagem…"></textarea>
-      <button class="botao botao-forte" id="btnEnviarMsg">Abrir no WhatsApp</button>
-    </div>
-    <p class="chat-nota">Isto registra a mensagem aqui e abre o WhatsApp com ela
-      pronta. Recebeu resposta? <button class="elo" id="btnAnotarResposta">anote
-      aqui</button> para o histórico ficar completo.</p>
-  </div>`;
-}
-
-function pintarMensagensWPP(l){
-  const area = $("#mensagensArea");
-  if (!area) return;
-
-  const msgs = mensagensDe(l);
-  if (!msgs.length){
-    area.innerHTML = `<p class="wpp-sem-msg">Nada registrado ainda.</p>`;
-    return;
-  }
-
-  area.innerHTML = msgs.map(m => `
-    <div class="msg ${m.tipo}">
-      <span class="msg-texto">${esc(m.texto)}</span>
-      <span class="msg-pe">
-        ${new Date(m.data).toLocaleString("pt-BR", {
-          day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}
-        <button class="msg-x" data-apagar="${m.id}" title="Apagar">×</button>
-      </span>
-    </div>`).join("");
-
-  area.scrollTop = area.scrollHeight;
-
-  area.querySelectorAll("[data-apagar]").forEach(b => b.onclick = async () => {
-    const msgId = b.dataset.apagar;
-    l.mensagens = mensagensDe(l).filter(m => m.id !== msgId);
-    pintarMensagensWPP(l);
-    try { await API.apagarMensagem(l.id, msgId); }
-    catch (e){ aviso("Não consegui apagar: " + e.message, true); }
-  });
-}
-
-function ligarConversa(l){
-  const registrar = async (texto, tipo) => {
-    try {
-      const msg = await API.registrarMensagem(l.id, texto, tipo);
-      (l.mensagens = mensagensDe(l)).push(msg);
-      return true;
-    } catch (e){
-      aviso("Não consegui registrar: " + e.message, true);
-      return false;
-    }
-  };
-
-  const enviar = async () => {
-    const campo = $("#inputMsg");
-    const texto = campo.value.trim();
-    if (!texto) return;
-
-    /* A abertura vem PRIMEIRO e de forma síncrona. Tentei registrar antes,
-       para o histórico nunca mentir, mas qualquer `await` antes do open
-       quebra a cadeia do gesto do usuário e o navegador barra a janela como
-       pop-up — foi por isso que o WhatsApp não abria. Registrar depois é o
-       preço; se falhar, o aviso aparece e a mensagem já foi. */
-    abrirFora(linkWhatsApp(numeroDoLead(l), texto));
-
-    campo.value = "";
-    await registrar(texto, "saida");
-    iniciarConversa(l);
-    renderizarWhatsApp();
-  };
-
-  $("#btnEnviarMsg").onclick = enviar;
-  $("#inputMsg").onkeydown = e => {
-    if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); enviar(); }
-  };
-
-  $("#btnAnotarResposta").onclick = async () => {
-    const texto = prompt(`O que ${l.nome} respondeu?`);
-    if (!texto || !texto.trim()) return;
-    if (await registrar(texto.trim(), "entrada")) renderizarWhatsApp();
-  };
-
-  $("#wppVerLead").onclick = () => { S.visao = "leads"; render(); abrirPainel(l.id); };
-}
+/* A aba de conversas foi removida: o agente fala pelo WhatsApp de verdade e o
+   acompanhamento vive no quadro de Estados. Sobrou aqui só o que ainda serve —
+   abrir o WhatsApp por link e registrar mensagem no histórico. */
 
 /* A aba de conversas entra no render junto com as outras visões. */
 const renderOriginal = render;
@@ -1554,7 +1365,7 @@ render = function(){
 
   const VISOES = { leads:"visaoLeads", estados:"visaoEstados",
                    agente:"visaoAgente", panorama:"visaoPanorama",
-                   mapa:"visaoMapa", whatsapp:"visaoWhatsApp" };
+                   mapa:"visaoMapa" };
 
   if (S.visao === "agente"){
     $("#tituloVisao").textContent = "Agente";
@@ -1566,17 +1377,6 @@ render = function(){
     if (el) el.classList.toggle("ocultar", S.visao !== v);
   });
 
-  if (S.visao === "whatsapp"){
-    const comConversa = S.leads.filter(l => mensagensDe(l).length).length;
-    const comTel = S.leads.filter(l => temTel(l) && l.status !== "descartado").length;
-
-    $("#tituloVisao").textContent = "Conversas";
-    $("#subTitulo").textContent = comConversa
-      ? `${comConversa} com conversa · ${comTel} leads com telefone`
-      : `${comTel} leads com telefone`;
-
-    renderizarWhatsApp();
-  }
 };
 
 
@@ -1775,6 +1575,12 @@ function fichaEstado(l){
     </div>
 
     ${temTel(l) ? `<div class="ficha-tel">${IC.tel(14)} ${esc(l.telefone)}</div>` : ""}
+
+    ${l.reuniao ? `<div class="ficha-reuniao"><b>Reunião:</b> ${esc(l.reuniao)}</div>` : ""}
+
+    ${l.nota_agente ? `<p class="ficha-nota">${esc(l.nota_agente)}
+      ${l.nota_agente_em ? `<time>${new Date(l.nota_agente_em).toLocaleDateString("pt-BR",
+        {day:"2-digit",month:"2-digit"})}</time>` : ""}</p>` : ""}
 
     ${escalaHTML(l)}
 
@@ -2261,7 +2067,9 @@ async function renderAgente(){
       <section class="coluna">
         <header><h3>Sob gestão do agente</h3>
           <span class="coluna-sub">recebem e respondem mensagem</span>
-          <span class="coluna-qt">${geridos.length}</span></header>
+          <span class="coluna-qt">${geridos.length}</span>
+          ${geridos.length ? `<button class="botao ag-lote" id="limparTodos">Limpar</button>` : ""}
+        </header>
         <div class="coluna-corpo">
           ${geridos.length ? geridos.map(g => `
             <article class="ag-item">
@@ -2276,7 +2084,9 @@ async function renderAgente(){
       <section class="coluna">
         <header><h3>Disponíveis</h3>
           <span class="coluna-sub">com telefone, fora da gestão</span>
-          <span class="coluna-qt">${candidatos.length}</span></header>
+          <span class="coluna-qt">${candidatos.length}</span>
+          ${candidatos.length ? `<button class="botao botao-forte ag-lote" id="incluirTodos">Incluir todos</button>` : ""}
+        </header>
         <div class="coluna-corpo">
           ${candidatos.map(l => `
             <article class="ag-item">
@@ -2296,6 +2106,42 @@ async function renderAgente(){
     try { await API.gestaoAgente(l.id, true); l.agente = true; renderAgente(); }
     catch (err){ aviso("Não consegui incluir: " + err.message, true); b.disabled = false; }
   });
+
+  const bt = $("#incluirTodos");
+  if (bt) bt.onclick = async () => {
+    if (!confirm(`Incluir os ${candidatos.length} leads da lista na gestão do agente?\n\n` +
+      `Todos passam a poder receber mensagem. O teto de ${
+        (e.limites && e.limites.abordagensPorDia) || 25} abordagens por dia continua ` +
+      `valendo, então elas saem aos poucos, não de uma vez.`)) return;
+
+    bt.disabled = true; bt.textContent = "Incluindo…";
+    let ok = 0;
+    for (const l of candidatos){
+      // Um que falha não pode parar o lote inteiro.
+      try { await API.gestaoAgente(l.id, true); l.agente = true; ok++; } catch (_) {}
+    }
+    aviso(`${ok} de ${candidatos.length} incluídos.`);
+    renderAgente();
+  };
+
+  const bl = $("#limparTodos");
+  if (bl) bl.onclick = async () => {
+    if (!confirm(`Tirar os ${geridos.length} leads da gestão do agente?\n\n` +
+      `O agente para de falar e de ouvir todos eles. As conversas já registradas ` +
+      `continuam salvas.`)) return;
+
+    bl.disabled = true; bl.textContent = "Limpando…";
+    let ok = 0;
+    for (const g of geridos){
+      try {
+        await API.gestaoAgente(g.id, false);
+        const l = S.leads.find(x => x.id === g.id); if (l) l.agente = false;
+        ok++;
+      } catch (_) {}
+    }
+    aviso(`${ok} tirados da gestão.`);
+    renderAgente();
+  };
 
   raiz.querySelectorAll("[data-tirar]").forEach(b => b.onclick = async () => {
     const id = +b.dataset.tirar;
