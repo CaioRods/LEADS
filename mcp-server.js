@@ -106,7 +106,7 @@ const resumo = l =>
   `#${l.id} · ${l.nome} · score ${l.score ?? '?'} · ${l.status || 'novo'}` +
   (l.estado ? ` · ${l.estado}` : '') +
   ` · ${l.telefone || 'sem telefone'} · ${l.bairro || '?'}, ${l.cidade || '?'}` +
-  ` · site: ${temSite(l) ? l.site : 'nenhum'}`;
+  ` · site: ${temSite(l) ? l.site + (l.site_qualidade === 'ruim' ? ' (RUIM — já paga, dá para fazer melhor)' : '') : 'nenhum'}`;
 
 // ------------------------------------------------------------------ servidor
 
@@ -162,7 +162,10 @@ server.registerTool('listar_leads', {
     cidade:    z.string().optional(),
     bairro:    z.string().optional(),
     categoria: z.enum(CATEGORIAS).optional(),
-    sem_site:  z.boolean().optional().describe('só os que não têm site — os melhores alvos'),
+    sem_site:  z.boolean().optional().describe('só os que não têm site'),
+    site_ruim: z.boolean().optional().describe('só quem TEM site, mas ruim — o melhor ' +
+      'tipo de lead: já pagou por um site, então não precisa ser convencido do valor, ' +
+      'só de que dá para fazer melhor e mais barato'),
     score_min: z.number().optional(),
     status:    z.enum(['novo','contatado','agendado','proposta','vendido','descartado']).optional(),
     estado:    z.enum(['conversando','aguardando','nao_deu_certo','fechado']).optional(),
@@ -179,6 +182,7 @@ server.registerTool('listar_leads', {
     if (a.bairro    && chaveNome(l.bairro)  !== chaveNome(a.bairro))  return false;
     if (a.categoria && l.categoria !== a.categoria) return false;
     if (a.sem_site  && temSite(l)) return false;
+    if (a.site_ruim && !(temSite(l) && l.site_qualidade === 'ruim')) return false;
     if (a.score_min != null && (l.score ?? 0) < a.score_min) return false;
     if (a.status    && l.status !== a.status) return false;
     if (a.estado    && l.estado !== a.estado) return false;

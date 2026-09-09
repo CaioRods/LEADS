@@ -221,6 +221,25 @@ Cole este bloco antes de qualquer prompt de conversa ou prospecção:
 > ser o processo interno (estoque, pedidos, controle), não a presença online.
 > Para comércio pequeno, o site ainda é a porta de entrada.
 >
+> **Olhe o campo `site_qualidade` antes de escrever.** Ele muda a abordagem
+> por inteiro:
+>
+> - **`nenhum` (sem site):** o argumento é ser encontrado. "Quem procura
+>   [ramo] em Prudente no Google não acha vocês."
+>
+> - **`ruim` (tem site, mas ruim):** este é o melhor tipo de lead, e a
+>   abordagem é outra. A pessoa **já pagou por um site** — não precisa ser
+>   convencida de que vale a pena, só de que dá para ser melhor. Cite o que
+>   está ruim de forma concreta e sem ofender ("vi que o site de vocês não
+>   abre direito no celular", "reparei que o site está fora do ar"), e diga
+>   que faz melhor e **mais barato do que ele provavelmente pagou**. Nunca
+>   diga que o site é feio ou ruim de forma seca: ele pode ter feito, ou um
+>   parente. Fale do problema, não da qualidade.
+>
+> - **`bom` (tem site bom):** não ofereça site. Vá para sistema ou automação
+>   — estoque, pedidos, agendamento, integração. Quem investiu num site bom
+>   costuma ter orçamento e entender o valor de software.
+>
 > **Quando perguntarem o preço:** dê a faixa dos pacotes fechados e diga que
 > sistema sob medida depende do escopo. Nunca invente número para sistema.
 >

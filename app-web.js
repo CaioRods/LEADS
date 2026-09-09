@@ -1449,7 +1449,8 @@ function fichaWhatsApp(l){
           l.bairro ? ` · ${esc(l.bairro)}` : ""}</dd></div>
         <div><dt>Site</dt><dd>${semSite(l)
           ? `<span class="wpp-sem">nenhum</span>`
-          : `<a href="${esc(l.site)}" target="_blank" rel="noopener">${esc(l.site)}</a>`}</dd></div>
+          : `<a href="${esc(l.site)}" target="_blank" rel="noopener">${esc(l.site)}</a>${
+              l.site_qualidade === "ruim" ? ` <b class="sit sit-temp">ruim</b>` : ""}`}</dd></div>
         ${temInsta(l) ? `<div><dt>Instagram</dt>
           <dd><a href="${esc(urlInsta(l))}" target="_blank" rel="noopener">@${
             esc(String(l.instagram).replace(/^@/,""))}</a></dd></div>` : ""}

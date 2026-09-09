@@ -80,13 +80,26 @@ function pontuar(l) {
   else if (l.facebook)         { s += 12; m.push('sem telefone, mas tem Facebook (+12)'); }
   else                         { m.push('sem canal de contato (+0)'); }
 
-  // 2. Ele precisa mesmo do que você vende? (0-30)
+  /* 2. Ele precisa mesmo do que você vende? (0-30)
+
+     Site ruim vale quase tanto quanto site nenhum, e por um motivo comercial:
+     quem tem site ruim JÁ PAGOU por um site. Não precisa ser convencido de
+     que vale a pena ter presença online — só de que dá para ser melhor. Essa
+     conversa é mais curta que a de quem nunca comprou, e o orçamento já
+     existe no bolso dele. Por isso 25, não 10.
+
+     `site_qualidade` é preenchido pela verificação (subagentes ou Google
+     Places); quando falta, caímos nas heurísticas antigas de texto. */
   const site = (l.site || '').toLowerCase();
-  if (site === 'nenhum')                    { s += 30; m.push('nenhum site (+30)'); }
+  const qual = (l.site_qualidade || '').toLowerCase();
+
+  if (site === 'nenhum' || !site)           { s += 30; m.push('nenhum site (+30)'); }
+  else if (qual === 'ruim')                 { s += 25; m.push('site ruim — já paga por um, dá para fazer melhor (+25)'); }
   else if (site.includes('portal') || site.includes('goomer'))
                                             { s += 15; m.push('só plataforma alugada, sem domínio próprio (+15)'); }
   else if (site.includes('rede') || site === 'desatualizado')
                                             { s += 10; m.push('site de rede/desatualizado (+10)'); }
+  else if (qual === 'bom')                  { m.push('já tem site bom (+0)'); }
   else                                      { m.push('já tem site próprio (+0)'); }
 
   // 3. Já acredita em presença digital? (0-20) — melhor previsor de conversa fácil
