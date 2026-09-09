@@ -123,7 +123,11 @@ function pontuar(l) {
                        { s += 10; m.push('destaque de reputação na cidade (+10)'); }
   else if (anos >= 15) { s += 7;  m.push(`${anos} anos de casa (+7)`); }
   else if (l.cnpj)     { s += 5;  m.push('empresa formalizada, CNPJ conhecido (+5)'); }
-  else                 { s += 2;  m.push('porte não confirmado (+2)'); }
+  /* O rótulo antes dizia "porte não confirmado", o que era falso para um lead
+     cujo porte está confirmado como pequeno — e a frase aparece no painel, que
+     o usuário lê. Este ramo não mede porte: ele é o fallback de reputação e
+     tempo de casa, sinais que o comércio de bairro simplesmente não publica. */
+  else                 { s += 2;  m.push('sem sinal de reputação ou tempo de casa (+2)'); }
 
   // 6. Proximidade do escritório (0-15)
   const prox = nivelProx(l);
