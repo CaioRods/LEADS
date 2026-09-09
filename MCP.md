@@ -320,6 +320,14 @@ Ao reabrir, a Baileys sincroniza o que chegou no intervalo.
 > - **`nenhum` (sem site):** o argumento é ser encontrado. "Quem procura
 >   [ramo] em Prudente no Google não acha vocês."
 >
+>   **Antes de usar este argumento, confira.** Dizer "vocês não têm site" para
+>   quem tem é o erro mais caro possível: mata a conversa e faz a CRdevs
+>   parecer que não pesquisou. Já aconteceu na base — 14 leads estavam
+>   marcados como sem site e tinham, porque a verificação descartava site de
+>   grupo (o Centro Diagnóstico Iamada aparece em hospitaliamada.com.br, o Jr
+>   Park em jrhoteis.com.br/presidente-prudente). Se o lead pertence a uma
+>   rede, hospital ou grupo, quase sempre existe um site onde ele aparece.
+>
 > - **`ruim` (tem site, mas ruim):** este é o melhor tipo de lead, e a
 >   abordagem é outra. A pessoa **já pagou por um site** — não precisa ser
 >   convencida de que vale a pena, só de que dá para ser melhor. Cite o que
@@ -429,3 +437,37 @@ R$ 0,72 na campanha inteira. `HELO_MODELO=claude-haiku-4-5` troca, se preferir.
 **A alternativa sem custo de API:** conduzir pelo Claude Code, com o MCP, como
 está documentado acima. Aí quem escreve é a assinatura que você já paga — o
 botão é conveniência, não necessidade.
+
+---
+
+# Como verificar site (a regra correta)
+
+Uma regra errada minha custou 14 falsos "sem site" na base — 29% dos que
+foram re-verificados, concentrados justamente no topo da fila. Ela dizia que
+site de marca ou grupo só contava se fosse específico daquela unidade. Isso
+serve para separar `chevrolet.com.br` de uma concessionária qualquer, e
+falha completamente para empresa que **é** o grupo.
+
+**O critério é comercial, não técnico.** A pergunta é uma só:
+
+> *Se alguém disser a essa empresa "vi que vocês não têm site", ela pode
+> responder "temos sim, é fulano.com.br"?*
+
+Se puder, ela TEM site. Ponto.
+
+**Conta como ter site:** domínio próprio; site do grupo ou rede onde a
+empresa aparece; subdomínio dela, mesmo em plataforma; página da unidade
+dentro do site da marca.
+
+**Não conta:** diretórios (prudenteempresas, listamais, guiafacil, apontador,
+econodata, solutudo, paginaamarela), redes sociais, marketplaces e OTAs
+(iFood, Booking, iCarros, OLX, Webmotors, TripAdvisor), e site de marca
+nacional onde a loja local não aparece.
+
+**Na dúvida, marque TEM.** Um falso "não tem site" custa a conversa inteira;
+um falso "tem site" só faz perder um lead da fila.
+
+**Guarde sempre a URL que encontrou, mesmo ao decidir que não conta.** Foi
+isso que permitiu auditar o erro: as notas diziam "damha.com.br é corporativo"
+— o dado estava lá, só tinha sido descartado. Sem a nota, o erro seria
+invisível.

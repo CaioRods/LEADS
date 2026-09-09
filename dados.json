@@ -12,7 +12,7 @@
       "endereco": "Rua Cassemiro Boscoli, 236",
       "bairro": "Jardim Icaray",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://hospitaliamada.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1102.jpg",
@@ -33,13 +33,12 @@
       "lon": -51.4107031,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:15:39.545Z",
-      "site_verificado_em": "2026-09-09T14:11:17.555Z",
-      "site_notas": "apenas diretórios e o site do Hospital Iamada",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.668Z",
+      "site_notas": "faz parte do Hospital Iamada, aparece na página de exames",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.081Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -77,16 +76,24 @@
       "lon": -51.4177737,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:15.390Z",
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "somente diretórios de empresas",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
-      "atualizado_em": "2026-09-09T15:03:38.089Z",
-      "estado": null,
-      "chance": 0,
+      "atualizado_em": "2026-09-09T19:32:03.829Z",
+      "estado": "aguardando",
       "nota_agente": null,
       "nota_agente_em": null,
-      "reuniao": null
+      "reuniao": null,
+      "mensagens": [
+        {
+          "id": "mtuhvvjp5mgm",
+          "texto": "Boa tarde! Helô aqui, da CRdevs — a gente fica na Manoel Goulart, quase vizinhos de vocês.\n\nVi que a Ville Japan não tem site próprio. Quem procura carro pesquisa antes de ir na loja, e hoje esse pessoal não consegue ver o estoque de vocês. Fizemos uma automação pra Liane Veículos que resolve isso.\n\nQuer que eu mostre como ficaria?",
+          "tipo": "saida",
+          "data": "2026-09-09T19:32:03.829Z"
+        }
+      ],
+      "chance": 5
     },
     {
       "id": 1007,
@@ -100,7 +107,7 @@
       "endereco": "Avenida Manoel Goulart, 3636",
       "bairro": "Vila Santa Helena",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://www.fiatviviani.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1007.png",
@@ -121,13 +128,12 @@
       "lon": -51.4174049,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:20.143Z",
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "fiatviviani.com.br é domínio de franquia, não próprio",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site do grupo Viviani com página de Presidente Prudente",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.097Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -144,7 +150,7 @@
       "endereco": "Rua Doutor Gurgel, 715",
       "bairro": "Centro",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "http://hospitalng.com.br/ng/cdi/",
       "instagram": "",
       "facebook": "",
       "logo": "",
@@ -176,9 +182,9 @@
       "estado": null,
       "chance": 0,
       "agente": true,
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "apenas Facebook, Instagram e diretórios",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "CDI aparece no site do Hospital Nossa Senhora das Graças",
+      "site_qualidade": "?",
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -195,7 +201,7 @@
       "endereco": "Avenida Vereador Aurelino Coutinho, 2353",
       "bairro": "Jardim Alto da Boa Vista",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://damha.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1031.jpg",
@@ -216,13 +222,12 @@
       "lon": -51.3882528,
       "geo_precisao": "cidade",
       "geo_em": "2026-09-03T23:15:46.050Z",
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "damha.com.br é corporativo da marca, não da filial",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site corporativo com empreendimentos de Prudente",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.111Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -239,7 +244,7 @@
       "endereco": "Avenida Coronel José Soares Marcondes, 3190",
       "bairro": "Parque Higienópolis",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://encalso.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1061.jpg",
@@ -261,11 +266,10 @@
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:15:47.997Z",
       "estado": null,
-      "chance": 0,
       "atualizado_em": "2026-09-09T15:03:38.118Z",
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "encalso.com.br é corporativo, não destaca a filial local",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site institucional, empresa fundada em Prudente",
+      "site_qualidade": "?",
       "agente": true,
       "nota_agente": null,
       "nota_agente_em": null,
@@ -283,7 +287,7 @@
       "endereco": "Avenida Coronel José Soares Marcondes, 3800",
       "bairro": "Jardim Bongiovani",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://jrhoteis.com.br/presidente-prudente/",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1092.jpg",
@@ -304,16 +308,24 @@
       "lon": -51.3967105,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:06.749Z",
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "apenas Booking, Hotels.com, TripAdvisor, Instagram",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "rede JR Hotéis, página da unidade",
+      "site_qualidade": "?",
       "agente": true,
-      "atualizado_em": "2026-09-09T15:03:38.125Z",
-      "estado": null,
-      "chance": 0,
+      "atualizado_em": "2026-09-09T19:34:00.807Z",
+      "estado": "aguardando",
       "nota_agente": null,
       "nota_agente_em": null,
-      "reuniao": null
+      "reuniao": null,
+      "mensagens": [
+        {
+          "id": "mtuhydt36okq",
+          "texto": "Boa tarde! Helô aqui, da CRdevs, de Presidente Prudente 🙂\n\nVi que o Jr Park não tem site próprio. Isso quer dizer que toda reserva passa por Booking, que fica com uns 15 a 20% de comissão. Com um motor de reserva direto, essa parte fica com vocês.\n\nPosso te mostrar como funciona?",
+          "tipo": "saida",
+          "data": "2026-09-09T19:34:00.807Z"
+        }
+      ],
+      "chance": 5
     },
     {
       "id": 1076,
@@ -327,7 +339,7 @@
       "endereco": "Avenida Coronel José Soares Marcondes, 1750",
       "bairro": "Centro",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://superestrela.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1076.jpg",
@@ -359,9 +371,9 @@
       "atualizado_em": "2026-09-09T15:03:38.131Z",
       "estado": null,
       "chance": 0,
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "apenas Instagram e diretórios",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site corporativo e e-commerce da rede",
+      "site_qualidade": "?",
       "agente": true,
       "nota_agente": null,
       "nota_agente_em": null,
@@ -628,16 +640,24 @@
       "lon": -51.4157624,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:55.811Z",
-      "site_verificado_em": "2026-09-09T14:11:17.557Z",
-      "site_notas": "apenas Facebook",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
-      "atualizado_em": "2026-09-09T15:03:38.139Z",
-      "estado": null,
-      "chance": 0,
+      "atualizado_em": "2026-09-09T19:35:37.385Z",
+      "estado": "aguardando",
       "nota_agente": null,
       "nota_agente_em": null,
-      "reuniao": null
+      "reuniao": null,
+      "mensagens": [
+        {
+          "id": "mtui0gbt47uj",
+          "texto": "Boa tarde! Sou a Helô, da CRdevs — a gente fica na Manoel Goulart, praticamente do lado de vocês.\n\nVi que a Mondiali não tem site. Quem procura seminovo pesquisa antes de sair de casa, e hoje o estoque de vocês não aparece. Faço uma página que o próprio vendedor atualiza pelo celular.\n\nQuer ver um exemplo?",
+          "tipo": "saida",
+          "data": "2026-09-09T19:35:37.385Z"
+        }
+      ],
+      "chance": 5
     },
     {
       "id": 1788981405902,
@@ -727,7 +747,7 @@
       "endereco": "Avenida Washington Luiz, 2010",
       "bairro": "Jardim Paulista",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://vianorteveiculospp.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "",
@@ -747,13 +767,12 @@
       "lon": -51.4023012,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:09.447Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "Facebook, OLX, diretórios",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site próprio",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.146Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -835,7 +854,6 @@
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.152Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -878,7 +896,6 @@
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.158Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -922,7 +939,6 @@
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.165Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -966,7 +982,6 @@
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.172Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -1009,7 +1024,6 @@
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.178Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -1053,7 +1067,6 @@
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.184Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -1091,13 +1104,12 @@
       "lon": -51.4146565,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:15:50.315Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas diretório prudenteempresas",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.191Z",
       "estado": null,
-      "chance": 0,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -1135,8 +1147,8 @@
       "lon": -51.4526035,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:15:52.195Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "diretórios e sites de consulta empresarial",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.197Z"
@@ -1174,8 +1186,8 @@
       "lon": -51.4103196,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:13.061Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "Instagram, iCarros, diretórios; ofertas.viajapan.com.br é plataforma genérica AutoForce",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.203Z"
@@ -1496,7 +1508,7 @@
       "endereco": "Avenida Brasil, 2603",
       "bairro": "Vila Industrial",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://www.alpha4veiculos.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1027.png",
@@ -1517,9 +1529,9 @@
       "lon": -51.3874587,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:38.792Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "Instagram, Facebook, diretórios",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site próprio",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.210Z"
     },
@@ -1556,8 +1568,8 @@
       "lon": -51.3874587,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:41.119Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "Instagram e diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.216Z"
@@ -1726,7 +1738,7 @@
       "endereco": "Avenida Presidente Juscelino Kubitschek, 4793",
       "bairro": "Parque Furquim",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://kennethveiculos.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1014.jpg",
@@ -1747,9 +1759,9 @@
       "lon": -51.4208018,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:51.388Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "Facebook, Linktree, diretórios",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "site próprio",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.229Z"
     },
@@ -1900,8 +1912,8 @@
       "lon": -51.3899132,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:58.142Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "Instagram, OLX, diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.235Z"
@@ -1976,8 +1988,8 @@
       "lon": -51.3967105,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:01.067Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas listagens em diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.241Z"
@@ -2129,8 +2141,8 @@
       "lon": -51.4366308,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:03.282Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "pontocomveiculos.com é de Arapongas-PR, não daqui",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.248Z"
@@ -2320,8 +2332,8 @@
       "lon": -51.3942621,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:05.209Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas Facebook e Instagram",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.255Z"
@@ -2338,7 +2350,7 @@
       "endereco": "Avenida Joaquim Constantino, 1895",
       "bairro": "Jardim Satélite",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://www.vmuchiuttselect.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "",
@@ -2358,9 +2370,9 @@
       "lon": -51.4067044,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:07.028Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas Facebook, Instagram e diretórios",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "Seminovos Select V. Muchiutt, com estoque e contato",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.261Z"
     },
@@ -2396,8 +2408,8 @@
       "lon": -51.41923,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:21.999Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas Facebook e diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.267Z"
@@ -2434,8 +2446,8 @@
       "lon": -51.4245905,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:20.471Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.273Z"
@@ -3157,8 +3169,8 @@
       "lon": -51.4271458,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:21.948Z",
-      "site_verificado_em": "2026-09-09T14:11:17.558Z",
-      "site_notas": "apenas diretório Hot-Mapper",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.280Z"
@@ -3196,8 +3208,8 @@
       "lon": -51.4094324,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:18:02.453Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas em diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.286Z"
@@ -3235,8 +3247,8 @@
       "lon": -51.4230801,
       "geo_precisao": "bairro",
       "geo_em": "2026-09-03T23:18:11.721Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "listada apenas em diretórios de construtoras",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.293Z"
@@ -3481,7 +3493,7 @@
       "endereco": "Avenida Coronel José Soares Marcondes, 2555",
       "bairro": "Vila Euclides",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://www.supermercadosavenida.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1084.png",
@@ -3502,9 +3514,9 @@
       "lon": -51.3967105,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:13.668Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "diretórios e Instagram, sem site próprio",
-      "site_qualidade": "nenhum",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "rede Supermercados Avenida, 5 unidades em Prudente listadas",
+      "site_qualidade": "?",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.305Z"
     },
@@ -3541,8 +3553,8 @@
       "lon": -51.3779503,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:17.093Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "diretórios e Yelp, sem site próprio",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum",
       "agente": true,
       "atualizado_em": "2026-09-09T15:03:38.311Z"
@@ -3887,8 +3899,8 @@
       "lon": -51.3944295,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:26.246Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "diretórios e redes sociais, sem site próprio",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -3924,8 +3936,8 @@
       "lon": -51.3967105,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:23.860Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas diretórios e Facebook",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -3961,8 +3973,8 @@
       "lon": -51.3861125,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:25.796Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "plataforma de terceiros (bomhotel.com), não é site próprio",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -3998,8 +4010,8 @@
       "lon": -51.4013505,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:27.230Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas em diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4035,8 +4047,8 @@
       "lon": -51.4008134,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:29.139Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "empresa não encontrada em busca nenhuma",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4072,8 +4084,8 @@
       "lon": -51.4002099,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:33.062Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas LinkedIn e diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4109,8 +4121,8 @@
       "lon": -51.3841938,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:34.905Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4146,8 +4158,8 @@
       "lon": -51.3890478,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:36.831Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas diretórios, sem site próprio funcionando",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4183,8 +4195,8 @@
       "lon": -51.4053883,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:38.800Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4220,8 +4232,8 @@
       "lon": -51.3989604,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:41.039Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas diretórios e listagens",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4257,8 +4269,8 @@
       "lon": -51.3964833,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:30.425Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas Facebook",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4294,8 +4306,8 @@
       "lon": -51.3867376,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:42.575Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "não encontrado, só referência de endereço",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4331,8 +4343,8 @@
       "lon": -51.3904821,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:16:32.234Z",
-      "site_verificado_em": "2026-09-09T14:11:17.559Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4367,8 +4379,8 @@
       "lon": -51.4013505,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:51.367Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "só processos legais e diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4404,8 +4416,8 @@
       "lon": -51.4423088,
       "geo_precisao": "bairro",
       "geo_em": "2026-09-03T23:17:54.775Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "nikkeiimoveis.com.br é de São Paulo, não daqui",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4441,8 +4453,8 @@
       "lon": -51.3942621,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:56.771Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "só Booking e TripAdvisor",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4478,8 +4490,8 @@
       "lon": -51.3942621,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:18:00.696Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.671Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4494,7 +4506,7 @@
       "endereco": "Rua Luiz Estevão Foglia, 219",
       "bairro": "Parque Residencial Carandá",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "http://www.ramossales.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1063.jpg",
@@ -4515,9 +4527,9 @@
       "lon": -51.4257525,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:18:04.432Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "site citado em buscas mas não está funcional",
-      "site_qualidade": "nenhum"
+      "site_verificado_em": "2026-09-09T19:37:46.672Z",
+      "site_notas": "site próprio",
+      "site_qualidade": "?"
     },
     {
       "id": 1055,
@@ -4531,7 +4543,7 @@
       "endereco": "Avenida Quatorze de Setembro, 390",
       "bairro": "Vila Industrial",
       "cidade": "Presidente Prudente",
-      "site": "nenhum",
+      "site": "https://www.remaxalliance.com.br",
       "instagram": "",
       "facebook": "",
       "logo": "assets/logos/1055.png",
@@ -4552,9 +4564,9 @@
       "lon": -51.394666,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:18:05.947Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "RE/MAX é franquia, sem domínio próprio da loja",
-      "site_qualidade": "nenhum"
+      "site_verificado_em": "2026-09-09T19:37:46.672Z",
+      "site_notas": "rede RE/MAX Alliance com imóveis de Prudente listados",
+      "site_qualidade": "?"
     },
     {
       "id": 1073,
@@ -4588,8 +4600,8 @@
       "lon": -51.3779503,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:18:13.312Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "CNPJ ativo, sem site próprio",
+      "site_verificado_em": "2026-09-09T19:37:46.672Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4625,8 +4637,8 @@
       "lon": -51.4545368,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:12.108Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.672Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4700,8 +4712,8 @@
       "lon": -51.3821404,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:15.592Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "apenas iFood, Facebook e diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.672Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
@@ -4737,8 +4749,8 @@
       "lon": -51.3958465,
       "geo_precisao": "endereco",
       "geo_em": "2026-09-03T23:17:19.005Z",
-      "site_verificado_em": "2026-09-09T14:11:17.560Z",
-      "site_notas": "apenas diretórios",
+      "site_verificado_em": "2026-09-09T19:37:46.672Z",
+      "site_notas": "",
       "site_qualidade": "nenhum"
     },
     {
