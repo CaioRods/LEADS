@@ -461,8 +461,16 @@ dentro do site da marca.
 
 **Não conta:** diretórios (prudenteempresas, listamais, guiafacil, apontador,
 econodata, solutudo, paginaamarela), redes sociais, marketplaces e OTAs
-(iFood, Booking, iCarros, OLX, Webmotors, TripAdvisor), e site de marca
-nacional onde a loja local não aparece.
+(iFood, Booking, iCarros, OLX, Webmotors, TripAdvisor).
+
+**Concessionária de marca conta como ter site**, mesmo que a loja local não
+apareça no site da marca. Foi uma correção do usuário, e ela decorre do mesmo
+critério comercial: se você disser à Ville Japan que ela não tem site, o dono
+responde "temos, é o site da Nissan" — e a conversa morre igual. Vale para
+Nissan, Toyota, Fiat, Chevrolet, Suzuki, Mitsubishi e afins.
+
+**Multimarcas de seminovo continua sendo alvo**: não representa marca
+nenhuma, então não tem site de marca para invocar.
 
 **Na dúvida, marque TEM.** Um falso "não tem site" custa a conversa inteira;
 um falso "tem site" só faz perder um lead da fila.

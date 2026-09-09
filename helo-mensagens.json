@@ -1,10 +1,5 @@
 [
   {
-    "id": 1005,
-    "nome": "Ville Japan Veículos",
-    "texto": "Boa tarde! Sou a Helô, da CRdevs — a gente fica aqui na Manoel Goulart também, quase vizinhos 🙂\n\nProcurei a Ville Japan no Google e achei só iCarros e diretório. Quem procura carro pesquisa antes de ir na loja, e nessa hora o estoque de vocês não aparece. Fizemos uma automação pra Liane Veículos justamente pra isso.\n\nPosso te mostrar como ficou?"
-  },
-  {
     "id": 1788981405883,
     "nome": "Academia Hard Training",
     "texto": "Boa tarde! Sou a Helô, da CRdevs, aqui de Prudente.\n\nVi que a Hard Training não tem site — quem procura academia no Jardim Cambuy acaba achando as outras. E pra academia funciona bem ter os planos e horários de aula online, além de matrícula sem precisar ir até lá.\n\nPosso te mandar um exemplo de como ficaria?"
@@ -35,11 +30,6 @@
     "texto": "Boa tarde! Helô aqui, da CRdevs, de Presidente Prudente.\n\nVi que vocês fazem entrega e divulgam pelo Facebook. Uma página de pedido própria resolveria bem: o cliente monta o pedido e cai direto no seu WhatsApp, sem comissão de aplicativo.\n\nPosso te mostrar um exemplo?"
   },
   {
-    "id": 1026,
-    "nome": "Mondiali Veículos",
-    "texto": "Boa tarde! Sou a Helô, da CRdevs — estamos praticamente do lado de vocês, aqui na Manoel Goulart.\n\nReparei que a Mondiali não tem site. Quem procura seminovo pesquisa antes de sair de casa, e hoje o estoque de vocês fica de fora dessa busca.\n\nFaço uma página que o próprio vendedor atualiza pelo celular. Quer ver?"
-  },
-  {
     "id": 1788981405902,
     "nome": "Padoca Café",
     "texto": "Boa tarde! Helô, da CRdevs, aqui de Prudente 🙂\n\nVi que a Padoca Café não tem site. Pra café artesanal, uma página com o cardápio e as fotos ajuda bastante — é o tipo de lugar que as pessoas procuram no Google antes de decidir onde parar.\n\nPosso te mandar um exemplo?"
@@ -48,5 +38,15 @@
     "id": 1788981405942,
     "nome": "Serralheria Angélica",
     "texto": "Boa tarde! Sou a Helô, da CRdevs, aqui de Presidente Prudente.\n\nReparei que a Serralheria Angélica não tem site. Estrutura metálica é coisa que o cliente pesquisa e compara antes de pedir orçamento — e um portfólio com fotos dos trabalhos costuma render bastante contato.\n\nQuer que eu mostre como ficaria?"
+  },
+  {
+    "id": 1788981405877,
+    "nome": "Barbearia Silveira",
+    "texto": "Boa tarde! Helô aqui, da CRdevs, de Prudente.\n\nVi que a Barbearia Silveira também faz depilação — e que o agendamento é todo por WhatsApp. A gente monta uma agenda online onde o cliente escolhe o horário e o serviço sozinho, e você só confirma.\n\nPosso te mostrar como funciona?"
+  },
+  {
+    "id": 1033,
+    "nome": "Gamax Empreendimentos",
+    "texto": "Boa tarde! Sou a Helô, da CRdevs, aqui de Presidente Prudente.\n\nProcurei a Gamax no Google e achei só diretório. Pra empreendimento, uma página por projeto com planta, fotos e localização costuma render bastante contato — e dá pra saber de onde veio cada um.\n\nPosso te mostrar um exemplo?"
   }
 ]
