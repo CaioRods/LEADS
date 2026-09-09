@@ -94,6 +94,7 @@ function pontuar(l) {
   const qual = (l.site_qualidade || '').toLowerCase();
 
   if (site === 'nenhum' || !site)           { s += 30; m.push('nenhum site (+30)'); }
+  else if (qual === 'morto')                { s += 28; m.push('site fora do ar — pagou por um e hoje não tem nada (+28)'); }
   else if (qual === 'ruim')                 { s += 25; m.push('site ruim — já paga por um, dá para fazer melhor (+25)'); }
   else if (site.includes('portal') || site.includes('goomer'))
                                             { s += 15; m.push('só plataforma alugada, sem domínio próprio (+15)'); }
