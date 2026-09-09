@@ -19,7 +19,7 @@ const os = require('os');
 const ARQUIVOS = [
   'main.js', 'preload.js', 'server.js', 'index.html', 'styles.css',
   'app-web.js', 'score.js', 'buscar-fotos.js', 'geocodificar.js',
-  'wa-worker.js', 'wa-ponte.js', 'package.json', 'dados.json'
+  'wa-worker.js', 'wa-ponte.js', 'helo.js', 'package.json', 'dados.json'
 ];
 
 const alvo = process.argv[2] || path.join(__dirname, 'dist', 'mac', 'ProspecApp.app');

@@ -59,7 +59,8 @@
       "dados.json",
       "funcionamento.js",
       "wa-worker.js",
-      "wa-ponte.js"
+      "wa-ponte.js",
+      "helo.js"
     ],
     "mac": {
       "target": [

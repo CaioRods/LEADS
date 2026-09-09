@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const wa = require('./wa-ponte');
+const helo = require('./helo');
 
 const app = express();
 const PORT = 3000;
@@ -445,6 +446,164 @@ app.post('/api/agente/enviar', async (req, res) => {
   saveData(d2);
 
   res.json({ ok: true, enviadasHoje: r.enviadasHoje });
+});
+
+/* ===== CAMPANHA =====
+   A Helô percorrendo a fila sozinha, do lead com mais chance para o com
+   menos. Ela redige, o worker envia, e cada envio continua passando por todas
+   as travas: só quem está sob gestão, dentro do horário, dentro do teto, com
+   o espaçamento sorteado entre mensagens. A campanha não fura nada — ela só
+   evita que você precise ficar sentado conduzindo.
+
+   Estado em memória de propósito: se o app fechar no meio, a campanha morre
+   junto, que é o comportamento seguro. Nada continua mandando mensagem sem
+   alguém por perto.                                                        */
+
+let campanha = {
+  rodando: false, parar: false, fila: [], feitos: 0, erros: 0,
+  atual: null, comecou: null, ultimoErro: null
+};
+
+const chaveClaude = () => process.env.ANTHROPIC_API_KEY || campanha.chave || null;
+
+async function rodarCampanha() {
+  campanha.rodando = true;
+  campanha.parar = false;
+  campanha.feitos = 0;
+  campanha.erros = 0;
+  campanha.comecou = new Date().toISOString();
+
+  for (const id of campanha.fila) {
+    if (campanha.parar) break;
+
+    const dados = loadData();
+    const lead = (dados.leads || []).find(l => l.id === id);
+
+    // A gestão pode ter mudado depois que a fila foi montada.
+    if (!lead || !lead.agente) continue;
+
+    campanha.atual = lead.nome;
+
+    try {
+      const jaFalamos = (lead.mensagens || []).some(m => m.tipo === 'saida');
+      const responderam = (lead.mensagens || []).some(m => m.tipo === 'entrada');
+
+      // Quem não respondeu a primeira não recebe uma segunda. Reabordagem é o
+      // que mais gera denúncia, e é a coisa que mais rápido queima o número.
+      if (jaFalamos && !responderam) continue;
+
+      let texto, diag = null;
+      if (responderam) {
+        const r = await helo.responder(chaveClaude(), lead);
+        texto = r.mensagem;
+        diag = r;
+      } else {
+        texto = await helo.primeiraMensagem(chaveClaude(), lead);
+      }
+
+      const envio = await wa.enviar(lead.telefone, texto, responderam);
+
+      if (!envio.ok) {
+        campanha.ultimoErro = `${lead.nome}: ${envio.erro}`;
+        campanha.erros++;
+        // Limite de horário ou teto: insistir não adianta, o resto da fila
+        // vai bater no mesmo muro.
+        if (envio.adiavel) { campanha.parar = true; break; }
+        continue;
+      }
+
+      const d2 = loadData();
+      const l2 = d2.leads.find(l => l.id === id);
+      (l2.mensagens = l2.mensagens || []).push({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        texto, tipo: 'saida', data: new Date().toISOString()
+      });
+
+      if (diag) {
+        l2.estado = diag.estado || 'aguardando';
+        if (Number.isFinite(+diag.chance)) l2.chance = Math.max(0, Math.min(10, +diag.chance));
+        if (diag.nota) { l2.nota_agente = diag.nota; l2.nota_agente_em = new Date().toISOString(); }
+        if (diag.reuniao) l2.reuniao = diag.reuniao;
+        // Conversa que pediu um responsável sai da automação e espera você.
+        if (diag.passar_para_caio) { l2.agente = false; l2.estado = 'conversando'; }
+      } else {
+        l2.estado = 'aguardando';
+        if (l2.chance == null) l2.chance = 5;
+      }
+      l2.atualizado_em = new Date().toISOString();
+      saveData(d2);
+
+      if (diag && diag.passar_para_caio) wa.sincronizarAutorizados();
+      campanha.feitos++;
+
+    } catch (err) {
+      campanha.ultimoErro = `${lead.nome}: ${err.message}`;
+      campanha.erros++;
+      // Chave inválida ou sem crédito derruba tudo: não adianta seguir.
+      if (/401|403|credit|invalid/i.test(err.message)) { campanha.parar = true; break; }
+    }
+  }
+
+  campanha.rodando = false;
+  campanha.atual = null;
+}
+
+// POST /api/agente/campanha — começa a conversar, dos com mais chance aos com menos
+app.post('/api/agente/campanha', async (req, res) => {
+  if (campanha.rodando) return res.status(409).json({ error: 'já está rodando' });
+
+  if (req.body && req.body.chave) campanha.chave = String(req.body.chave).trim();
+  if (!chaveClaude()) return res.status(400).json({
+    error: 'falta a chave da API da Anthropic — sem ela a Helô não consegue escrever' });
+
+  const dados = loadData();
+  const geridos = (dados.leads || []).filter(l => l.agente === true && l.telefone);
+
+  if (!geridos.length) return res.status(400).json({
+    error: 'nenhum lead sob gestão do agente' });
+
+  /* A ordem é o pedido: mais chance primeiro. Para quem ainda não conversou
+     não existe `chance`, então o score faz esse papel — ele é justamente a
+     estimativa de quão promissor o lead é. */
+  campanha.fila = geridos
+    .map(l => {
+      /* Chance avaliada manda; score só entra quando ela ainda não existe.
+         O teste precisa ser por "foi avaliado?", não por "é maior que zero":
+         chance 0 significa que alguém olhou a conversa e concluiu que não vai
+         dar — esse lead tem de ir para o fim, e não herdar o score alto que
+         tinha antes de a conversa começar. */
+      const avaliada = l.chance !== undefined && l.chance !== null && Number.isFinite(+l.chance);
+      return { id: l.id, peso: avaliada ? +l.chance * 10 : (l.score || 0) };
+    })
+    .sort((a, b) => b.peso - a.peso)
+    .map(x => x.id);
+
+  rodarCampanha().catch(e => {
+    campanha.rodando = false;
+    campanha.ultimoErro = e.message;
+  });
+
+  res.json({ ok: true, total: campanha.fila.length });
+});
+
+// POST /api/agente/campanha/parar
+app.post('/api/agente/campanha/parar', (req, res) => {
+  campanha.parar = true;
+  res.json({ ok: true, parando: campanha.rodando });
+});
+
+// GET /api/agente/campanha
+app.get('/api/agente/campanha', (req, res) => {
+  res.json({
+    rodando: campanha.rodando,
+    total: campanha.fila.length,
+    feitos: campanha.feitos,
+    erros: campanha.erros,
+    atual: campanha.atual,
+    ultimoErro: campanha.ultimoErro,
+    temChave: !!chaveClaude(),
+    modelo: helo.MODELO
+  });
 });
 
 // Servir index.html na raiz

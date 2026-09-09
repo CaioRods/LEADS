@@ -36,8 +36,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.555Z",
       "site_notas": "apenas diretórios e o site do Hospital Iamada",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.369Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.081Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -80,8 +80,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "somente diretórios de empresas",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.384Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.089Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -124,8 +124,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "fiatviviani.com.br é domínio de franquia, não próprio",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.397Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.097Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -172,10 +172,10 @@
           "data": "2026-09-04T20:49:43.766Z"
         }
       ],
-      "atualizado_em": "2026-09-09T15:03:12.410Z",
+      "atualizado_em": "2026-09-09T15:03:38.104Z",
       "estado": null,
       "chance": 0,
-      "agente": false,
+      "agente": true,
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "apenas Facebook, Instagram e diretórios",
       "site_qualidade": "nenhum",
@@ -219,8 +219,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "damha.com.br é corporativo da marca, não da filial",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.423Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.111Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -262,11 +262,11 @@
       "geo_em": "2026-09-03T23:15:47.997Z",
       "estado": null,
       "chance": 0,
-      "atualizado_em": "2026-09-09T15:03:12.434Z",
+      "atualizado_em": "2026-09-09T15:03:38.118Z",
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "encalso.com.br é corporativo, não destaca a filial local",
       "site_qualidade": "nenhum",
-      "agente": false,
+      "agente": true,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -307,8 +307,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "apenas Booking, Hotels.com, TripAdvisor, Instagram",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.445Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.125Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -356,13 +356,13 @@
           "data": "2026-09-04T20:53:25.573Z"
         }
       ],
-      "atualizado_em": "2026-09-09T15:03:12.455Z",
+      "atualizado_em": "2026-09-09T15:03:38.131Z",
       "estado": null,
       "chance": 0,
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "apenas Instagram e diretórios",
       "site_qualidade": "nenhum",
-      "agente": false,
+      "agente": true,
       "nota_agente": null,
       "nota_agente_em": null,
       "reuniao": null
@@ -403,8 +403,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "apenas Facebook",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.465Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.139Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -446,8 +446,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "Facebook, OLX, diretórios",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.476Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.146Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -490,8 +490,8 @@
       "site_verificado_em": "2026-09-09T14:27:56.594Z",
       "site_notas": "design de 2018, copyright 2019, sem elementos modernos",
       "site_qualidade": "ruim",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.486Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.152Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -533,8 +533,8 @@
       "site_verificado_em": "2026-09-09T14:27:56.594Z",
       "site_notas": "encoding quebrado com caracteres corrompidos, imagens não carregam",
       "site_qualidade": "ruim",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.496Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.158Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -577,8 +577,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "domínio existe mas não respondeu — possivelmente fora do ar",
       "site_qualidade": "ruim",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.507Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.165Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -621,8 +621,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "funcional mas com erros de manutenção",
       "site_qualidade": "ruim",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.517Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.172Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -664,8 +664,8 @@
       "site_verificado_em": "2026-09-09T14:27:56.594Z",
       "site_notas": "design dos anos 2010, listagens desatualizadas de 2018-2022",
       "site_qualidade": "ruim",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.528Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.178Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -708,8 +708,8 @@
       "site_verificado_em": "2026-09-09T14:27:56.594Z",
       "site_notas": "encoding quebrado, design dos anos 2010",
       "site_qualidade": "ruim",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.538Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.184Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -752,8 +752,8 @@
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas diretório prudenteempresas",
       "site_qualidade": "nenhum",
-      "agente": false,
-      "atualizado_em": "2026-09-09T15:03:12.549Z",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.191Z",
       "estado": null,
       "chance": 0,
       "nota_agente": null,
@@ -795,7 +795,9 @@
       "geo_em": "2026-09-03T23:15:52.195Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "diretórios e sites de consulta empresarial",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.197Z"
     },
     {
       "id": 1001,
@@ -832,7 +834,9 @@
       "geo_em": "2026-09-03T23:16:13.061Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "Instagram, iCarros, diretórios; ofertas.viajapan.com.br é plataforma genérica AutoForce",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.203Z"
     },
     {
       "id": 1027,
@@ -869,7 +873,9 @@
       "geo_em": "2026-09-03T23:16:38.792Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "Instagram, Facebook, diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.210Z"
     },
     {
       "id": 1015,
@@ -906,7 +912,9 @@
       "geo_em": "2026-09-03T23:16:41.119Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "Instagram e diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.216Z"
     },
     {
       "id": 1023,
@@ -943,7 +951,9 @@
       "geo_em": "2026-09-03T23:16:48.974Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "empresa desativada (baixada)",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.222Z"
     },
     {
       "id": 1014,
@@ -980,7 +990,9 @@
       "geo_em": "2026-09-03T23:16:51.388Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "Facebook, Linktree, diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.229Z"
     },
     {
       "id": 1022,
@@ -1017,7 +1029,9 @@
       "geo_em": "2026-09-03T23:16:58.142Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "Instagram, OLX, diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.235Z"
     },
     {
       "id": 1018,
@@ -1053,7 +1067,9 @@
       "geo_em": "2026-09-03T23:17:01.067Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas listagens em diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.241Z"
     },
     {
       "id": 1019,
@@ -1090,7 +1106,9 @@
       "geo_em": "2026-09-03T23:17:03.282Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "pontocomveiculos.com é de Arapongas-PR, não daqui",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.248Z"
     },
     {
       "id": 1028,
@@ -1127,7 +1145,9 @@
       "geo_em": "2026-09-03T23:17:05.209Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas Facebook e Instagram",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.255Z"
     },
     {
       "id": 1020,
@@ -1163,7 +1183,9 @@
       "geo_em": "2026-09-03T23:17:07.028Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas Facebook, Instagram e diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.261Z"
     },
     {
       "id": 1080,
@@ -1199,7 +1221,9 @@
       "geo_em": "2026-09-03T23:16:21.999Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas Facebook e diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.267Z"
     },
     {
       "id": 1087,
@@ -1235,7 +1259,9 @@
       "geo_em": "2026-09-03T23:17:20.471Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.273Z"
     },
     {
       "id": 1037,
@@ -1272,7 +1298,9 @@
       "geo_em": "2026-09-03T23:17:21.948Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "apenas diretório Hot-Mapper",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.280Z"
     },
     {
       "id": 1054,
@@ -1309,7 +1337,9 @@
       "geo_em": "2026-09-03T23:18:02.453Z",
       "site_verificado_em": "2026-09-09T14:11:17.559Z",
       "site_notas": "apenas em diretórios",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.286Z"
     },
     {
       "id": 1072,
@@ -1346,7 +1376,9 @@
       "geo_em": "2026-09-03T23:18:11.721Z",
       "site_verificado_em": "2026-09-09T14:11:17.559Z",
       "site_notas": "listada apenas em diretórios de construtoras",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.293Z"
     },
     {
       "id": 1009,
@@ -1382,7 +1414,9 @@
       "geo_em": "2026-09-03T23:18:37.903Z",
       "site_verificado_em": "2026-09-09T14:27:56.595Z",
       "site_notas": "design de meados dos anos 2010, anterior a 2018",
-      "site_qualidade": "ruim"
+      "site_qualidade": "ruim",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.299Z"
     },
     {
       "id": 1084,
@@ -1419,7 +1453,9 @@
       "geo_em": "2026-09-03T23:17:13.668Z",
       "site_verificado_em": "2026-09-09T14:11:17.559Z",
       "site_notas": "diretórios e Instagram, sem site próprio",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.305Z"
     },
     {
       "id": 1083,
@@ -1456,7 +1492,9 @@
       "geo_em": "2026-09-03T23:17:17.093Z",
       "site_verificado_em": "2026-09-09T14:11:17.559Z",
       "site_notas": "diretórios e Yelp, sem site próprio",
-      "site_qualidade": "nenhum"
+      "site_qualidade": "nenhum",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.311Z"
     },
     {
       "id": 1090,
@@ -1493,7 +1531,9 @@
       "geo_em": "2026-09-03T23:15:56.825Z",
       "site_verificado_em": "2026-09-09T14:11:17.557Z",
       "site_notas": "site moderno com reservas",
-      "site_qualidade": "bom"
+      "site_qualidade": "bom",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.317Z"
     },
     {
       "id": 1095,
@@ -1530,7 +1570,9 @@
       "geo_em": "2026-09-03T23:18:58.179Z",
       "site_verificado_em": "2026-09-09T14:27:56.595Z",
       "site_notas": "copyright 2015, imagens de 2015-2019, sem atualização há anos",
-      "site_qualidade": "ruim"
+      "site_qualidade": "ruim",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.323Z"
     },
     {
       "id": 1049,
@@ -1567,7 +1609,9 @@
       "geo_em": "2026-09-03T23:16:34.565Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "site antigo, problemas de encoding, design de 2016",
-      "site_qualidade": "ruim"
+      "site_qualidade": "ruim",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.329Z"
     },
     {
       "id": 1050,
@@ -1603,7 +1647,9 @@
       "geo_em": "2026-09-03T23:16:36.399Z",
       "site_verificado_em": "2026-09-09T14:11:17.558Z",
       "site_notas": "indexado no Google mas domínio não está resolvendo",
-      "site_qualidade": "ruim"
+      "site_qualidade": "ruim",
+      "agente": true,
+      "atualizado_em": "2026-09-09T15:03:38.336Z"
     },
     {
       "id": 1038,

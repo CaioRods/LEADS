@@ -2014,12 +2014,19 @@ let estadoAgente = null;
 let agenteTimer  = null;
 
 API.estadoAgente = () => API.req("GET", "/api/agente/estado");
+API.estadoCampanha = () => API.req("GET", "/api/agente/campanha");
+API.iniciarCampanha = (chave) => API.req("POST", "/api/agente/campanha", chave ? { chave } : {});
+API.pararCampanha = () => API.req("POST", "/api/agente/campanha/parar", {});
 API.gestaoAgente = (id, ativo) => API.req("POST", "/api/agente/gestao", { id, ativo });
 
 async function renderAgente(){
   if (S.visao !== "agente") return;
   const raiz = $("#visaoAgente");
   if (!raiz) return;
+
+  let camp = null;
+  try { camp = await API.estadoCampanha(); } catch (_) {}
+  if (estadoAgente) estadoAgente.campanhaRodando = !!(camp && camp.rodando);
 
   try { estadoAgente = await API.estadoAgente(); }
   catch (e){
@@ -2054,9 +2061,45 @@ async function renderAgente(){
     .sort((a,b) => (b.score||0) - (a.score||0))
     .slice(0, 40);
 
+  /* O painel da campanha só faz sentido com WhatsApp conectado e alguém sob
+     gestão — antes disso o botão não teria o que fazer. */
+  const podeRodar = e.conectado && geridos.length;
+  const rodando = camp && camp.rodando;
+
+  const painelCampanha = !podeRodar ? "" : `
+    <div class="ag-campanha ${rodando ? "ag-rodando" : ""}">
+      ${rodando ? `
+        <div class="ag-camp-info">
+          <b>A Helô está conversando…</b>
+          <span>${camp.feitos} de ${camp.total} · ${
+            esc(camp.atual || "preparando")}${camp.erros ? ` · ${camp.erros} falharam` : ""}</span>
+          ${camp.ultimoErro ? `<span class="ag-camp-erro">${esc(camp.ultimoErro)}</span>` : ""}
+        </div>
+        <button class="botao" id="pararCampanha">Parar</button>
+      ` : `
+        <div class="ag-camp-info">
+          <b>Começar a conversar</b>
+          <span>A Helô escreve e manda para os ${geridos.length} leads sob gestão,
+          do com mais chance para o com menos. Respeita o teto de ${
+            (e.limites && e.limites.abordagensPorDia) || 25} por dia,
+          o horário e o espaçamento entre mensagens.</span>
+          ${camp && camp.ultimoErro ? `<span class="ag-camp-erro">último erro: ${
+            esc(camp.ultimoErro)}</span>` : ""}
+        </div>
+        ${camp && camp.temChave
+          ? `<button class="botao botao-forte" id="comecarCampanha">Começar</button>`
+          : `<div class="ag-chave">
+               <input type="password" id="chaveClaude" placeholder="chave da API da Anthropic"
+                      autocomplete="off">
+               <button class="botao botao-forte" id="comecarCampanha">Começar</button>
+             </div>`}
+      `}
+    </div>`;
+
   raiz.innerHTML = `
     <div class="ag-topo">
       ${conexao}
+      ${painelCampanha}
       <p class="ag-nota"><b>O agente só fala com quem está na lista abaixo.</b>
       Nenhuma outra conversa do seu WhatsApp é lida, respondida ou sequer
       registrada — nem grupos, nem contatos pessoais, nem clientes atuais.
@@ -2106,6 +2149,36 @@ async function renderAgente(){
     try { await API.gestaoAgente(l.id, true); l.agente = true; renderAgente(); }
     catch (err){ aviso("Não consegui incluir: " + err.message, true); b.disabled = false; }
   });
+
+  const bc = $("#comecarCampanha");
+  if (bc) bc.onclick = async () => {
+    const campo = $("#chaveClaude");
+    const chave = campo ? campo.value.trim() : "";
+    if (campo && !chave) return aviso("Preciso da chave da API para a Helô escrever.", true);
+
+    if (!confirm(`A Helô vai conversar com ${geridos.length} lead(s), começando ` +
+      `pelos de maior chance.\n\nSão empresas reais recebendo mensagem de verdade. ` +
+      `Ela para sozinha ao bater o teto do dia ou sair do horário, e você pode ` +
+      `parar a qualquer momento.\n\nComeçar?`)) return;
+
+    bc.disabled = true; bc.textContent = "Começando…";
+    try {
+      const r = await API.iniciarCampanha(chave || undefined);
+      aviso(`Campanha iniciada: ${r.total} na fila.`);
+      renderAgente();
+    } catch (err){
+      aviso("Não consegui começar: " + err.message, true);
+      bc.disabled = false; bc.textContent = "Começar";
+    }
+  };
+
+  const bp = $("#pararCampanha");
+  if (bp) bp.onclick = async () => {
+    bp.disabled = true; bp.textContent = "Parando…";
+    try { await API.pararCampanha(); aviso("A Helô vai parar após a mensagem atual."); }
+    catch (err){ aviso("Não consegui parar: " + err.message, true); }
+    renderAgente();
+  };
 
   const bt = $("#incluirTodos");
   if (bt) bt.onclick = async () => {
@@ -2159,8 +2232,12 @@ async function renderAgente(){
 function acompanharAgente(){
   clearInterval(agenteTimer);
   if (S.visao !== "agente") return;
-  agenteTimer = setInterval(() => {
+  /* Com campanha rodando o painel precisa acompanhar o avanço; parado, um
+     ritmo lento basta para o QR aparecer sozinho. */
+  const ritmo = () => (estadoAgente && estadoAgente.campanhaRodando) ? 2500 : 5000;
+  const bater = () => {
     if (S.visao !== "agente") return clearInterval(agenteTimer);
     renderAgente();
-  }, 4000);
+  };
+  agenteTimer = setInterval(bater, ritmo());
 }

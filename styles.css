@@ -2229,3 +2229,32 @@ body.no-app .modal{ max-height:calc(100vh - 76px) }
 }
 .ficha-reuniao b{ font-weight:700 }
 [data-theme="dark"] .ficha-reuniao{ background:hsl(145 26% 20%); color:hsl(145 44% 74%) }
+
+/* ---- campanha ---- */
+.ag-campanha{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:14px 16px; border-radius:var(--r-g); box-shadow:var(--fundo-p);
+}
+.ag-campanha.ag-rodando{
+  box-shadow:var(--fundo-p), inset 0 0 0 2px var(--acento);
+}
+.ag-camp-info{ flex:1; min-width:220px; display:grid; gap:3px }
+.ag-camp-info b{ font-size:13.5px }
+.ag-camp-info > span{ font-size:12px; color:var(--tinta-2); line-height:1.5 }
+.ag-camp-erro{ color:hsl(8 48% 46%) !important; font-size:11.5px !important }
+[data-theme="dark"] .ag-camp-erro{ color:hsl(8 52% 68%) !important }
+
+.ag-rodando .ag-camp-info b::before{
+  content:""; display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--acento); margin-right:8px; vertical-align:middle;
+  animation:pulsa 1.4s ease-in-out infinite;
+}
+@keyframes pulsa{ 0%,100%{opacity:.35} 50%{opacity:1} }
+
+.ag-chave{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+.ag-chave input{
+  font:inherit; font-size:12.5px; padding:8px 11px; min-width:230px;
+  border:0; border-radius:var(--r-p);
+  background:var(--fundo); color:var(--tinta); box-shadow:var(--fundo-p);
+}
+.ag-chave input:focus{ outline:none; box-shadow:var(--fundo-p), 0 0 0 2px var(--acento) }

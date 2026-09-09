@@ -353,3 +353,61 @@ Ao reabrir, a Baileys sincroniza o que chegou no intervalo.
 >
 > No fim, me diga quem respondeu, quem virou oportunidade, que reunião ficou
 > marcada e para quando, e quem você tirou da gestão.
+
+
+---
+
+# O botão "Começar a conversar"
+
+Na aba **Agente**, com o WhatsApp conectado e leads sob gestão, aparece o botão
+que faz a Helô percorrer a fila sozinha.
+
+## De onde vem a ordem
+
+**Do lead com mais chance para o com menos.** Para quem já conversou, vale a
+`chance` de 0 a 10 registrada pelo diagnóstico. Para quem nunca foi abordado,
+vale o `score` — que é justamente a estimativa de quão promissor ele é.
+
+Chance 0 vai para o **fim** da fila, não para o começo: zero significa que
+alguém olhou a conversa e concluiu que não vai dar, e esse lead não pode
+herdar o score alto que tinha antes de a conversa começar.
+
+## O que ela faz em cada um
+
+- **Nunca abordado:** escreve a primeira mensagem, citando algo concreto e
+  verificável daquela empresa — o defeito do site, o ramo, a rua.
+- **Já respondeu:** lê a conversa, responde, e registra o diagnóstico (estado,
+  chance, nota, reunião) no quadro de Estados.
+- **Já mandamos e ele não respondeu:** **pula.** Não manda de novo. Reabordagem
+  é o que mais gera denúncia e o que mais rápido queima um número.
+
+Se a conversa virar assunto sobre a Helô, ou ele pedir para falar com um
+responsável, ela **tira o lead da automação** e deixa em "conversando" para
+você assumir.
+
+## O que ela não consegue furar
+
+Todas as travas continuam valendo, e são impostas no worker, fora do alcance
+da campanha: só quem está sob gestão, teto de 25 abordagens por dia, horário
+comercial, sem fim de semana, espaçamento sorteado de 45 a 180 segundos entre
+mensagens. Ao bater o teto ou sair do horário, a campanha **para sozinha**.
+
+Você pode parar a qualquer momento; ela encerra depois da mensagem em curso.
+
+Se o app fechar no meio, a campanha morre junto — de propósito. Nada continua
+mandando mensagem sem alguém por perto.
+
+## A chave
+
+A Helô escreve chamando a API da Anthropic, então precisa de uma chave de
+`console.anthropic.com`. Cole no campo ao lado do botão (fica só na memória do
+app, some ao fechar), ou exporte antes de abrir:
+
+```bash
+export ANTHROPIC_API_KEY=sua-chave
+```
+
+O modelo padrão é `claude-sonnet-5`; `HELO_MODELO` troca.
+
+**Custo:** cada primeira mensagem é uma chamada curta, na casa de centavos.
+Uma campanha de 25 leads sai por poucos centavos de dólar.
